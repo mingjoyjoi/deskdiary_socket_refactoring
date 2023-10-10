@@ -15,7 +15,7 @@ async function bootstrap() {
   );
 
   const config = new DocumentBuilder()
-    .setTitle('Delivery Boss')
+    .setTitle('DeskDiary API')
     .setDescription('The Median API description')
     .setVersion('0.1')
     .addBearerAuth()
