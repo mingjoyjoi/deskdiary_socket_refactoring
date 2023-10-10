@@ -1,9 +1,10 @@
 import { Body, Controller, HttpCode, Post, Res } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { UserService } from './user.service';
 import { Response } from 'express';
-import { LoginUserDto } from './dto/login.user.dto';
+
+import { UserService } from './user.service';
 import { JoinUserDto } from './dto/join.user.dto';
+import { LoginUserDto } from './dto/login.user.dto';
 
 @ApiTags('Join')
 @Controller('auth')
