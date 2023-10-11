@@ -1,3 +1,5 @@
+# Workflow title
+# 명시하지 않는 경우 파일의 경로가 타이틀이 된다.
 name: deskdiary-cicd
 
 # main.yml에서 사용할 환경변수
@@ -5,43 +7,42 @@ env:
   DOCKER_IMAGE: ghcr.io/deskdiary/deskdiary-nest
   DOCKER_CONTAINER: deskdiary-nest-container
 
+# 이벤트
+# main 브랜치에 push나 pull request가 일어난우경우
 on:
+  push:
+    branches: [main]
   pull_request:
     branches: [dev]
 
+# 이벤트가 일어나면 해야할 작업들을 명시
+# 테스트, 빌드, 배포 단위로 명시
+# 각각의 job은 runner라는 컨테이너에서 개별적으로 실행
 jobs:
-  # CI
+  # test code with Jest
   test:
     runs-on: ubuntu-latest
     steps:
-      # git actions를 트리거한 commit에 checkout
-      - name: checkout commit
+      - name: Checkout Source Code
         uses: actions/checkout@v3
-
-      # node 환경 세팅
       - name: setup node.js 18.x
         uses: actions/setup-node@v3
         with:
           node-version: 18.x
           cache: 'npm'
-
-      - name: Setting .env
+      - name: Load env file
         run: |
+          touch .env
           echo "MODE=${{ secrets.MODE }}" >> .env
-          echo "SERVER_PORT=${{ secrets.SERVER_PORT }}" >> .env
+          echo "PORT=${{ secrets.PORT }}" >> .env
           echo "RDS_DB_NAME=${{ secrets.RDS_DB_NAME }}" >> .env
           echo "RDS_HOSTNAME=${{ secrets.RDS_HOSTNAME }}" >> .env
           echo "RDS_PASSWORD=${{ secrets.RDS_PASSWORD }}" >> .env
           echo "RDS_PORT=${{ secrets.RDS_PORT }}" >> .env
           echo "RDS_USERNAME=${{ secrets.RDS_USERNAME }}" >> .env
-      # 패키지 설치
-      - name: setup packages
+      - name: Install dependencies
         run: npm install
-
-      # 테스트 진행
-      - name: start test
-        run: npm test
-
+      - run: npm run test
   # Docker image build
   build:
     # build가 시작되려면 test를 완료해야함
@@ -89,6 +90,7 @@ jobs:
           password: ${{ secrets.FINALPROJECT_TOKEN }}
       - name: Run docker
         run: |
+          touch .env
           echo "MODE=${{ secrets.MODE }}" >> .env
           echo "PORT=${{ secrets.PORT }}" >> .env
           echo "RDS_DB_NAME=${{ secrets.RDS_DB_NAME }}" >> .env
