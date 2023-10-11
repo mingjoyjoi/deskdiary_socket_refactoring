@@ -1,12 +1,18 @@
 import { Module } from '@nestjs/common';
-import { JwtModule } from '@nestjs/jwt';
 import { PrismaModule } from 'src/prisma/prisma.module';
-import { UserJoinController } from './user.controller';
+import { UserController } from './user.controller';
 import { UserService } from './user.service';
+import { JwtModule } from '@nestjs/jwt';
+import { JwtConfigService } from 'src/config/jwt.config.service';
 
 @Module({
-  imports: [PrismaModule, JwtModule],
-  controllers: [UserJoinController],
-  providers: [UserService],
+  imports: [
+    PrismaModule,
+    JwtModule.registerAsync({
+      useClass: JwtConfigService,
+    }),
+  ],
+  controllers: [UserController],
+  providers: [UserService, JwtConfigService],
 })
 export class UserModule {}

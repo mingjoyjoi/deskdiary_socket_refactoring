@@ -1,17 +1,17 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { Response } from 'express';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { JoinUserDto } from './dto/join.user.dto';
 import { LoginUserDto } from './dto/login.user.dto';
+import { JwtConfigService } from 'src/config/jwt.config.service';
 
 @Injectable()
 export class UserService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly configService: ConfigService,
+    private readonly jwtconfigService: JwtConfigService,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -60,8 +60,8 @@ export class UserService {
 
     const jwtPayload = { userId: user.userid, type: 'user' };
     const accessToken = this.jwtService.sign(jwtPayload, {
-      expiresIn: '30m',
-      secret: process.env.JWT_SECRET,
+      secret: this.jwtconfigService.createJwtOptions().secret,
+      expiresIn: this.jwtconfigService.createJwtOptions().signOptions.expiresIn,
     });
     const refreshToken = this.jwtService.sign(jwtPayload, {
       expiresIn: '7d',
