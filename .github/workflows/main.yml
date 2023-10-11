@@ -10,8 +10,6 @@ env:
 # 이벤트
 # main 브랜치에 push나 pull request가 일어난우경우
 on:
-  push:
-    branches: [main]
   pull_request:
     branches: [dev]
 
