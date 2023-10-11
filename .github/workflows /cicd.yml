@@ -86,7 +86,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.FINALPROJECT_NEST }}
+          password: ${{ secrets.FINALPROJECT_TOKEN }}
       - name: Run docker
         run: |
           echo "MODE=${{ secrets.MODE }}" >> .env
