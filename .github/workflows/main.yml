@@ -52,6 +52,7 @@ jobs:
       - name: Check DOCKERHUB_USERNAME
         run: |
           echo "DOCKERHUB_USERNAME length: ${#DOCKERHUB_USERNAME}"
+          echo "DOCKERHUB_PASSWORD length: ${#DOCKERHUB_PASSWORD}"
         env:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       - name: variable 확인
