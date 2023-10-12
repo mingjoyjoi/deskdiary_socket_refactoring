@@ -7,6 +7,8 @@ name: deskdiary-cicd
 on:
   pull_request:
     branches: [dev]
+  push:
+    branches: [main]
 
 # 이벤트가 일어나면 해야할 작업들을 명시
 # 테스트, 빌드, 배포 단위로 명시
