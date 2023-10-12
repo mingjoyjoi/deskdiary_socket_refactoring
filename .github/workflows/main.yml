@@ -59,7 +59,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.FINALPROJECT_TOKEN }}
+          password: ${{ secrets.PROJECT_TOKEN  }}
       - name: Build and push
         id: docker_build
         uses: docker/build-push-action@v3
@@ -85,7 +85,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.FINALPROJECT_TOKEN }}
+          password: ${{ secrets.PROJECT_TOKEN  }}
       - name: Run docker
         run: |
           touch .env
