@@ -92,4 +92,4 @@ jobs:
           echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
           docker stop deskdiary-server || true
           docker rm deskdiary-server || true
-          docker run --env-file ./.env -d -p 80:3000 --name deskdiary-server --restart always namhyeonjae/deskdiary-server:latest
+          docker run --env-file ./.env -d -p 80:4000 --name deskdiary-server --restart always namhyeonjae/deskdiary-server:latest
