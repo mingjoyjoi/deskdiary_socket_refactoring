@@ -29,12 +29,12 @@ jobs:
         run: |
           touch .env
           echo "MODE=${{ secrets.MODE }}" >> .env
-          echo "PORT=${{ secrets.PORT }}" >> .env
           echo "RDS_DB_NAME=${{ secrets.RDS_DB_NAME }}" >> .env
           echo "RDS_HOSTNAME=${{ secrets.RDS_HOSTNAME }}" >> .env
           echo "RDS_PASSWORD=${{ secrets.RDS_PASSWORD }}" >> .env
           echo "RDS_PORT=${{ secrets.RDS_PORT }}" >> .env
           echo "RDS_USERNAME=${{ secrets.RDS_USERNAME }}" >> .env
+          echo "RDS_DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
       - name: Install dependencies
         run: npm install
       - run: npm run test
@@ -82,7 +82,6 @@ jobs:
         run: |
           touch .env
           echo "MODE=${{ secrets.MODE }}" >> .env
-          echo "PORT=${{ secrets.PORT }}" >> .env
           echo "RDS_DB_NAME=${{ secrets.RDS_DB_NAME }}" >> .env
           echo "RDS_HOSTNAME=${{ secrets.RDS_HOSTNAME }}" >> .env
           echo "RDS_PASSWORD=${{ secrets.RDS_PASSWORD }}" >> .env
