@@ -88,6 +88,7 @@ jobs:
           echo "RDS_PASSWORD=${{ secrets.RDS_PASSWORD }}" >> .env
           echo "RDS_PORT=${{ secrets.RDS_PORT }}" >> .env
           echo "RDS_USERNAME=${{ secrets.RDS_USERNAME }}" >> .env
+          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
           docker stop deskdiary-server || true
           docker rm deskdiary-server || true
           docker run --env-file ./.env -d -p 80:3000 --name deskdiary-server --restart always namhyeonjae/deskdiary-server:latest
