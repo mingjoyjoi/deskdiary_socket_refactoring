@@ -10,9 +10,6 @@ import {
 export class JoinUserDto {
   @IsEmail({}, { message: '이메일 형식이 아닙니다' })
   @IsNotEmpty({ message: '이메일이 비어 있으면 안됩니다' })
-  @Matches(/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$/, {
-    message: '이메일은 소문자로 작성해야 합니다',
-  })
   @ApiProperty({
     description: '사용자의 이메일 주소',
     example: 'user@example.com',
