@@ -12,14 +12,108 @@ datasource db {
 
 
 model User {
-  userid        Int      @id @default(autoincrement())
+  userId        Int      @id @default(autoincrement())
   email     String       @unique
   nickname  String
   password  String
+  profileImage String?
   snsId     String?
-  provider  String?
+  provider  String?      @default("local")
   type      String?      @default("user")
   refreshToken String?
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
+
+  Room Room[]
+  History History[]
+  Report Report[]
+  UserRoom UserRoom[]
+  UserDetail UserDetail?
+   // Follower 관계 설정
+  followers     Follow[] @relation("Followers")
+  // Following 관계 설정
+  following     Follow[] @relation("Following")
 }
+
+
+
+model Room {
+  roomId       String    @id
+  count        Int      @default(0)
+  creatorId    Int
+  ownerId      Int
+  nowHeadcount Int
+  maxHeadcount Int
+  title        String
+  roomThumnail String
+  category     String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime
+
+  Creator    User  @relation(fields: [creatorId], references: [userId])
+  UserRoom UserRoom[]
+}
+
+model History {
+  historyId Int @id
+  UserId  Int
+  RoomId Int
+  checkIn DateTime
+  checkOut DateTime
+  totalHours Int?
+  historyType String
+
+  User User @relation(fields: [UserId], references: [userId])
+}
+
+//관계설정할 필요가 있을까? 내 신고목록 조회시 필요할듯, n회 이상 신고당하면 탈퇴 그것도 컬럼 필요! 어디에 추가 ?? 
+model Report {
+  reportId Int @id
+  reporterId Int
+  offenderId Int
+  content String
+  reportImage String
+  reportType String
+
+  User User @relation(fields: [reporterId], references: [userId])
+}
+
+
+model UserDetail{
+  UserDeailId Int @id
+  UserId Int @unique
+  studyGoalTime Int
+  hobbyGoalTime Int
+  mainCategory String
+  createdAt DateTime
+  updatedAt DateTime
+
+  User  User?  @relation(fields: [UserId], references: [userId])
+}
+
+model UserRoom {
+  UserId Int
+  RoomId String
+
+  User  User  @relation(fields: [UserId], references: [userId])
+  Room  Room  @relation(fields: [RoomId], references: [roomId])
+ 
+  @@id([UserId, RoomId])
+  @@map("UserRoom")
+
+}
+
+model Follow {
+  followId      Int      @id @default(autoincrement())
+  followerId    Int
+  followingId   Int
+
+  // Follower 관계 설정
+  follower      User     @relation("Followers", fields: [followerId], references: [userId])
+
+  // Following 관계 설정
+  following     User     @relation("Following", fields: [followingId], references: [userId])
+}
+
+
