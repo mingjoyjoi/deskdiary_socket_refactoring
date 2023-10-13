@@ -19,7 +19,7 @@ model User {
   profileImage String?
   snsId     String?
   provider  String?      @default("local")
-  type      String?      @default("user")
+  type      UserRole?      @default(USER)
   refreshToken String?
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
@@ -46,7 +46,7 @@ model Room {
   maxHeadcount Int
   title        String
   roomThumnail String
-  category     String
+  category     Category
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
   deletedAt    DateTime
@@ -62,7 +62,7 @@ model History {
   checkIn DateTime
   checkOut DateTime
   totalHours Int?
-  historyType String
+  historyType Category
 
   User User @relation(fields: [UserId], references: [userId])
 }
@@ -85,7 +85,7 @@ model UserDetail{
   UserId Int @unique
   studyGoalTime Int
   hobbyGoalTime Int
-  mainCategory String
+  mainCategory Category
   createdAt DateTime
   updatedAt DateTime
 
@@ -111,9 +111,17 @@ model Follow {
 
   // Follower 관계 설정
   follower      User     @relation("Followers", fields: [followerId], references: [userId])
-
   // Following 관계 설정
   following     User     @relation("Following", fields: [followingId], references: [userId])
 }
 
 
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum Category {
+   STUDY
+   HOBBY
+}
