@@ -20,11 +20,14 @@
 //     const user = await this.userService.findOne({ email: req.user.email });
 
 //     if (!user)
-//       this.userService.create({
+//       this.userService.createuser({
 //         name: req.user.name,
 //         email: req.user.email,
 //         hashedPassword: req.user.hashedPassword,
 //         age: req.user.age,
 //       });
+//     // 3. 로그인
+//     this.authService.setRefreshToken({ user, res });
+//     res.redirect('/마이페이지');
 //   }
 // }

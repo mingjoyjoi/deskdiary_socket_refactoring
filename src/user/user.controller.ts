@@ -8,7 +8,7 @@ import { LoginUserDto } from './dto/login.user.dto';
 
 @ApiTags('Join')
 @Controller('auth')
-export class UserJoinController {
+export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @ApiOperation({ summary: '회원가입' })
