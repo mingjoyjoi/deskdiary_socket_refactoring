@@ -1,0 +1,45 @@
+<!-- 카카오 로그인 동의 페이지 테스트 페이지 -->
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kakao Callback</title>
+  </head>
+  <body>
+    <div>로그인 중 입니다...</div>
+
+    <script>
+      window.onload = async function () {
+        try {
+          const urlParams = new URLSearchParams(window.location.search);
+          const code = urlParams.get('code');
+
+          if (!code) {
+            window.location.href = '/';
+            return;
+          }
+          console.log(`code: ${code}`);
+
+          const body = {
+            code: code,
+            domain: window.location.origin,
+          };
+
+          const response = await fetch('/login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(body),
+          });
+          const data = await response.json();
+          console.log(data);
+        } catch (error) {
+          console.log(error);
+        }
+      };
+    </script>
+  </body>
+</html>

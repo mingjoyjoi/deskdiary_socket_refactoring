@@ -6,6 +6,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { JoinUserDto } from './dto/join.user.dto';
 import { LoginUserDto } from './dto/login.user.dto';
 import { JwtConfigService } from 'src/config/jwt.config.service';
+import { User } from '@prisma/client';
 
 @Injectable()
 export class UserService {
@@ -122,5 +123,37 @@ export class UserService {
     return await this.prisma.user.findUnique({
       where: { userid: userId },
     });
+  }
+
+  /** -------------------- 카카오 로그인 ---------------- 
+   * 카카오 로그인을 위한 사용자 조회 또는 생성 메서드
+   * @param user 사용자 정보 객체
+   * @returns User 데이터베이스에 저장된 사용자 정보
+   */
+  async findOrCreateKakaoUser(user: {
+    email: string;
+    nickname: string;
+    snsId: string;
+    provider: string;
+  }): Promise<User> {
+    const { email, nickname, snsId, provider } = user;
+
+    let existingUser = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!existingUser) {
+      existingUser = await this.prisma.user.create({
+        data: {
+          email,
+          nickname,
+          snsId,
+          provider: 'Kakao',
+          password: 'KAKAO_SNS_LOGIN',
+        },
+      });
+    }
+
+    return existingUser;
   }
 }
