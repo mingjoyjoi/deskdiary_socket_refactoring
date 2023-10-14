@@ -1,4 +1,3 @@
-
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy as KaKaoStrategy } from 'passport-kakao';
 import { Injectable } from '@nestjs/common';
@@ -21,7 +20,6 @@ export class JwtKakaoStrategy extends PassportStrategy(KaKaoStrategy, 'kakao') {
   ) {
     const { id, displayName, _json } = profile;
     const kakaoAccount = _json.kakao_account;
-
 
     const user = {
       email: kakaoAccount.email,
