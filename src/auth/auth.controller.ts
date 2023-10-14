@@ -1,5 +1,3 @@
-
-
 import { Controller, Get, UseGuards, Req, Res } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { JwtService } from '@nestjs/jwt';
@@ -49,3 +47,4 @@ export class AuthController {
     res.json({ message: '로그인 성공', token: jwtToken });
   }
 }
+
