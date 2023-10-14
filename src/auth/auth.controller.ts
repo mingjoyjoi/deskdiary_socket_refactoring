@@ -20,7 +20,7 @@ export class AuthController {
 
     // JWT 토큰 발급
     const jwtToken = this.jwtService.sign({
-      userId: savedKakaoUser.userid, // 저장된 사용자의 ID를 사용합니다.
+      userId: savedKakaoUser.userId, // 저장된 사용자의 ID를 사용합니다.
       email: savedKakaoUser.email,
       type: 'user',
     });
@@ -47,4 +47,3 @@ export class AuthController {
     res.json({ message: '로그인 성공', token: jwtToken });
   }
 }
-

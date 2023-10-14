@@ -59,7 +59,7 @@ export class UserService {
       );
     }
 
-    const jwtPayload = { userId: user.userid, type: 'user' };
+    const jwtPayload = { userId: user.userId, type: 'user' };
     const accessToken = this.jwtService.sign(jwtPayload, {
       secret: this.jwtconfigService.createJwtOptions().secret,
       expiresIn: this.jwtconfigService.createJwtOptions().signOptions.expiresIn,
@@ -70,7 +70,7 @@ export class UserService {
     });
 
     await this.prisma.user.update({
-      where: { userid: user.userid },
+      where: { userId: user.userId },
       data: { refreshToken },
     });
 
@@ -121,11 +121,11 @@ export class UserService {
 
   async findOne(userId: number) {
     return await this.prisma.user.findUnique({
-      where: { userid: userId },
+      where: { userId: userId },
     });
   }
 
-  /** -------------------- 카카오 로그인 ---------------- 
+  /** -------------------- 카카오 로그인 ----------------
    * 카카오 로그인을 위한 사용자 조회 또는 생성 메서드
    * @param user 사용자 정보 객체
    * @returns User 데이터베이스에 저장된 사용자 정보

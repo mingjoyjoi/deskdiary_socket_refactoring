@@ -1,6 +1,6 @@
 -- CreateTable
 CREATE TABLE `User` (
-    `userid` INTEGER NOT NULL AUTO_INCREMENT,
+    `userId` INTEGER NOT NULL AUTO_INCREMENT,
     `email` VARCHAR(191) NOT NULL,
     `nickname` VARCHAR(191) NOT NULL,
     `password` VARCHAR(191) NOT NULL,
@@ -12,5 +12,5 @@ CREATE TABLE `User` (
     `updatedAt` DATETIME(3) NOT NULL,
 
     UNIQUE INDEX `User_email_key`(`email`),
-    PRIMARY KEY (`userid`)
+    PRIMARY KEY (`userId`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
