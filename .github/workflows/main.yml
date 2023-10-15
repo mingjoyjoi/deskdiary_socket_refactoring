@@ -95,6 +95,10 @@ jobs:
           echo "RDS_USERNAME=${{ secrets.RDS_USERNAME }}" >> .env
           echo "RDS_DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
           echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+          echo KAKAO_JS_KEY=${{ secrets.KAKAO_JS_KEY }} >> .env
+          echo KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }} >> .env
+          echo KAKAO_REDIRECT_URI=${{ secrets.KAKAO_REDIRECT_URI }} >> .env
+          echo KAKAO_CALLBACK_URL=${{ secrets.KAKAO_CALLBACK_URL }} >> .env
           docker stop deskdiary-server || true
           docker rm deskdiary-server || true
           docker run --env-file ./.env -d -p 80:4000 --name deskdiary-server --restart always namhyeonjae/deskdiary-server:latest
