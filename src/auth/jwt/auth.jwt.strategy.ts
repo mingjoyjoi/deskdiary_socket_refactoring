@@ -23,7 +23,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     console.log('JWT Validate Payload:', payload);
     let user;
     if (payload.type === 'user' || payload.type === 'admin') {
-      user = await this.userService.findOne(payload.userId);
+      user = await this.userService.findUserByUserId(payload.userId);
     }
     if (!user || (payload.type !== 'user' && payload.type !== 'admin')) {
       throw new UnauthorizedException();
