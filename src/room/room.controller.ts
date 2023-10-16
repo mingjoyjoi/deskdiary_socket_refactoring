@@ -19,6 +19,7 @@ import { Request } from 'express';
 import { JwtAuthGuard } from '../auth/jwt/jwt-auth.guard';
 import { RoomService } from './room.service';
 import { CreateRoomRequestDto } from './dto/create-room-request.dto';
+import { RoomResponseExample } from './room.response.examples';
 @ApiTags('Room API')
 @Controller('room')
 export class RoomController {
@@ -29,6 +30,9 @@ export class RoomController {
   @ApiResponse({
     status: 201,
     description: '생성된 방의 정보와 방의 owner 정보를 함께 반환합니다.',
+    content: {
+      examples: RoomResponseExample,
+    },
   })
   @ApiBearerAuth()
   @ApiHeader({
@@ -52,6 +56,9 @@ export class RoomController {
   @ApiResponse({
     status: 200,
     description: '방의 정보와 방의 owner 정보를 함께 반환합니다.',
+    content: {
+      examples: RoomResponseExample,
+    },
   })
   @ApiBearerAuth()
   @ApiHeader({
