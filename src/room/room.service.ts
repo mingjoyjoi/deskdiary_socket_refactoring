@@ -120,9 +120,8 @@ export class RoomService {
     const findRoom = await this.prisma.room.findUnique({
       where: { uuid: uuid },
     });
-
+      
     const roomId = findRoom.roomId;
-
     const recordedHistory = await this.prisma.history.create({
       data: {
         checkIn,
