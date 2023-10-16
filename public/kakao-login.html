@@ -1,4 +1,32 @@
-<!-- 카카오 로그인 동의 페이지 테스트 페이지 -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kakao Login Test</title>
+    <script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
+  </head>
+  <body>
+    helloworld!
+    <a href="#" onclick="loginWithKakao()">
+      <img src="/static/kakao_login_medium_narrow.png" alt="Kakao Login" />
+    </a>
+
+    <script>
+      // Kakao SDK 초기화
+      Kakao.init('0f14771f5c1da3103acdfca76b9e53fe'); // KaKao client key
+
+      function loginWithKakao() {
+        Kakao.Auth.authorize({
+          redirectUri: `${window.location.origin}/kakao-callback`,
+        });
+      }
+    </script>
+  </body>
+</html>
+
+
+<!-- 카카오 로그인 동의 페이지 테스트 페이지
 
 <!doctype html>
 <html lang="en">
@@ -42,4 +70,4 @@
       };
     </script>
   </body>
-</html>
+</html> -->
