@@ -22,7 +22,6 @@ RUN npm run build
 
 # Port (3000) 개방
 EXPOSE 3000
-
 # 서버 실행
 ENTRYPOINT ["npm"]
 CMD ["run", "start:prod"]

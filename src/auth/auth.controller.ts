@@ -2,6 +2,7 @@ import { Controller, Get, UseGuards, Req, Res } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from '../user/user.service';
+import { ApiExcludeEndpoint } from '@nestjs/swagger';
 
 @Controller()
 export class AuthController {
@@ -10,6 +11,7 @@ export class AuthController {
     private readonly userService: UserService,
   ) {}
 
+  @ApiExcludeEndpoint()
   @UseGuards(AuthGuard('kakao'))
   @Get('/kakao-callback')
   async kakaoCallback(@Req() req, @Res() res) {
