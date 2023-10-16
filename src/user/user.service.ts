@@ -79,7 +79,7 @@ export class UserService {
     //   httpOnly: true,
     //   secure: true,
     // });
-    res.json({ message: '로그인에 성공하였습니다.' });
+    res.json({ message: '로그인에 성공하였습니다.', token: accessToken });
   }
 
   // async renewAccessToken(refreshToken: string, res: Response): Promise<void> {
@@ -119,7 +119,8 @@ export class UserService {
     return { message: '로그아웃에 성공하였습니다.' };
   }
 
-  async findOne(userId: number) {
+  //함수명 수정함 findOne에서
+  async findUserByUserId(userId: number) {
     return await this.prisma.user.findUnique({
       where: { userId: userId },
     });

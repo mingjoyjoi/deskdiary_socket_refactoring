@@ -21,7 +21,7 @@ import { JwtKakaoStrategy } from './kakao/jwt-social-kakao-strategy';
     HttpModule,
   ],
   controllers: [AuthController],
-  providers: [JwtStrategy, JwtConfigService, UserService, JwtKakaoStrategy],
+  providers: [JwtStrategy, JwtConfigService, UserService, JwtKakaoStrategy], //JwtKakaoStrategy
   exports: [JwtStrategy, JwtConfigService],
 })
 export class AuthModule {}
