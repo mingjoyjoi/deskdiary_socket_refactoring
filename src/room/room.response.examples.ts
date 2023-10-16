@@ -76,3 +76,18 @@ export const RoomlistResponseExample = {
     ],
   },
 };
+
+export const roomLeaveResponseExample = {
+  example: {
+    isLeaveRoom: true,
+    record: {
+      historyId: 1,
+      UserId: 3,
+      RoomId: 6,
+      checkIn: '2023-10-16T14:00:00.000Z',
+      checkOut: '2023-10-16T16:30:00.000Z',
+      totalHours: 9000,
+      historyType: '취미',
+    },
+  },
+};

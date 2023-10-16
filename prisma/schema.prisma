@@ -60,7 +60,7 @@ model Room {
 }
 
 model History {
-  historyId   Int        @id
+  historyId   Int        @id  @default(autoincrement())
   UserId      Int
   RoomId      Int
   checkIn     DateTime

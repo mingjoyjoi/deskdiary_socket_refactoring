@@ -22,7 +22,9 @@ import { CreateRoomRequestDto } from './dto/create-room-request.dto';
 import {
   RoomResponseExample,
   RoomlistResponseExample,
+  roomLeaveResponseExample,
 } from './room.response.examples';
+import { CheckoutRoomRequestDto } from './dto/checkout-room.dto';
 @ApiTags('Room API')
 @Controller('room')
 export class RoomController {
@@ -34,7 +36,7 @@ export class RoomController {
   })
   @ApiResponse({
     status: 200,
-    description: '존재하는 방 목록의 정보를 조회합니다',
+    description: '존재하는 방 목록의 정보(agoraToken 포함)를 조회합니다',
     content: {
       examples: RoomlistResponseExample,
     },
@@ -47,7 +49,8 @@ export class RoomController {
   @ApiOperation({ summary: '방 생성' })
   @ApiResponse({
     status: 201,
-    description: '생성된 방의 정보와 방의 owner 정보를 함께 반환합니다.',
+    description:
+      '방 생성시 agoraToken토큰을 생성하며, 생성된 방의 정보(agoraToken 포함)와 방의 owner 정보를 함께 반환합니다.',
     content: {
       examples: RoomResponseExample,
     },
@@ -69,7 +72,7 @@ export class RoomController {
   @Get(':uuid')
   @ApiOperation({
     summary: 'UUID로 방 조회',
-    description: '방의 고유 UUID로 정보를 조회합니다.',
+    description: '방의 고유 UUID로 정보(agoratoken 포함)를 조회합니다.',
   })
   @ApiResponse({
     status: 200,
@@ -110,11 +113,16 @@ export class RoomController {
   @Post(':uuid/leave')
   @ApiOperation({
     summary: '방 나가기',
-    description: '방을 성공적으로 나갔는지에 대해 boolean값을 반환합니다',
+    description:
+      '방을 성공적으로 나갔는지에 대한 boolean값과 기록된 학습기록 데이터를 반환합니다. ',
   })
   @ApiResponse({
     status: 200,
-    description: '방 참여자수를 1감소시킵니다.',
+    description:
+      '방 참여자수를 1 감소시키고, 학습기록(체크인, 체크아웃시간, 타이머에 기록된 누적학습시간) 데이터를 성공적으로 저장함.',
+    content: {
+      examples: roomLeaveResponseExample,
+    },
   })
   @ApiBearerAuth()
   @ApiHeader({
@@ -122,8 +130,22 @@ export class RoomController {
     description: 'Bearer Token for authentication',
   })
   @UseGuards(JwtAuthGuard)
-  async leaveRoom(@Param('uuid') uuid: string): Promise<{ result: boolean }> {
-    return { result: await this.roomService.leaveRoom(uuid) };
+  async leaveRoom(
+    @Param('uuid') uuid: string,
+    @Req() req: Request,
+    @Body() checkoutRoomRequestDto: CheckoutRoomRequestDto,
+  ) {
+    const userId = req.user['userId'];
+    const resultLeaveRoom = await this.roomService.leaveRoom(uuid);
+    const record = await this.roomService.checkoutRoom(
+      checkoutRoomRequestDto,
+      uuid,
+      userId,
+    );
+    return {
+      isLeaveRoom: resultLeaveRoom,
+      record,
+    };
   }
 
   @Delete(':uuid')

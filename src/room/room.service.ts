@@ -6,6 +6,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { RoomException } from '../exception/room.exception';
 import { UserException } from '../exception/user.exception';
 import { UserService } from 'src/user/user.service';
+import { CheckoutRoomRequestDto } from './dto/checkout-room.dto';
 
 @Injectable()
 export class RoomService {
@@ -108,6 +109,38 @@ export class RoomService {
     return true;
   }
 
+  async checkoutRoom(
+    checkoutRoomRequestDto: CheckoutRoomRequestDto,
+    uuid: string,
+    userId: number,
+  ) {
+    const { checkIn, checkOut, totalHours, historyType } =
+      checkoutRoomRequestDto;
+    const totalSeconds = this.timeStringToSeconds(totalHours);
+    const findRoom = await this.prisma.room.findUnique({
+      where: { uuid: uuid },
+    });
+
+    const roomId = findRoom.roomId;
+
+    const recordedHistory = await this.prisma.history.create({
+      data: {
+        checkIn,
+        checkOut,
+        historyType,
+        totalHours: totalSeconds,
+        User: {
+          connect: {
+            userId,
+          },
+        },
+        RoomId: roomId,
+      },
+    });
+
+    return recordedHistory;
+  }
+
   async deleteRoom(userId: number, uuid: string): Promise<boolean> {
     const user = await this.userService.findUserByUserId(userId);
     if (!user) throw UserException.userNotFound();
@@ -149,5 +182,20 @@ export class RoomService {
       expirationTimestamp,
     );
     //0는게 원래는 uid 자리인데 저거 그냥 똑같아도 이미 다른거에서 고유한 토큰값 나오니깐 0으로 함
+  }
+
+  timeStringToSeconds(timeString: string): number {
+    // 시간 문자열을 콜론 (:)을 기준으로 분리
+    const timeParts = timeString.split(':');
+
+    // 시, 분 및 초를 정수로 파싱
+    const hours = parseInt(timeParts[0], 10);
+    const minutes = parseInt(timeParts[1], 10);
+    const seconds = parseInt(timeParts[2], 10);
+
+    // 초로 변환
+    const totalSeconds = hours * 3600 + minutes * 60 + seconds;
+
+    return totalSeconds;
   }
 }
