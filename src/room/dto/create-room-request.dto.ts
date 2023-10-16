@@ -19,7 +19,7 @@ export class CreateRoomRequestDto {
   readonly title: string;
 
   @IsInt()
-  @Min(2, { message: '방 최대인원은 2명 이상이어야 합니다.' })
+  @Min(1, { message: '방 최대인원은 1명 이상이어야 합니다.' })
   @Max(8, { message: '방 최대인원은 8명 이내이어야 합니다.' })
   @IsNotEmpty()
   @IsNotEmpty({ message: '방 최대인원 설정은 필수 입니다.' })
@@ -51,5 +51,5 @@ export class CreateRoomRequestDto {
     description: '방 썸네일 이미지',
     required: false,
   })
-  readonly roomThumnail: string;
+  readonly roomThumbnail: string;
 }

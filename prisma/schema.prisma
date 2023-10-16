@@ -37,7 +37,7 @@ model User {
 
 
 //일단 enum 제외, creatorId 없애기 ownerId로 통일
-//description은 유의사항 
+//note은 유의사항 
 //uuid는 방생성시 채널 고유값 
 model Room {
   roomId       Int       @id @default(autoincrement())
@@ -49,7 +49,7 @@ model Room {
   ownerId      Int       
   nowHeadcount Int       @default(0)
   maxHeadcount Int
-  roomThumnail String?
+  roomThumbnail String?
   category     String
   count        Int       @default(0)
   createdAt    DateTime  @default(now())
@@ -85,7 +85,7 @@ model Report {
 
 
 model UserDetail{
-  UserDeailId   Int       @id
+  UserDeailId   Int       @id @default(autoincrement())
   UserId        Int       @unique
   studyGoalTime Int
   hobbyGoalTime Int
