@@ -19,7 +19,7 @@ model User {
   profileImage String?
   snsId     String?
   provider  String?      @default("local")
-  type      UserRole?      @default(USER)
+  type      String       @default("user")
   refreshToken String?
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
@@ -36,68 +36,72 @@ model User {
 }
 
 
-
+//일단 enum 제외, creatorId 없애기 ownerId로 통일
+//note은 유의사항 
+//uuid는 방생성시 채널 고유값 
 model Room {
-  roomId       String    @id
-  count        Int      @default(0)
-  creatorId    Int
-  ownerId      Int
-  nowHeadcount Int
-  maxHeadcount Int
+  roomId       Int       @id @default(autoincrement())
+  uuid         String    @unique
+  agoraAppId   String
+  agoraToken   String    @unique
   title        String
-  roomThumbnail String
-  category     Category
+  note         String?
+  ownerId      Int       
+  nowHeadcount Int       @default(0)
+  maxHeadcount Int
+  roomThumbnail String?
+  category     String
+  count        Int       @default(0)
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
-  deletedAt    DateTime
 
-  Creator    User  @relation(fields: [creatorId], references: [userId])
-  UserRoom UserRoom[]
+  Creator    User        @relation(fields: [ownerId], references: [userId])
+  UserRoom   UserRoom[]
 }
 
 model History {
-  historyId Int @id
-  UserId  Int
-  RoomId Int
-  checkIn DateTime
-  checkOut DateTime
-  totalHours Int?
-  historyType Category
+  historyId   Int        @id
+  UserId      Int
+  RoomId      Int
+  checkIn     DateTime
+  checkOut    DateTime
+  totalHours  Int?
+  historyType String
 
-  User User @relation(fields: [UserId], references: [userId])
+  User        User       @relation(fields: [UserId], references: [userId])
 }
 
 //관계설정할 필요가 있을까? 내 신고목록 조회시 필요할듯, n회 이상 신고당하면 탈퇴 그것도 컬럼 필요! 어디에 추가 ?? 
 model Report {
-  reportId Int @id
-  reporterId Int
-  offenderId Int
-  content String
-  reportImage String
-  reportType String
+  reportId     Int       @id
+  reporterId   Int
+  offenderId   Int
+  content      String
+  reportImage  String
+  reportType   String
 
-  User User @relation(fields: [reporterId], references: [userId])
+  User         User      @relation(fields: [reporterId], references: [userId])
 }
 
 
 model UserDetail{
-  UserDeailId Int @id
-  UserId Int @unique
+  UserDeailId   Int       @id @default(autoincrement())
+  UserId        Int       @unique
   studyGoalTime Int
   hobbyGoalTime Int
-  mainCategory Category
-  createdAt DateTime
-  updatedAt DateTime
+  mainCategory  String
+  createdAt     DateTime
+  updatedAt     DateTime
 
-  User  User?  @relation(fields: [UserId], references: [userId])
+  User          User?     @relation(fields: [UserId], references: [userId])
 }
 
 model UserRoom {
-  UserId Int
-  RoomId String
+  UserId        Int
+  RoomId        Int
 
-  User  User  @relation(fields: [UserId], references: [userId])
-  Room  Room  @relation(fields: [RoomId], references: [roomId])
+  User          User      @relation(fields: [UserId], references: [userId])
+  Room          Room      @relation(fields: [RoomId], references: [roomId])
  
   @@id([UserId, RoomId])
   @@map("UserRoom")
@@ -105,7 +109,6 @@ model UserRoom {
 }
 
 model Follow {
-  followId      Int      @id @default(autoincrement())
   followerId    Int
   followingId   Int
 
@@ -113,15 +116,16 @@ model Follow {
   follower      User     @relation("Followers", fields: [followerId], references: [userId])
   // Following 관계 설정
   following     User     @relation("Following", fields: [followingId], references: [userId])
+  @@id([followerId, followingId])
 }
 
 
-enum UserRole {
-  USER
-  ADMIN
-}
+// enum UserRole {
+//   USER
+//   ADMIN
+// }
 
-enum Category {
-   STUDY
-   HOBBY
-}
+// enum Category {
+//    STUDY
+//    HOBBY
+// }
