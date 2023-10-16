@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'path';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -14,6 +15,11 @@ async function bootstrap() {
     }),
   );
 
+  app.useStaticAssets(join(__dirname, '..', 'public'));
+  app.useStaticAssets(join(__dirname, '..', 'static'), {
+    prefix: '/static/',
+  });
+
   const config = new DocumentBuilder()
     .setTitle('DeskDiary API')
     .setDescription('The Median API description')
@@ -22,6 +28,10 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
-  await app.listen(3000);
+  app.enableCors({
+    exposedHeaders: ['Authorization'],
+    origin: 'http://localhost:3000',
+  });
+  await app.listen(4000);
 }
 bootstrap();
