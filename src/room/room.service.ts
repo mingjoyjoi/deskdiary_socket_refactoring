@@ -42,6 +42,19 @@ export class RoomService {
     return { createdRoom, owner };
   }
 
+  async getRoomListAll() {
+    const findRooms = await this.prisma.room.findMany({
+      select: {
+        uuid: true,
+        title: true,
+        category: true,
+        agoraAppId: true,
+        agoraToken: true,
+        ownerId: true,
+      },
+    });
+    return findRooms;
+  }
   async getRoomByUUID(uuid: string) {
     const findRoom = await this.prisma.room.findUnique({
       where: { uuid: uuid },
@@ -64,6 +77,9 @@ export class RoomService {
       data: {
         nowHeadcount: {
           increment: 1, // 증가시키려는 값
+        },
+        count: {
+          increment: 1,
         },
       },
       where: { uuid: uuid },
