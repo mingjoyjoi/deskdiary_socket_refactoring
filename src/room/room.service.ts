@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 import { RtcRole, RtcTokenBuilder } from 'agora-access-token';
 import { CreateRoomRequestDto } from './dto/create-room-request.dto';
@@ -6,23 +6,34 @@ import { PrismaService } from '../prisma/prisma.service';
 import { RoomException } from '../exception/room.exception';
 import { UserException } from '../exception/user.exception';
 import { UserService } from 'src/user/user.service';
+import { ImageService } from 'src/image/image.service';
 import { CheckoutRoomRequestDto } from './dto/checkout-room.dto';
 
+export interface ThumbnailUploadResult {
+  message: string;
+  roomThumbnail: string;
+}
 @Injectable()
 export class RoomService {
   constructor(
     private prisma: PrismaService,
     private userService: UserService,
+    private imageService: ImageService,
   ) {}
 
   //썸네일 multer, s3부분이므로 일단 제외
-  async createRoom(createRoomRequestDto: CreateRoomRequestDto, userId: number) {
+  async createRoom(
+    createRoomRequestDto: CreateRoomRequestDto,
+    userId: number,
+    roomThumbnail: string,
+  ) {
     const { title, maxHeadcount, note, category } = createRoomRequestDto; //직접 가져오는값
     const uuid = uuidv4(); //고유한 문자열 생성
     const user = await this.userService.findUserByUserId(userId);
     if (!user) throw UserException.userNotFound();
     const agoraAppId: string = process.env.AGORA_APP_ID ?? '';
     const agoraToken = this.createTokenWithChannel(agoraAppId, uuid);
+
     const newRoom = {
       title,
       maxHeadcount: +maxHeadcount,
@@ -31,6 +42,7 @@ export class RoomService {
       uuid,
       agoraAppId,
       agoraToken,
+      roomThumbnail,
       ownerId: userId,
       count: 0,
     };
@@ -182,6 +194,25 @@ export class RoomService {
     );
     //0는게 원래는 uid 자리인데 저거 그냥 똑같아도 이미 다른거에서 고유한 토큰값 나오니깐 0으로 함
   }
+
+
+  async uploadRoomThumbnail(
+    userId: number,
+    file: Express.Multer.File,
+  ): Promise<ThumbnailUploadResult> {
+    const user = await this.userService.findUserByUserId(userId);
+    if (!user) {
+      throw new BadRequestException('유저가 존재하지 않습니다');
+    }
+
+    const uploadedFile = await this.imageService.uploadImage(
+      file,
+      'room-thumbnails',
+    );
+    return {
+      message: '썸네일이 성공적으로 업로드되었습니다',
+      roomThumbnail: uploadedFile.Location,
+    };
 
   timeStringToSeconds(timeString: string): number {
     // 시간 문자열을 콜론 (:)을 기준으로 분리

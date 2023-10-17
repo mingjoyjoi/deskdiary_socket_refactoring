@@ -11,7 +11,8 @@ export const RoomResponseExample = {
       ownerId: 2,
       nowHeadcount: 0,
       maxHeadcount: 5,
-      roomThumnail: null,
+      roomThumbnail:
+        'https://heavy-hips-s3.s3.ap-northeast-2.amazonaws.com/room-thumbnails/1697553592689-rabbit.png',
       category: 'study',
       count: 0,
       createdAt: '2023-10-16T00:05:10.753Z',

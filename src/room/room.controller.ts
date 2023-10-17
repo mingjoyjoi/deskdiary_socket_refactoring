@@ -7,6 +7,10 @@ import {
   Req,
   UseGuards,
   Get,
+  UseInterceptors,
+  UploadedFile,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import {
   ApiOperation,
@@ -14,6 +18,8 @@ import {
   ApiHeader,
   ApiBearerAuth,
   ApiResponse,
+  ApiConsumes,
+  ApiBody,
 } from '@nestjs/swagger';
 import { Request } from 'express';
 import { JwtAuthGuard } from '../auth/jwt/jwt-auth.guard';
@@ -24,7 +30,8 @@ import {
   RoomlistResponseExample,
   roomLeaveResponseExample,
 } from './room.response.examples';
-import { CheckoutRoomRequestDto } from './dto/checkout-room.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+
 @ApiTags('Room API')
 @Controller('room')
 export class RoomController {
@@ -56,17 +63,27 @@ export class RoomController {
     },
   })
   @ApiBearerAuth()
-  @ApiHeader({
-    name: 'Authorization',
-    description: 'Bearer Token for authentication',
-  })
   @UseGuards(JwtAuthGuard)
+  @UseInterceptors(FileInterceptor('roomThumbnail'))
   async createRoom(
     @Req() req: Request,
     @Body() createRoomRequestDto: CreateRoomRequestDto,
   ) {
     const userId = req.user['userId'];
-    return await this.roomService.createRoom(createRoomRequestDto, userId);
+    const roomThumbnail = createRoomRequestDto.roomThumbnail;
+
+    if (!roomThumbnail) {
+      throw new HttpException(
+        'Room Thumbnail is missing',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    return await this.roomService.createRoom(
+      createRoomRequestDto,
+      userId,
+      roomThumbnail,
+    );
   }
 
   @Get(':uuid')
@@ -197,5 +214,52 @@ export class RoomController {
       return { result: await this.roomService.deleteRoomFromSocket(uuid) };
     }
     return { result: false };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '방 썸네일 업로드' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: '방 썸네일 이미지',
+    type: 'multipart/form-data',
+    required: true,
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  @Post('image')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadThumbnail(
+    @Req() req: { user: { userId: number } },
+    @UploadedFile() image: Express.Multer.File,
+  ): Promise<{ message: string; roomThumbnail: string }> {
+    const userId = req.user.userId;
+
+    try {
+      const uploadResult = await this.roomService.uploadRoomThumbnail(
+        userId,
+        image,
+      );
+      return {
+        message: '썸네일이 성공적으로 업로드되었습니다.',
+        roomThumbnail: uploadResult.roomThumbnail,
+      };
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      } else {
+        throw new HttpException(
+          '썸네일 업로드 중 문제가 발생했습니다.',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+    }
   }
 }
