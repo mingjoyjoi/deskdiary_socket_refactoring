@@ -23,12 +23,15 @@ export class ImageService {
     this.s3 = new AWS.S3();
   }
 
-  async uploadImage(image: Express.Multer.File): Promise<ObjectStorageData> {
+  async uploadImage(
+    file: Express.Multer.File,
+    folder: string,
+  ): Promise<ObjectStorageData> {
     const param = {
       Bucket: process.env.AWS_BUCKET_NAME,
-      Key: `${Date.now().toString()}-${image.originalname}`,
+      Key: `${folder}/${Date.now().toString()}-${file.originalname}`,
       ACL: 'public-read',
-      Body: image.buffer,
+      Body: file.buffer,
     };
     return new Promise((resolve, reject) => {
       this.s3.upload(param, (err, data) => {
@@ -36,16 +39,16 @@ export class ImageService {
           console.error('Error occurred:', err);
           reject(err);
         }
-        console.log('Original File name:', image.originalname);
+        console.log('Original File name:', file.originalname);
         resolve(data);
       });
     });
   }
 
-  async deleteImage(imageName: string) {
+  async deleteImage(fileName: string) {
     const param = {
       Bucket: process.env.AWS_BUCKET_NAME,
-      Key: imageName,
+      Key: fileName,
     };
 
     return new Promise((resolve, reject) => {
