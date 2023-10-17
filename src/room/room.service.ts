@@ -25,7 +25,7 @@ export class RoomService {
     const agoraToken = this.createTokenWithChannel(agoraAppId, uuid);
     const newRoom = {
       title,
-      maxHeadcount,
+      maxHeadcount: +maxHeadcount,
       note,
       category,
       uuid,
