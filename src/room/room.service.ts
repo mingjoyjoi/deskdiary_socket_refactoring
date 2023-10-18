@@ -44,6 +44,7 @@ export class RoomService {
       ownerId: userId,
       count: 0,
     };
+    console.log(newRoom);
     // await this.roomRepository.createRoom(newRoom);
     const createdRoom = await this.prisma.room.create({
       data: newRoom,
