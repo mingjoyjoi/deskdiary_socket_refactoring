@@ -8,6 +8,7 @@ import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { RoomModule } from './room/room.module';
 import { ImageModule } from './image/image.module';
+import { UserDetailModule } from './user-detail/user-detail.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { ImageModule } from './image/image.module';
     UserModule,
     RoomModule,
     ImageModule,
+    UserDetailModule,
   ],
   controllers: [AppController],
   providers: [AppService],
