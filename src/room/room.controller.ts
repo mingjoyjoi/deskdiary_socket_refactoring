@@ -22,7 +22,7 @@ import {
   ApiBody,
 } from '@nestjs/swagger';
 import { Request } from 'express';
-import { JwtAuthGuard } from '../auth/jwt/jwt-auth.guard';
+
 import { RoomService } from './room.service';
 import { CreateRoomRequestDto } from './dto/create-room-request.dto';
 import {
@@ -32,11 +32,16 @@ import {
 } from './room.response.examples';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CheckoutRoomRequestDto } from './dto/checkout-room.dto';
+import { JwtAuthGuard } from 'src/auth/jwt/jwt-auth.guard';
+import { ImageService } from 'src/image/image.service';
 
 @ApiTags('Room API')
 @Controller('room')
 export class RoomController {
-  constructor(private readonly roomService: RoomService) {}
+  constructor(
+    private readonly roomService: RoomService,
+    private readonly imageService: ImageService,
+  ) {}
 
   @Get()
   @ApiOperation({
@@ -63,24 +68,50 @@ export class RoomController {
       examples: RoomResponseExample,
     },
   })
+  @Post()
+  @ApiOperation({ summary: '방 생성' })
+  @ApiResponse({
+    status: 201,
+    description: '방 생성 성공',
+  })
+  @ApiConsumes('multipart/form-data')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
-  @UseInterceptors(FileInterceptor('roomThumbnail'))
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+        title: { type: 'string' },
+        maxHeadcount: { type: 'number' },
+        category: { type: 'string' },
+        note: { type: 'string' },
+      },
+    },
+  })
   async createRoom(
     @Req() req: Request,
     @Body() createRoomRequestDto: CreateRoomRequestDto,
+    @UploadedFile() file: Express.Multer.File,
   ) {
     const userId = req.user['userId'];
-    const roomThumbnail = createRoomRequestDto.roomThumbnail;
 
-    if (!roomThumbnail) {
-      throw new HttpException(
-        'Room Thumbnail is missing',
-        HttpStatus.BAD_REQUEST,
+    if (!file) {
+      const roomThumbnail =
+        'https://megis3.s3.ap-northeast-2.amazonaws.com/default.png';
+      return this.roomService.createRoom(
+        createRoomRequestDto,
+        userId,
+        roomThumbnail,
       );
     }
-
-    return await this.roomService.createRoom(
+    const s3Data = await this.imageService.uploadImage(file, 'room-thumbnails');
+    const roomThumbnail = s3Data.Location;
+    return this.roomService.createRoom(
       createRoomRequestDto,
       userId,
       roomThumbnail,

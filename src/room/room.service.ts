@@ -32,7 +32,6 @@ export class RoomService {
     if (!user) throw UserException.userNotFound();
     const agoraAppId: string = process.env.AGORA_APP_ID ?? '';
     const agoraToken = this.createTokenWithChannel(agoraAppId, uuid);
-
     const newRoom = {
       title,
       maxHeadcount: +maxHeadcount,
