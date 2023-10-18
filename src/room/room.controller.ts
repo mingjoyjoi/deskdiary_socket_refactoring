@@ -102,7 +102,7 @@ export class RoomController {
 
     if (!file) {
       const roomThumbnail =
-        'https://megis3.s3.ap-northeast-2.amazonaws.com/default.png';
+        'https://heavy-hips-s3.s3.ap-northeast-2.amazonaws.com/room-thumbnails/1697631199431-dog.jpeg';
       return this.roomService.createRoom(
         createRoomRequestDto,
         userId,
