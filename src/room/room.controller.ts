@@ -31,6 +31,7 @@ import {
   roomLeaveResponseExample,
 } from './room.response.examples';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { CheckoutRoomRequestDto } from './dto/checkout-room.dto';
 
 @ApiTags('Room API')
 @Controller('room')
