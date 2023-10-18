@@ -37,12 +37,12 @@ export class RoomSearchService {
       },
     });
   }
-  async UserHistoryRooms(userId: number) {
-    return this.prisma.room.findMany({
-      where: { userId },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
-  }
+  // async UserHistoryRooms(userId: number) {
+  //   return this.prisma.room.findMany({
+  //     where: { userId },
+  //     orderBy: {
+  //       createdAt: 'desc',
+  //     },
+  //   });
+  // }
 }
