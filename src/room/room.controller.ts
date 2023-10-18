@@ -53,7 +53,7 @@ export class RoomController {
     },
   })
   async getRoomList() {
-    return { result: await this.roomService.getRoomListAll() };
+    return await this.roomService.getRoomListAll();
   }
 
   @Post()
