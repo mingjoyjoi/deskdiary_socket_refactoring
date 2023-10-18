@@ -1,10 +1,25 @@
-import { Body, Controller, HttpCode, Post, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Post,
+  Put,
+  Res,
+  Req,
+  UseGuards,
+  Param,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
+import { JwtAuthGuard } from '../auth/jwt/jwt-auth.guard';
 
 import { UserService } from './user.service';
 import { JoinUserDto } from './dto/join.user.dto';
 import { LoginUserDto } from './dto/login.user.dto';
+import { UpdateProfileDto } from './dto/update.profile.dto';
+import Api from 'arweave/node/lib/api';
+import { UpdatePasswordDto } from './dto/update.password.dto';
 
 @ApiTags('Join')
 @Controller('auth')
@@ -28,9 +43,53 @@ export class UserController {
     await this.userService.login(loginuserDto, res);
   }
 
+  @Put('password')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: '비밀번호 수정',
+    description: '회원의 비밀번호를 수정합니다.',
+  })
+  @UseGuards(JwtAuthGuard)
+  async updatePassword(
+    @Req() req: any,
+    @Body() updatePasswordDto: UpdatePasswordDto,
+  ) {
+    const userId = req.user['userId'];
+    return this.userService.updatePassword(userId, updatePasswordDto);
+  }
+
   // @ApiOperation({ summary: '로그아웃' })
   // @Post('logout')
   // async logout(@Body() loginuserDto: LoginUserDto) {
   //   return await this.userService.logout(loginuserDto.email);
   // }
+
+  // 마이페이지 유저 정보 조회 (프로필이미지, 닉네임, 이메일, 목표 시간 등)
+  @Get('profile')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: '프로필 조회',
+    description: '회원의 닉네임과 프로필 이미지를 조회합니다.',
+  })
+  @UseGuards(JwtAuthGuard)
+  async getProfile(@Req() req: any) {
+    console.log(req.user);
+    const userId = req.user['userId'];
+    return this.userService.getProfile(userId);
+  }
+
+  @Put('profile')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: '프로필 수정',
+    description: '회원의 닉네임과 프로필 이미지를 수정합니다.',
+  })
+  @UseGuards(JwtAuthGuard)
+  async updateProfile(
+    @Req() req: any,
+    @Body() updateProfileDto: UpdateProfileDto,
+  ) {
+    const userId = req.user['userId'];
+    return this.userService.updateProfile(userId, updateProfileDto);
+  }
 }
