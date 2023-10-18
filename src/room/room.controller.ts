@@ -9,8 +9,6 @@ import {
   Get,
   UseInterceptors,
   UploadedFile,
-  HttpException,
-  HttpStatus,
 } from '@nestjs/common';
 import {
   ApiOperation,
@@ -103,7 +101,7 @@ export class RoomController {
     if (!file) {
       const roomThumbnail =
         'https://heavy-hips-s3.s3.ap-northeast-2.amazonaws.com/room-thumbnails/1697631199431-dog.jpeg';
-      return this.roomService.createRoom(
+      return await this.roomService.createRoom(
         createRoomRequestDto,
         userId,
         roomThumbnail,
@@ -111,7 +109,7 @@ export class RoomController {
     }
     const s3Data = await this.imageService.uploadImage(file, 'room-thumbnails');
     const roomThumbnail = s3Data.Location;
-    return this.roomService.createRoom(
+    return await this.roomService.createRoom(
       createRoomRequestDto,
       userId,
       roomThumbnail,
@@ -137,7 +135,7 @@ export class RoomController {
   })
   @UseGuards(JwtAuthGuard)
   async getRoomByUUID(@Param('uuid') uuid: string) {
-    return { result: await this.roomService.getRoomByUUID(uuid) };
+    return await this.roomService.getRoomByUUID(uuid);
   }
 
   @Post(':uuid/join')
@@ -155,8 +153,8 @@ export class RoomController {
     description: 'Bearer Token for authentication',
   })
   @UseGuards(JwtAuthGuard)
-  async joinRoom(@Param('uuid') uuid: string): Promise<{ result: boolean }> {
-    return { result: await this.roomService.joinRoom(uuid) };
+  async joinRoom(@Param('uuid') uuid: string): Promise<boolean> {
+    return await this.roomService.joinRoom(uuid);
   }
 
   @Post(':uuid/leave')
@@ -214,12 +212,10 @@ export class RoomController {
   async deleteRoom(
     @Req() req: Request,
     @Param('uuid') uuid: string,
-  ): Promise<{ result: boolean }> {
+  ): Promise<boolean> {
     const userId = req.user['userId'];
     console.log(userId);
-    return {
-      result: await this.roomService.deleteRoom(userId, uuid),
-    };
+    return await this.roomService.deleteRoom(userId, uuid);
   }
 
   @Post('socket/leave/:uuid')
@@ -227,12 +223,12 @@ export class RoomController {
   async leaveRoomBySocket(
     @Req() req: Request,
     @Param('uuid') uuid: string,
-  ): Promise<{ result: boolean }> {
+  ): Promise<boolean> {
     const key = req.header('socket-secret-key');
     if (key === process.env.SOCKET_SECRET_KEY) {
-      return { result: await this.roomService.leaveRoom(uuid) };
+      return await this.roomService.leaveRoom(uuid);
     }
-    return { result: false };
+    return false;
   }
 
   @Delete('socket/:uuid')
@@ -240,58 +236,58 @@ export class RoomController {
   async deleteRoomBySocket(
     @Req() req: Request,
     @Param('uuid') uuid: string,
-  ): Promise<{ result: boolean }> {
+  ): Promise<boolean> {
     const key = req.header('socket-secret-key');
     if (key === process.env.SOCKET_SECRET_KEY) {
-      return { result: await this.roomService.deleteRoomFromSocket(uuid) };
+      return await this.roomService.deleteRoomFromSocket(uuid);
     }
-    return { result: false };
+    return false;
   }
 
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: '방 썸네일 업로드' })
-  @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    description: '방 썸네일 이미지',
-    type: 'multipart/form-data',
-    required: true,
-    schema: {
-      type: 'object',
-      properties: {
-        file: {
-          type: 'string',
-          format: 'binary',
-        },
-      },
-    },
-  })
-  @Post('image')
-  @UseInterceptors(FileInterceptor('file'))
-  async uploadThumbnail(
-    @Req() req: { user: { userId: number } },
-    @UploadedFile() image: Express.Multer.File,
-  ): Promise<{ message: string; roomThumbnail: string }> {
-    const userId = req.user.userId;
+  // @UseGuards(JwtAuthGuard)
+  // @ApiBearerAuth()
+  // @ApiOperation({ summary: '방 썸네일 업로드' })
+  // @ApiConsumes('multipart/form-data')
+  // @ApiBody({
+  //   description: '방 썸네일 이미지',
+  //   type: 'multipart/form-data',
+  //   required: true,
+  //   schema: {
+  //     type: 'object',
+  //     properties: {
+  //       file: {
+  //         type: 'string',
+  //         format: 'binary',
+  //       },
+  //     },
+  //   },
+  // })
+  // @Post('image')
+  // @UseInterceptors(FileInterceptor('file'))
+  // async uploadThumbnail(
+  //   @Req() req: { user: { userId: number } },
+  //   @UploadedFile() image: Express.Multer.File,
+  // ): Promise<{ message: string; roomThumbnail: string }> {
+  //   const userId = req.user.userId;
 
-    try {
-      const uploadResult = await this.roomService.uploadRoomThumbnail(
-        userId,
-        image,
-      );
-      return {
-        message: '썸네일이 성공적으로 업로드되었습니다.',
-        roomThumbnail: uploadResult.roomThumbnail,
-      };
-    } catch (error) {
-      if (error instanceof HttpException) {
-        throw error;
-      } else {
-        throw new HttpException(
-          '썸네일 업로드 중 문제가 발생했습니다.',
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
-    }
-  }
+  //   try {
+  //     const uploadResult = await this.roomService.uploadRoomThumbnail(
+  //       userId,
+  //       image,
+  //     );
+  //     return {
+  //       message: '썸네일이 성공적으로 업로드되었습니다.',
+  //       roomThumbnail: uploadResult.roomThumbnail,
+  //     };
+  //   } catch (error) {
+  //     if (error instanceof HttpException) {
+  //       throw error;
+  //     } else {
+  //       throw new HttpException(
+  //         '썸네일 업로드 중 문제가 발생했습니다.',
+  //         HttpStatus.INTERNAL_SERVER_ERROR,
+  //       );
+  //     }
+  //   }
+  // }
 }

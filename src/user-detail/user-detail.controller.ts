@@ -3,7 +3,6 @@ import {
   Post,
   Put,
   Body,
-  Param,
   Get,
   Req,
   UseGuards,
@@ -11,13 +10,7 @@ import {
 import { UserDetailService } from './user-detail.service';
 import { SetGoalTimeDto } from './dto/set.goaltime.dto';
 import { UpdateGoalTimeDto } from './dto/update.goaltime.dto';
-import {
-  ApiOperation,
-  ApiTags,
-  ApiHeader,
-  ApiBearerAuth,
-  ApiResponse,
-} from '@nestjs/swagger';
+import { ApiOperation, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt/jwt-auth.guard';
 import { Request } from 'express';
 
@@ -40,7 +33,7 @@ export class UserDetailController {
     @Body() setGoalTimeDto: SetGoalTimeDto,
   ) {
     const userId = req.user['userId'];
-    const userDetailId = req.user['userDetailId']
+    const userDetailId = req.user['userDetailId'];
     return this.userDetailService.setGoalTime(setGoalTimeDto, userId);
   }
 

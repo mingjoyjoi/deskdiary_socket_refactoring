@@ -1,13 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsInt,
-  IsNotEmpty,
-  Max,
-  MaxLength,
-  IsOptional,
-  Min,
-  IsString,
-} from 'class-validator';
+import { IsInt, IsOptional, IsString } from 'class-validator';
 
 export class UpdateGoalTimeDto {
   @IsOptional({ message: '목표 시간이 비어있으면 안 됩니다.' })
@@ -35,5 +27,5 @@ export class UpdateGoalTimeDto {
     example: '학습',
     required: true,
   })
-  readonly mainCategory?: String;
+  readonly mainCategory?: string;
 }

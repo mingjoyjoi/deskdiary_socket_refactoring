@@ -1,13 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsInt,
-  IsNotEmpty,
-  Max,
-  MaxLength,
-  IsOptional,
-  Min,
-  IsString,
-} from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class UpdateProfileDto {
   @IsNotEmpty({ message: '닉네임이 비어 있으면 안됩니다' })
@@ -33,5 +25,5 @@ export class UpdateProfileDto {
     example: '학습',
     required: true,
   })
-  readonly mainCategory?: String;
+  readonly mainCategory?: string;
 }
