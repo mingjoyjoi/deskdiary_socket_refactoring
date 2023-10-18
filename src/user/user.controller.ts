@@ -8,7 +8,6 @@ import {
   Res,
   Req,
   UseGuards,
-  Param,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
@@ -18,7 +17,6 @@ import { UserService } from './user.service';
 import { JoinUserDto } from './dto/join.user.dto';
 import { LoginUserDto } from './dto/login.user.dto';
 import { UpdateProfileDto } from './dto/update.profile.dto';
-import Api from 'arweave/node/lib/api';
 import { UpdatePasswordDto } from './dto/update.password.dto';
 
 @ApiTags('Join')
