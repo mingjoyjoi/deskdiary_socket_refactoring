@@ -11,7 +11,8 @@ export const RoomResponseExample = {
       ownerId: 2,
       nowHeadcount: 0,
       maxHeadcount: 5,
-      roomThumnail: null,
+      roomThumbnail:
+        'https://heavy-hips-s3.s3.ap-northeast-2.amazonaws.com/room-thumbnails/1697553592689-rabbit.png',
       category: 'study',
       count: 0,
       createdAt: '2023-10-16T00:05:10.753Z',
@@ -74,5 +75,20 @@ export const RoomlistResponseExample = {
         ownerId: 2,
       },
     ],
+  },
+};
+
+export const roomLeaveResponseExample = {
+  example: {
+    isLeaveRoom: true,
+    record: {
+      historyId: 1,
+      UserId: 3,
+      RoomId: 6,
+      checkIn: '2023-10-16T14:00:00.000Z',
+      checkOut: '2023-10-16T16:30:00.000Z',
+      totalHours: 9000,
+      historyType: '취미',
+    },
   },
 };
