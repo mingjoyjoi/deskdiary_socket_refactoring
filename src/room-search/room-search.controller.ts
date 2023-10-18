@@ -31,18 +31,28 @@ export class RoomSearchController {
     return { result: await this.roomSearchService.PopularStudyRooms() };
   }
 
-  //   @Get('/rooms/popular')
-  //   @ApiOperation({
-  //     summary: '방 인기순 조회',
-  //   })
+  @Get('/rooms/popular')
+  @ApiOperation({
+    summary: '방 인기순 조회',
+  })
+  async getPopularRooms() {
+    return { result: await this.roomSearchService.PopularRooms() };
+  }
 
-  //   @Get('/rooms/latest')
-  //   @ApiOperation({
-  //     summary: '방 최신순 조회',
-  //   })
+  @Get('/rooms/latest')
+  @ApiOperation({
+    summary: '방 최신순 조회',
+  })
+  async getLatestRooms() {
+    return { result: await this.roomSearchService.LatestRooms() };
+  }
 
-  //   @Get('user/rooms/history')
-  //   @ApiOperation({
-  //     summary: '유저가 최근 참여한 방 목록 조회 ',
-  //   })
+  // @Get('user/rooms/history')
+  // @ApiOperation({
+  //   summary: '유저가 최근 참여한 방 목록 조회 ',
+  // })
+  // async getUserHistoryRooms(@Request() req) {
+  //   const userId = req.user.id;
+  //   return { result: await this.roomSearchService.UserHistoryRooms(userId) };
+  // }
 }
