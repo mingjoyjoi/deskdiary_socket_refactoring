@@ -22,4 +22,27 @@ export class RoomSearchService {
       },
     });
   }
+
+  async PopularRooms() {
+    return this.prisma.room.findMany({
+      orderBy: {
+        count: 'desc',
+      },
+    });
+  }
+  async LatestRooms() {
+    return this.prisma.room.findMany({
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
+  // async UserHistoryRooms(userId: number) {
+  //   return this.prisma.room.findMany({
+  //     where: { userId },
+  //     orderBy: {
+  //       createdAt: 'desc',
+  //     },
+  //   });
+  // }
 }

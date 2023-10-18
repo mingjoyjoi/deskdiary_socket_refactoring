@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import * as AWS from 'aws-sdk';
 
 export interface ObjectStorageData {
@@ -11,7 +11,7 @@ export interface ObjectStorageData {
 @Injectable()
 export class ImageService {
   private readonly s3: AWS.S3;
-
+  private readonly FILE_LIMIT_SIZE = 3145728;
   constructor() {
     AWS.config.update({
       region: process.env.AWS_REGION,
@@ -23,12 +23,19 @@ export class ImageService {
     this.s3 = new AWS.S3();
   }
 
-  async uploadImage(image: Express.Multer.File): Promise<ObjectStorageData> {
+  async uploadImage(
+    file: Express.Multer.File,
+    folder: string,
+  ): Promise<ObjectStorageData> {
+    if (file.size > this.FILE_LIMIT_SIZE) {
+      throw new BadRequestException('파일 사이즈는 3MB를 넘을 수 없습니다.');
+    }
+
     const param = {
       Bucket: process.env.AWS_BUCKET_NAME,
-      Key: `${Date.now().toString()}-${image.originalname}`,
+      Key: `${folder}/${Date.now().toString()}-${file.originalname}`,
       ACL: 'public-read',
-      Body: image.buffer,
+      Body: file.buffer,
     };
     return new Promise((resolve, reject) => {
       this.s3.upload(param, (err, data) => {
@@ -36,16 +43,16 @@ export class ImageService {
           console.error('Error occurred:', err);
           reject(err);
         }
-        console.log('Original File name:', image.originalname);
+        console.log('Original File name:', file.originalname);
         resolve(data);
       });
     });
   }
 
-  async deleteImage(imageName: string) {
+  async deleteImage(fileName: string) {
     const param = {
       Bucket: process.env.AWS_BUCKET_NAME,
-      Key: imageName,
+      Key: fileName,
     };
 
     return new Promise((resolve, reject) => {
