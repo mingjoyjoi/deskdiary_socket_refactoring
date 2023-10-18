@@ -16,7 +16,7 @@ export class RoomSearchController {
     description: '스터디룸을 조회수 기준 인기순으로 조회 합니다.',
   })
   async getPopularHobbyRooms() {
-    return { result: await this.roomSearchService.PopularHobbyRooms() };
+    return await this.roomSearchService.PopularHobbyRooms();
   }
 
   @Get('hobby-rooms/popular')
@@ -28,21 +28,31 @@ export class RoomSearchController {
     description: '취미룸을 조회수 기준 인기순으로 조회 합니다.',
   })
   async getPopularStudyRooms() {
-    return { result: await this.roomSearchService.PopularStudyRooms() };
+    return await this.roomSearchService.PopularStudyRooms();
   }
 
-  //   @Get('/rooms/popular')
-  //   @ApiOperation({
-  //     summary: '방 인기순 조회',
-  //   })
+  @Get('/rooms/popular')
+  @ApiOperation({
+    summary: '방 인기순 조회',
+  })
+  async getPopularRooms() {
+    return await this.roomSearchService.PopularRooms();
+  }
 
-  //   @Get('/rooms/latest')
-  //   @ApiOperation({
-  //     summary: '방 최신순 조회',
-  //   })
+  @Get('/rooms/latest')
+  @ApiOperation({
+    summary: '방 최신순 조회',
+  })
+  async getLatestRooms() {
+    return await this.roomSearchService.LatestRooms();
+  }
 
-  //   @Get('user/rooms/history')
-  //   @ApiOperation({
-  //     summary: '유저가 최근 참여한 방 목록 조회 ',
-  //   })
+  // @Get('user/rooms/history')
+  // @ApiOperation({
+  //   summary: '유저가 최근 참여한 방 목록 조회 ',
+  // })
+  // async getUserHistoryRooms(@Request() req) {
+  //   const userId = req.user.id;
+  //   return { result: await this.roomSearchService.UserHistoryRooms(userId) };
+  // }
 }
