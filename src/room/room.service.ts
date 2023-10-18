@@ -1,13 +1,13 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { v4 as uuidv4 } from 'uuid';
 import { RtcRole, RtcTokenBuilder } from 'agora-access-token';
-import { CreateRoomRequestDto } from './dto/create-room-request.dto';
-import { PrismaService } from '../prisma/prisma.service';
+import { ImageService } from 'src/image/image.service';
+import { UserService } from 'src/user/user.service';
+import { v4 as uuidv4 } from 'uuid';
 import { RoomException } from '../exception/room.exception';
 import { UserException } from '../exception/user.exception';
-import { UserService } from 'src/user/user.service';
-import { ImageService } from 'src/image/image.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { CheckoutRoomRequestDto } from './dto/checkout-room.dto';
+import { CreateRoomRequestDto } from './dto/create-room-request.dto';
 
 export interface ThumbnailUploadResult {
   message: string;
@@ -21,7 +21,6 @@ export class RoomService {
     private imageService: ImageService,
   ) {}
 
-  //썸네일 multer, s3부분이므로 일단 제외
   async createRoom(
     createRoomRequestDto: CreateRoomRequestDto,
     userId: number,
@@ -132,7 +131,7 @@ export class RoomService {
     const findRoom = await this.prisma.room.findUnique({
       where: { uuid: uuid },
     });
-      
+
     const roomId = findRoom.roomId;
     const recordedHistory = await this.prisma.history.create({
       data: {
@@ -195,6 +194,20 @@ export class RoomService {
     //0는게 원래는 uid 자리인데 저거 그냥 똑같아도 이미 다른거에서 고유한 토큰값 나오니깐 0으로 함
   }
 
+  timeStringToSeconds(timeString: string): number {
+    // 시간 문자열을 콜론 (:)을 기준으로 분리
+    const timeParts = timeString.split(':');
+
+    // 시, 분 및 초를 정수로 파싱
+    const hours = parseInt(timeParts[0], 10);
+    const minutes = parseInt(timeParts[1], 10);
+    const seconds = parseInt(timeParts[2], 10);
+
+    // 초로 변환
+    const totalSeconds = hours * 3600 + minutes * 60 + seconds;
+
+    return totalSeconds;
+  }
 
   async uploadRoomThumbnail(
     userId: number,
@@ -213,19 +226,5 @@ export class RoomService {
       message: '썸네일이 성공적으로 업로드되었습니다',
       roomThumbnail: uploadedFile.Location,
     };
-
-  timeStringToSeconds(timeString: string): number {
-    // 시간 문자열을 콜론 (:)을 기준으로 분리
-    const timeParts = timeString.split(':');
-
-    // 시, 분 및 초를 정수로 파싱
-    const hours = parseInt(timeParts[0], 10);
-    const minutes = parseInt(timeParts[1], 10);
-    const seconds = parseInt(timeParts[2], 10);
-
-    // 초로 변환
-    const totalSeconds = hours * 3600 + minutes * 60 + seconds;
-
-    return totalSeconds;
   }
 }

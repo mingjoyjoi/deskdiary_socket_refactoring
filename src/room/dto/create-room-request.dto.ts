@@ -51,5 +51,5 @@ export class CreateRoomRequestDto {
     description: '방 썸네일 이미지',
     required: false,
   })
-  readonly roomThumbnail: string;
+  readonly roomThumbnail?: string;
 }
