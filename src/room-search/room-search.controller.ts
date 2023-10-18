@@ -16,7 +16,7 @@ export class RoomSearchController {
     description: '스터디룸을 조회수 기준 인기순으로 조회 합니다.',
   })
   async getPopularHobbyRooms() {
-    return { result: await this.roomSearchService.PopularHobbyRooms() };
+    return await this.roomSearchService.PopularHobbyRooms();
   }
 
   @Get('hobby-rooms/popular')
@@ -28,7 +28,7 @@ export class RoomSearchController {
     description: '취미룸을 조회수 기준 인기순으로 조회 합니다.',
   })
   async getPopularStudyRooms() {
-    return { result: await this.roomSearchService.PopularStudyRooms() };
+    return await this.roomSearchService.PopularStudyRooms();
   }
 
   @Get('/rooms/popular')
@@ -36,7 +36,8 @@ export class RoomSearchController {
     summary: '방 인기순 조회',
   })
   async getPopularRooms() {
-    return { result: await this.roomSearchService.PopularRooms() };
+    return await this.roomSearchService.PopularRooms();
+
   }
 
   @Get('/rooms/latest')
@@ -44,7 +45,8 @@ export class RoomSearchController {
     summary: '방 최신순 조회',
   })
   async getLatestRooms() {
-    return { result: await this.roomSearchService.LatestRooms() };
+    return await this.roomSearchService.LatestRooms();
+
   }
 
   // @Get('user/rooms/history')
