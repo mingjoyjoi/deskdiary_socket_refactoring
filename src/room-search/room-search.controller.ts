@@ -17,7 +17,6 @@ export class RoomSearchController {
   })
   async getPopularStudyRooms() {
     return await this.roomSearchService.PopularStudyRooms();
-
   }
 
   @Get('hobby-rooms/popular')
@@ -30,10 +29,9 @@ export class RoomSearchController {
   })
   async getPopularHobbyRooms() {
     return await this.roomSearchService.PopularHobbyRooms();
-
   }
 
-  @Get('/rooms/popular')
+  @Get('rooms/popular')
   @ApiOperation({
     summary: '전체방 인기순 조회',
   })
@@ -41,12 +39,36 @@ export class RoomSearchController {
     return await this.roomSearchService.PopularRooms();
   }
 
-  @Get('/rooms/latest')
+  @Get('rooms/latest')
   @ApiOperation({
     summary: '전체방 최신순 조회',
   })
   async getLatestRooms() {
     return await this.roomSearchService.LatestRooms();
+  }
+
+  @Get('hobby-rooms/latest')
+  @ApiOperation({
+    summary: '취미룸 전체방 최신순 조회',
+  })
+  @ApiResponse({
+    status: 200,
+    description: '취미룸을 최신순으로 전체 조회 합니다.',
+  })
+  async getLatestHobbyRooms() {
+    return await this.roomSearchService.LatestHobbyRooms();
+  }
+
+  @Get('study-rooms/latest')
+  @ApiOperation({
+    summary: '스터디룸 전체방 최신순 조회',
+  })
+  @ApiResponse({
+    status: 200,
+    description: '스터디룸을 최신순으로 전체 조회 합니다.',
+  })
+  async getLatestStudyRooms() {
+    return await this.roomSearchService.LatestStudyRooms();
   }
 
   @Get('study-rooms/popular-top')

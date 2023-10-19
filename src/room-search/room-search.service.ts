@@ -37,6 +37,22 @@ export class RoomSearchService {
       },
     });
   }
+  async LatestHobbyRooms() {
+    return this.prisma.room.findMany({
+      where: { category: 'hobby' },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
+  async LatestStudyRooms() {
+    return this.prisma.room.findMany({
+      where: { category: 'study' },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
 
   //? Top10
   async PopularHobbyRoomsTop10() {
