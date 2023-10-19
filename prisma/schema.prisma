@@ -57,18 +57,21 @@ model Room {
 
   Creator    User        @relation(fields: [ownerId], references: [userId])
   UserRoom   UserRoom[]
+  History    History[]
 }
 
 model History {
   historyId   Int        @id  @default(autoincrement())
   UserId      Int
   RoomId      Int
+  nickname    String
   checkIn     DateTime
   checkOut    DateTime
   totalHours  Int?
   historyType String
 
   User        User       @relation(fields: [UserId], references: [userId])
+  Room        Room       @relation(fields: [RoomId], references: [roomId])
 }
 
 //관계설정할 필요가 있을까? 내 신고목록 조회시 필요할듯, n회 이상 신고당하면 탈퇴 그것도 컬럼 필요! 어디에 추가 ?? 
@@ -85,13 +88,13 @@ model Report {
 
 
 model UserDetail{
-  UserDeailId   Int       @id @default(autoincrement())
+  UserDetailId   Int       @id @default(autoincrement())
   UserId        Int       @unique
-  studyGoalTime Int
-  hobbyGoalTime Int
-  mainCategory  String
-  createdAt     DateTime
-  updatedAt     DateTime
+  studyGoalTime Int?
+  hobbyGoalTime Int?
+  mainCategory  String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   User          User?     @relation(fields: [UserId], references: [userId])
 }

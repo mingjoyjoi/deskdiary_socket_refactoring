@@ -36,46 +36,44 @@ export const RoomResponseExample = {
 };
 
 export const RoomlistResponseExample = {
-  example: {
-    result: [
-      {
-        uuid: '1d0eeb55-1435-4d49-b4da-0c1f13165fd5',
-        title: '새벽스터디1',
-        category: 'study',
-        agoraAppId: '8441c092f3594aaab6808a4fbac50a7b',
-        agoraToken:
-          '0068441c092f3594aaab6808a4fbac50a7bIAAFIqVLSIcpRr6O26Yx9UtHGGTa9Ta8PPSHkuxn817HGtRJr3QAAAAAIgAXtNGoG7MtZQQAAQAbsy1lAgAbsy1lAwAbsy1lBAAbsy1l',
-        ownerId: 1,
-      },
-      {
-        uuid: 'e1b0edff-3a29-4358-bd7c-214d62c59e84',
-        title: '새벽스터디2',
-        category: 'study',
-        agoraAppId: '8441c092f3594aaab6808a4fbac50a7b',
-        agoraToken:
-          '0068441c092f3594aaab6808a4fbac50a7bIACxJqzz9OoxPqPvabFgusl+eASNZU+Q682Btvu8bTQKYZ6oEwcAAAAAIgC/kQWLXbwtZQQAAQBdvC1lAgBdvC1lAwBdvC1lBABdvC1l',
-        ownerId: 1,
-      },
-      {
-        uuid: 'd397f5a8-50f9-4224-8093-afda86ee227f',
-        title: '새벽스터디3',
-        category: 'study',
-        agoraAppId: '8441c092f3594aaab6808a4fbac50a7b',
-        agoraToken:
-          '0068441c092f3594aaab6808a4fbac50a7bIAAtROMoVW2OXUTvYC8Um1RFwUiX71T0Q1P5iXaqxh5//7SEVGwAAAAAIgDzvTFLucItZQQAAQC5wi1lAgC5wi1lAwC5wi1lBAC5wi1l',
-        ownerId: 2,
-      },
-      {
-        uuid: 'af26275a-f5e3-4d9c-8211-166f7d25aef6',
-        title: '새벽스터디4',
-        category: 'study',
-        agoraAppId: '8441c092f3594aaab6808a4fbac50a7b',
-        agoraToken:
-          '0068441c092f3594aaab6808a4fbac50a7bIAAp/o4FFKVCwC7s99cfoBZmaGf85jbhktnagu40V77t2knrL/IAAAAAIgDsdh9fts8tZQQAAQC2zy1lAgC2zy1lAwC2zy1lBAC2zy1l',
-        ownerId: 2,
-      },
-    ],
-  },
+  example: [
+    {
+      uuid: '1d0eeb55-1435-4d49-b4da-0c1f13165fd5',
+      title: '새벽스터디1',
+      category: 'study',
+      agoraAppId: '8441c092f3594aaab6808a4fbac50a7b',
+      agoraToken:
+        '0068441c092f3594aaab6808a4fbac50a7bIAAFIqVLSIcpRr6O26Yx9UtHGGTa9Ta8PPSHkuxn817HGtRJr3QAAAAAIgAXtNGoG7MtZQQAAQAbsy1lAgAbsy1lAwAbsy1lBAAbsy1l',
+      ownerId: 1,
+    },
+    {
+      uuid: 'e1b0edff-3a29-4358-bd7c-214d62c59e84',
+      title: '새벽스터디2',
+      category: 'study',
+      agoraAppId: '8441c092f3594aaab6808a4fbac50a7b',
+      agoraToken:
+        '0068441c092f3594aaab6808a4fbac50a7bIACxJqzz9OoxPqPvabFgusl+eASNZU+Q682Btvu8bTQKYZ6oEwcAAAAAIgC/kQWLXbwtZQQAAQBdvC1lAgBdvC1lAwBdvC1lBABdvC1l',
+      ownerId: 1,
+    },
+    {
+      uuid: 'd397f5a8-50f9-4224-8093-afda86ee227f',
+      title: '새벽스터디3',
+      category: 'study',
+      agoraAppId: '8441c092f3594aaab6808a4fbac50a7b',
+      agoraToken:
+        '0068441c092f3594aaab6808a4fbac50a7bIAAtROMoVW2OXUTvYC8Um1RFwUiX71T0Q1P5iXaqxh5//7SEVGwAAAAAIgDzvTFLucItZQQAAQC5wi1lAgC5wi1lAwC5wi1lBAC5wi1l',
+      ownerId: 2,
+    },
+    {
+      uuid: 'af26275a-f5e3-4d9c-8211-166f7d25aef6',
+      title: '새벽스터디4',
+      category: 'study',
+      agoraAppId: '8441c092f3594aaab6808a4fbac50a7b',
+      agoraToken:
+        '0068441c092f3594aaab6808a4fbac50a7bIAAp/o4FFKVCwC7s99cfoBZmaGf85jbhktnagu40V77t2knrL/IAAAAAIgDsdh9fts8tZQQAAQC2zy1lAgC2zy1lAwC2zy1lBAC2zy1l',
+      ownerId: 2,
+    },
+  ],
 };
 
 export const roomLeaveResponseExample = {
