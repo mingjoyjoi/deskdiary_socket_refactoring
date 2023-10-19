@@ -120,7 +120,10 @@ export class RoomService {
     const findRoom = await this.prisma.room.findUnique({
       where: { uuid: uuid },
     });
-      
+    const user = await this.userService.findUserByUserId(userId);
+    if (!user) throw UserException.userNotFound();
+    const nickname = user.nickname;
+
     const roomId = findRoom.roomId;
     const recordedHistory = await this.prisma.history.create({
       data: {
@@ -128,11 +131,8 @@ export class RoomService {
         checkOut,
         historyType,
         totalHours: totalSeconds,
-        User: {
-          connect: {
-            userId,
-          },
-        },
+        nickname,
+        UserId: userId,
         RoomId: roomId,
       },
     });
