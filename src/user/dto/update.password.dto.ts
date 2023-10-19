@@ -1,15 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsInt,
-  IsNotEmpty,
-  Max,
-  MaxLength,
-  IsOptional,
-  Min,
-  MinLength,
-  IsString,
-  Matches,
-} from 'class-validator';
+import { IsNotEmpty, MinLength, IsString, Matches } from 'class-validator';
 import { Transform } from 'class-transformer';
 
 export class UpdatePasswordDto {

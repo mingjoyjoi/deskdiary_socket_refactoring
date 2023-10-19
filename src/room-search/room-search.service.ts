@@ -7,7 +7,7 @@ export class RoomSearchService {
 
   async PopularHobbyRooms() {
     return this.prisma.room.findMany({
-      where: { category: 'study' },
+      where: { category: 'hobby' },
       orderBy: {
         count: 'desc',
       },
@@ -16,7 +16,7 @@ export class RoomSearchService {
 
   async PopularStudyRooms() {
     return this.prisma.room.findMany({
-      where: { category: 'hobby' },
+      where: { category: 'study' },
       orderBy: {
         count: 'desc',
       },
@@ -37,12 +37,41 @@ export class RoomSearchService {
       },
     });
   }
-  // async UserHistoryRooms(userId: number) {
-  //   return this.prisma.room.findMany({
-  //     where: { userId },
-  //     orderBy: {
-  //       createdAt: 'desc',
-  //     },
-  //   });
-  // }
+
+  //? Top10
+  async PopularHobbyRoomsTop10() {
+    return this.prisma.room.findMany({
+      where: { category: 'hobby' },
+      orderBy: {
+        count: 'desc',
+      },
+      take: 10,
+    });
+  }
+  async PopularStudyRoomsTop10() {
+    return this.prisma.room.findMany({
+      where: { category: 'study' },
+      orderBy: {
+        count: 'desc',
+      },
+      take: 10,
+    });
+  }
+
+  async PopularRoomsTop10() {
+    return this.prisma.room.findMany({
+      orderBy: {
+        count: 'desc',
+      },
+      take: 10,
+    });
+  }
+  async LatestRoomsTop10() {
+    return this.prisma.room.findMany({
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: 10,
+    });
+  }
 }
