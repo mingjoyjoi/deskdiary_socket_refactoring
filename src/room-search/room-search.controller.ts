@@ -15,8 +15,9 @@ export class RoomSearchController {
     status: 200,
     description: '스터디룸을 조회수 기준 인기순으로 조회 합니다.',
   })
-  async getPopularHobbyRooms() {
+  async getPopularStudyRooms() {
     return await this.roomSearchService.PopularStudyRooms();
+
   }
 
   @Get('hobby-rooms/popular')
@@ -27,8 +28,9 @@ export class RoomSearchController {
     status: 200,
     description: '취미룸을 조회수 기준 인기순으로 조회 합니다.',
   })
-  async getPopularStudyRooms() {
+  async getPopularHobbyRooms() {
     return await this.roomSearchService.PopularHobbyRooms();
+
   }
 
   @Get('/rooms/popular')
