@@ -14,6 +14,7 @@ import { UpdateProfileDto } from './dto/update.profile.dto';
 import { JwtConfigService } from 'src/config/jwt.config.service';
 import { User } from '@prisma/client';
 import { UpdatePasswordDto } from './dto/update.password.dto';
+import { ImageService } from 'src/image/image.service';
 
 @Injectable()
 export class UserService {
@@ -21,6 +22,7 @@ export class UserService {
     private readonly prisma: PrismaService,
     private readonly jwtconfigService: JwtConfigService,
     private readonly jwtService: JwtService,
+    private readonly imageService: ImageService,
   ) {}
 
   async signUp(joinuserDto: JoinUserDto) {
@@ -211,16 +213,27 @@ export class UserService {
       where: { userId },
       select: {
         nickname: true,
-        profileImage: true,
       },
     });
     if (!existingUser) {
       throw new NotFoundException(`${userId}를 찾을 수 없습니다.`);
     }
-
     return await this.prisma.user.update({
       where: { userId },
       data: dto,
+    });
+  }
+
+  async updateProfileImage(userId: number, file: Express.Multer.File) {
+    const uploadedData = await this.imageService.uploadImage(
+      file,
+      'profile-images',
+    );
+    return await this.prisma.user.update({
+      where: { userId },
+      data: {
+        profileImage: uploadedData.Location,
+      },
     });
   }
 }

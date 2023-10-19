@@ -8,6 +8,8 @@ import {
   Res,
   Req,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
@@ -18,6 +20,7 @@ import { JoinUserDto } from './dto/join.user.dto';
 import { LoginUserDto } from './dto/login.user.dto';
 import { UpdateProfileDto } from './dto/update.profile.dto';
 import { UpdatePasswordDto } from './dto/update.password.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @ApiTags('Join')
 @Controller('auth')
@@ -89,5 +92,19 @@ export class UserController {
   ) {
     const userId = req.user['userId'];
     return this.userService.updateProfile(userId, updateProfileDto);
+  }
+  @Post('profile/image')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: '프로필 이미지 수정',
+  })
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(FileInterceptor('image'))
+  async updateProfileImage(
+    @Req() req: any,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    const userId = req.user['userId'];
+    return this.userService.updateProfileImage(userId, file);
   }
 }
