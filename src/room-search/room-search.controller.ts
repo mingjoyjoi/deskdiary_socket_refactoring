@@ -17,7 +17,6 @@ export class RoomSearchController {
   })
   async getPopularStudyRooms() {
     return await this.roomSearchService.PopularStudyRooms();
-
   }
 
   @Get('hobby-rooms/popular')
@@ -30,7 +29,6 @@ export class RoomSearchController {
   })
   async getPopularHobbyRooms() {
     return await this.roomSearchService.PopularHobbyRooms();
-
   }
 
   @Get('rooms/popular')
