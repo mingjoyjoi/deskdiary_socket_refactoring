@@ -25,6 +25,8 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     if (payload.type === 'user' || payload.type === 'admin') {
       user = await this.userService.findUserByUserId(payload.userId);
     }
+
+    console.timeLog('User fetched:', user)
     if (!user || (payload.type !== 'user' && payload.type !== 'admin')) {
       throw new UnauthorizedException();
     }

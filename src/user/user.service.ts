@@ -1,12 +1,19 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { Response } from 'express';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { JoinUserDto } from './dto/join.user.dto';
 import { LoginUserDto } from './dto/login.user.dto';
+import { UpdateProfileDto } from './dto/update.profile.dto';
 import { JwtConfigService } from 'src/config/jwt.config.service';
 import { User } from '@prisma/client';
+import { UpdatePasswordDto } from './dto/update.password.dto';
 
 @Injectable()
 export class UserService {
@@ -156,5 +163,64 @@ export class UserService {
     }
 
     return existingUser;
+  }
+
+  // 비밀번호 수정
+  async updatePassword(userId: number, dto: UpdatePasswordDto) {
+    const existingUser = await this.prisma.user.findUnique({
+      where: { userId },
+      select: {
+        password: true,
+      },
+    });
+    // 사용자의 현재 비밀번호와 DB의 비밀번호가 일치하는지 확인
+    if (
+      !existingUser ||
+      !(await bcrypt.compare(dto.password, existingUser.password))
+    ) {
+      throw new Error('Incorrect current password');
+    }
+
+    // 새로운 비밀번호를 암호화
+    const hashedNewPassword = await bcrypt.hash(dto.newPassword, 10);
+
+    // DB에 새로운 비밀번호를 업데이트
+    return await this.prisma.user.update({
+      where: { userId },
+      data: { password: hashedNewPassword },
+    });
+  }
+
+  // 프로필 조회 및 수정
+  async getProfile(userId: number) {
+    const user = await this.prisma.user.findUnique({
+      where: { userId },
+      select: {
+        nickname: true,
+        profileImage: true,
+      },
+    });
+    if (!user) {
+      throw new NotFoundException(`${userId}를 찾을 수 없습니다.`);
+    }
+    return user;
+  }
+
+  async updateProfile(userId: number, dto: UpdateProfileDto) {
+    const existingUser = await this.prisma.user.findUnique({
+      where: { userId },
+      select: {
+        nickname: true,
+        profileImage: true,
+      },
+    });
+    if (!existingUser) {
+      throw new NotFoundException(`${userId}를 찾을 수 없습니다.`);
+    }
+
+    return await this.prisma.user.update({
+      where: { userId },
+      data: dto,
+    });
   }
 }

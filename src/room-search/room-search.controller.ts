@@ -37,6 +37,7 @@ export class RoomSearchController {
   })
   async getPopularRooms() {
     return await this.roomSearchService.PopularRooms();
+
   }
 
   @Get('/rooms/latest')
@@ -45,6 +46,7 @@ export class RoomSearchController {
   })
   async getLatestRooms() {
     return await this.roomSearchService.LatestRooms();
+
   }
 
   // @Get('user/rooms/history')

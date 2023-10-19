@@ -99,6 +99,12 @@ jobs:
           echo KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }} >> .env
           echo KAKAO_REDIRECT_URI=${{ secrets.KAKAO_REDIRECT_URI }} >> .env
           echo KAKAO_CALLBACK_URL=${{ secrets.KAKAO_CALLBACK_URL }} >> .env
+          echo AWS_BUCKET_NAME=${{ secrets.AWS_BUCKET_NAME }} >> .env
+          echo AWS_REGION=${{ secrets.AWS_REGION }} >> .env
+          echo AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }} >> .env
+          echo AWS_SECRET_KEY=${{ secrets.AWS_SECRET_KEY }} >> .env
+          echo AGORA_APP_ID=${{ secrets.AGORA_APP_ID }} >> .env
+          echo AGORA_APP_CERTIFICATE=${{ secrets.AGORA_APP_CERTIFICATE }} >> .env
           docker stop deskdiary-server || true
           docker rm deskdiary-server || true
           docker run --env-file ./.env -d -p 80:4000 --name deskdiary-server --restart always namhyeonjae/deskdiary-server:latest

@@ -88,13 +88,13 @@ model Report {
 
 
 model UserDetail{
-  UserDeailId   Int       @id @default(autoincrement())
+  UserDetailId   Int       @id @default(autoincrement())
   UserId        Int       @unique
-  studyGoalTime Int
-  hobbyGoalTime Int
-  mainCategory  String
-  createdAt     DateTime
-  updatedAt     DateTime
+  studyGoalTime Int?
+  hobbyGoalTime Int?
+  mainCategory  String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   User          User?     @relation(fields: [UserId], references: [userId])
 }
