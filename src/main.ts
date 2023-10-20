@@ -30,6 +30,8 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document);
   app.enableCors({
     exposedHeaders: ['Authorization', 'Axiosheaders'],
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
     origin: 'http://localhost:3000',
   });
   await app.listen(4000);
