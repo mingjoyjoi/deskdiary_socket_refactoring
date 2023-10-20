@@ -96,8 +96,9 @@ export class RoomController {
     @Body() createRoomRequestDto: CreateRoomRequestDto,
     @UploadedFile() file: Express.Multer.File,
   ) {
+    console.log('createRoom called');
     const userId = req.user['userId'];
-
+    console.log(file);
     if (!file) {
       const roomThumbnail =
         'https://heavy-hips-s3.s3.ap-northeast-2.amazonaws.com/room-thumbnails/1697631199431-dog.jpeg';
@@ -109,6 +110,7 @@ export class RoomController {
     }
     const s3Data = await this.imageService.uploadImage(file, 'room-thumbnails');
     const roomThumbnail = s3Data.Location;
+    console.log(roomThumbnail);
     return await this.roomService.createRoom(
       createRoomRequestDto,
       userId,
