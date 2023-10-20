@@ -9,13 +9,13 @@ import {
   IsString,
 } from 'class-validator';
 
-export class SetGoalTimeDto {
+export class UpdateMainCategoryDto {
   @IsNotEmpty()
-  @IsInt()
+  @IsString()
   @ApiProperty({
-    description: '목표 시간 설정',
-    example: 30,
+    description: '카테고리 설정',
+    example: '학습',
     required: true,
   })
-  readonly goalTime: number;
+  readonly mainCategory: String;
 }

@@ -10,12 +10,4 @@ export class UpdateProfileDto {
   })
   readonly nickname?: string;
 
-  @IsOptional()
-  @IsString()
-  @ApiProperty({
-    description: '카테고리 설정',
-    example: '학습',
-    required: true,
-  })
-  readonly mainCategory?: string;
 }
