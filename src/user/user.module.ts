@@ -4,6 +4,7 @@ import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtConfigService } from 'src/config/jwt.config.service';
+import { ImageModule } from 'src/image/image.module';
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import { JwtConfigService } from 'src/config/jwt.config.service';
     JwtModule.registerAsync({
       useClass: JwtConfigService,
     }),
+    ImageModule,
   ],
   controllers: [UserController],
   providers: [UserService, JwtConfigService],

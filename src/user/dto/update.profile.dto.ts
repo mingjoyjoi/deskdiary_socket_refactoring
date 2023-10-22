@@ -10,14 +10,6 @@ export class UpdateProfileDto {
   })
   readonly nickname?: string;
 
-  @IsNotEmpty({ message: '프로필 이미지 주소가 비어 있으면 안됩니다' })
-  @ApiProperty({
-    description: '프로필이미지',
-    example: 'storige.com/asdf1234',
-    required: true,
-  })
-  readonly profileImage?: string;
-
   @IsOptional()
   @IsString()
   @ApiProperty({
