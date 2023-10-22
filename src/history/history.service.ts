@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { UserException } from '../exception/user.exception';
 import { PrismaService } from '../prisma/prisma.service';
-import { UserService } from 'src/user/user.service';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class HistoryService {

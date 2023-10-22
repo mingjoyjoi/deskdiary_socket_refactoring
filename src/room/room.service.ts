@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { RtcRole, RtcTokenBuilder } from 'agora-access-token';
-import { ImageService } from 'src/image/image.service';
-import { UserService } from 'src/user/user.service';
+import { ImageService } from '../image/image.service';
+import { UserService } from '../user/user.service';
 import { v4 as uuidv4 } from 'uuid';
 import { RoomException } from '../exception/room.exception';
 import { UserException } from '../exception/user.exception';
@@ -131,7 +131,7 @@ export class RoomService {
     const findRoom = await this.prisma.room.findUnique({
       where: { uuid: uuid },
     });
-      
+
     const user = await this.userService.findUserByUserId(userId);
     if (!user) throw UserException.userNotFound();
     const nickname = user.nickname;
