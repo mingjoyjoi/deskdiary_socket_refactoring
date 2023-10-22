@@ -11,9 +11,6 @@ import { ImageModule } from './image/image.module';
 import { UserDetailModule } from './user-detail/user-detail.module';
 import { RoomSearchModule } from './room-search/room-search.module';
 import { HistoryModule } from './history/history.module';
-// import { RoomchatsModule } from './room-chats/room-chats.module';
-// import * as mongoose from 'mongoose';
-// import { MongooseModule } from '@nestjs/mongoose';
 
 @Module({
   imports: [
@@ -28,8 +25,6 @@ import { HistoryModule } from './history/history.module';
     UserDetailModule,
     RoomSearchModule,
     HistoryModule,
-    // RoomchatsModule,
-    // MongooseModule.forRoot(process.env.MONGO_URL),
   ],
   controllers: [AppController],
   providers: [AppService],

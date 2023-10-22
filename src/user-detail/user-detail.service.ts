@@ -1,8 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { SetGoalTimeDto } from './dto/set.goaltime.dto';
-import { UpdateGoalTimeDto } from './dto/update.goaltime.dto';
-import { UserService } from 'src/user/user.service';
+
+import { SetMainCategoryDto } from './dto/set.maincategory.dto';
+
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class UserDetailService {
@@ -12,28 +14,39 @@ export class UserDetailService {
   ) {}
 
   async setGoalTime(dto: SetGoalTimeDto, userId: number) {
-    const studyGoalTime = SetGoalTimeDto;
-    const user = await this.userService.findUserByUserId(userId);
-    return await this.prisma.userDetail.create({
-      data: {
-        studyGoalTime: dto.studyGoalTime,
-        hobbyGoalTime: dto.hobbyGoalTime,
-        mainCategory: String(dto.mainCategory),
-        UserId: userId, // 여기에 사용자 ID를 할당합니다.
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
+    // 해당 UserId의 UserDetail을 찾습니다.
+    const existingDetail = await this.prisma.userDetail.findUnique({
+      where: { UserId: userId },
     });
+
+    if (existingDetail) {
+      // 이미 존재하는 경우, goalTime을 업데이트합니다.
+      return await this.prisma.userDetail.update({
+        where: { UserDetailId: existingDetail.UserDetailId },
+        data: {
+          goalTime: dto.goalTime,
+          updatedAt: new Date(),
+        },
+      });
+    } else {
+      // 존재하지 않는 경우, 새 레코드를 생성합니다.
+      return await this.prisma.userDetail.create({
+        data: {
+          goalTime: dto.goalTime,
+          UserId: userId,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      });
+    }
   }
 
-  async getStudyGoalTimeById(id: number) {
+  async getGoalTimeById(id: number) {
     const userDetail = await this.prisma.userDetail.findUnique({
       where: { UserId: id },
       select: {
         UserId: true,
-        studyGoalTime: true,
-        hobbyGoalTime: true,
-        mainCategory: true,
+        goalTime: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -41,50 +54,54 @@ export class UserDetailService {
     return userDetail;
   }
 
-  async updateGoalTime(dto: UpdateGoalTimeDto, userId: number) {
-    const updateData: any = {};
+  // async updateGoalTime(dto: UpdateGoalTimeDto, userId: number) {
+  //   const updateData: any = {};
 
-    // 선택적으로 studyGoalTime 및 hobbyGoalTime을 업데이트합니다.
-    if (dto.studyGoalTime !== undefined) {
-      updateData.studyGoalTime = dto.studyGoalTime;
-    }
+  //   if (dto.goalTime !== undefined) {
+  //     updateData.goalTime = dto.goalTime;
+  //   }
 
-    if (dto.hobbyGoalTime !== undefined) {
-      updateData.hobbyGoalTime = dto.hobbyGoalTime;
-    }
+  //   return await this.prisma.userDetail.update({
+  //     where: { UserId: userId },
+  //     data: updateData,
+  //   });
+  // }
 
-    return await this.prisma.userDetail.update({
+  async setMainCategory(dto: SetMainCategoryDto, userId: number) {
+    const existingDetail = await this.prisma.userDetail.findUnique({
       where: { UserId: userId },
-      data: updateData,
     });
+
+    if (existingDetail) {
+      // 기존 레코드 업데이트
+      return await this.prisma.userDetail.update({
+        where: { UserId: userId },
+        data: { mainCategory: String(dto.mainCategory) },
+      });
+    } else {
+      // 새로운 레코드 생성
+      return await this.prisma.userDetail.create({
+        data: {
+          UserId: userId,
+          mainCategory: String(dto.mainCategory),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      });
+    }
   }
 
-  async getHobbyGoalTimeById(id: number) {
+  async getMainCategory(id: number) {
     const userDetail = await this.prisma.userDetail.findUnique({
       where: { UserId: id },
       select: {
         UserId: true,
-        hobbyGoalTime: true,
-        studyGoalTime: false,
+        UserDetailId: true,
         mainCategory: true,
+        createdAt: true,
+        updatedAt: true,
       },
     });
     return userDetail;
-  }
-
-  async setCategory(dto: SetGoalTimeDto, userId: number) {
-    const mainCategory = SetGoalTimeDto;
-    const user = await this.userService.findUserByUserId(userId);
-
-    return await this.prisma.userDetail.create({
-      data: {
-        UserId: userId,
-        studyGoalTime: dto.studyGoalTime,
-        hobbyGoalTime: dto.hobbyGoalTime,
-        mainCategory: String(dto.mainCategory),
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-    });
   }
 }

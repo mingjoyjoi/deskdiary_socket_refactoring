@@ -30,8 +30,8 @@ import {
 } from './room.response.examples';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CheckoutRoomRequestDto } from './dto/checkout-room.dto';
-import { JwtAuthGuard } from 'src/auth/jwt/jwt-auth.guard';
-import { ImageService } from 'src/image/image.service';
+import { JwtAuthGuard } from '../auth/jwt/jwt-auth.guard';
+import { ImageService } from '../image/image.service';
 
 @ApiTags('Room API')
 @Controller('room')
@@ -96,8 +96,9 @@ export class RoomController {
     @Body() createRoomRequestDto: CreateRoomRequestDto,
     @UploadedFile() file: Express.Multer.File,
   ) {
+    console.log('createRoom called');
     const userId = req.user['userId'];
-
+    console.log(file);
     if (!file) {
       const roomThumbnail =
         'https://heavy-hips-s3.s3.ap-northeast-2.amazonaws.com/room-thumbnails/1697631199431-dog.jpeg';
@@ -109,6 +110,7 @@ export class RoomController {
     }
     const s3Data = await this.imageService.uploadImage(file, 'room-thumbnails');
     const roomThumbnail = s3Data.Location;
+    console.log(roomThumbnail);
     return await this.roomService.createRoom(
       createRoomRequestDto,
       userId,

@@ -7,14 +7,14 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { Response } from 'express';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { JoinUserDto } from './dto/join.user.dto';
 import { LoginUserDto } from './dto/login.user.dto';
 import { UpdateProfileDto } from './dto/update.profile.dto';
-import { JwtConfigService } from 'src/config/jwt.config.service';
+import { JwtConfigService } from '../config/jwt.config.service';
 import { User } from '@prisma/client';
 import { UpdatePasswordDto } from './dto/update.password.dto';
-import { ImageService } from 'src/image/image.service';
+import { ImageService } from '../image/image.service';
 
 @Injectable()
 export class UserService {
@@ -193,7 +193,7 @@ export class UserService {
     });
   }
 
-  // 프로필 조회 및 수정
+  //? 프로필 조회 및 수정
   async getProfile(userId: number) {
     const user = await this.prisma.user.findUnique({
       where: { userId },

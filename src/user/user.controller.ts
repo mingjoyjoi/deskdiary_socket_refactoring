@@ -82,8 +82,8 @@ export class UserController {
   @Put('profile')
   @ApiBearerAuth()
   @ApiOperation({
-    summary: '프로필 수정',
-    description: '회원의 닉네임과 프로필 이미지를 수정합니다.',
+    summary: '닉네임 수정',
+    description: '닉네임을 수정합니다.',
   })
   @UseGuards(JwtAuthGuard)
   async updateProfile(
@@ -104,6 +104,8 @@ export class UserController {
     @Req() req: any,
     @UploadedFile() file: Express.Multer.File,
   ) {
+    console.log('updateProfileImage called');
+    console.log(file);
     const userId = req.user['userId'];
     return this.userService.updateProfileImage(userId, file);
   }
