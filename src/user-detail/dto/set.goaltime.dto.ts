@@ -1,13 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsInt,
-  IsNotEmpty,
-  Max,
-  MaxLength,
-  IsOptional,
-  Min,
-  IsString,
-} from 'class-validator';
+import { IsInt, IsNotEmpty } from 'class-validator';
 
 export class SetGoalTimeDto {
   @IsNotEmpty()

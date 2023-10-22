@@ -30,8 +30,8 @@ import {
 } from './room.response.examples';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CheckoutRoomRequestDto } from './dto/checkout-room.dto';
-import { JwtAuthGuard } from 'src/auth/jwt/jwt-auth.guard';
-import { ImageService } from 'src/image/image.service';
+import { JwtAuthGuard } from '../auth/jwt/jwt-auth.guard';
+import { ImageService } from '../image/image.service';
 
 @ApiTags('Room API')
 @Controller('room')

@@ -1,25 +1,8 @@
-import {
-  Controller,
-  Post,
-  Put,
-  Body,
-  Param,
-  Get,
-  Req,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Post, Body, Get, Req, UseGuards } from '@nestjs/common';
 // import { UserDetailService } from './user-detail.service';
 import { SetGoalTimeDto } from './dto/set.goaltime.dto';
-import { UpdateGoalTimeDto } from './dto/update.goaltime.dto';
 import { SetMainCategoryDto } from './dto/set.maincategory.dto';
-import { UpdateMainCategoryDto } from './dto/update.maincategory.dto';
-import {
-  ApiOperation,
-  ApiTags,
-  ApiHeader,
-  ApiBearerAuth,
-  ApiResponse,
-} from '@nestjs/swagger';
+import { ApiOperation, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt/jwt-auth.guard';
 import { Request } from 'express';
 import { UserDetailService } from './user-detail.service';

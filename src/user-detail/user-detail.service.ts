@@ -1,14 +1,10 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { SetGoalTimeDto } from './dto/set.goaltime.dto';
-import { UpdateGoalTimeDto } from './dto/update.goaltime.dto';
+
 import { SetMainCategoryDto } from './dto/set.maincategory.dto';
-import { UpdateMainCategoryDto } from './dto/update.maincategory.dto';
-import { UserService } from 'src/user/user.service';
+
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class UserDetailService {
