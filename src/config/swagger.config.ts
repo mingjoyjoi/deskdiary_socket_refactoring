@@ -7,6 +7,7 @@ export function SwaggerConfig(app: INestApplication): void {
     .setDescription('책상일기의 API 문서입니다.')
     .setContact('책상일기 개발팀', '', '')
     .setVersion('1.0.0')
+    .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, option);
   SwaggerModule.setup('api', app, document);
