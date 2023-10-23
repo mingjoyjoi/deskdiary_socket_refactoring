@@ -167,6 +167,16 @@ export class UserService {
     return existingUser;
   }
 
+  // -------------- 구글 로그인 ---------------------
+  // async findOrCreateGoogleUser(user: {
+  //   email: string;
+  //   nickname: string;
+  //   snsId: string;
+  //   provider: string;
+  // }): Promise<User> {
+  //   const { email, nickname, snsId, provider } = user;
+  // }
+
   // 비밀번호 수정
   async updatePassword(userId: number, dto: UpdatePasswordDto) {
     const existingUser = await this.prisma.user.findUnique({
