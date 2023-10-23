@@ -6,8 +6,11 @@
 /.scripts
 e2e.spec.ts
 rabbit.png
-room.seed.ts
 room.seed.service.ts
+room.seed.ts
+history.seed.ts
+history.service.seed.ts
+
 
 # Logs
 logs
