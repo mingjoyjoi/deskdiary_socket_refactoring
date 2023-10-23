@@ -5,13 +5,13 @@ import * as cookieParser from 'cookie-parser';
 import { join } from 'path';
 import { AppModule } from './app.module';
 import { CorsConfig, SwaggerConfig } from './config';
-import { RoomSeedService } from './room/room.seed.service';
+// import { RoomSeedService } from './room/room.seed.service';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
-  const roomSeedService = app.get(RoomSeedService);
+  // const roomSeedService = app.get(RoomSeedService);
 
-  await roomSeedService.seed(4);
+  // await roomSeedService.seed(4);
   app.use(cookieParser());
   app.useGlobalPipes(
     new ValidationPipe({
