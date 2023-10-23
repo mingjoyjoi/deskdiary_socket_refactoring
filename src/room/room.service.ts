@@ -131,7 +131,7 @@ export class RoomService {
     const findRoom = await this.prisma.room.findUnique({
       where: { uuid: uuid },
     });
-      
+
     const user = await this.userService.findUserByUserId(userId);
     if (!user) throw UserException.userNotFound();
     const nickname = user.nickname;

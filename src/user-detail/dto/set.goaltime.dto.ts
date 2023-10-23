@@ -5,20 +5,11 @@ export class SetGoalTimeDto {
   @IsOptional()
   @IsInt()
   @ApiProperty({
-    description: '학습 목표 시간 설정',
-    example: 30,
-    required: true,
-  })
-  readonly studyGoalTime?: number;
-
-  @IsOptional()
-  @IsInt()
-  @ApiProperty({
     description: '취미 목표 시간 설정',
     example: 30,
     required: true,
   })
-  readonly hobbyGoalTime?: number;
+  readonly GoalTime?: number;
 
   @IsOptional()
   @IsString()

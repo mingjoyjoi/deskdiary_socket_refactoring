@@ -61,6 +61,7 @@ export class HistoryController {
     status: 200,
     description: '1일 동안의 해당 유저의 학습기록 데이터를 조회합니다.',
   })
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   async getTodayLearningHistory(@Req() req: Request) {
     const userId = req.user['userId'];
@@ -75,6 +76,7 @@ export class HistoryController {
     status: 200,
     description: '일주일 동안의 해당 유저의 학습기록 데이터를 조회합니다.',
   })
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   async getWeeklyLearningHistory(@Req() req: Request) {
     const userId = req.user['userId'];
@@ -89,6 +91,7 @@ export class HistoryController {
     status: 200,
     description: '한달 동안의 해당 유저의 학습기록 데이터를 조회합니다.',
   })
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   async getMonthlyLearningHistory(@Req() req: Request) {
     const userId = req.user['userId'];
