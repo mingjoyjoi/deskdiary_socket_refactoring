@@ -90,7 +90,7 @@ export class HistoryService {
     if (!goaltimeData) return { message: '등록된 목표시간이 없습니다.' };
 
     const todayHobby = await this.prisma.$queryRaw`
-    SELECT SUM(totalHous) as totalHours, historyType, DATE_FORMAT(checkOut, '%Y-%m-%d') as checkOut 
+    SELECT SUM(totalHours) as totalHours, historyType, DATE_FORMAT(checkOut, '%Y-%m-%d') as checkOut 
     FROM History 
     Where UserId = ${userId} 
     AND historyType ='hobby'
@@ -98,7 +98,7 @@ export class HistoryService {
     GROUP BY checkOut`;
 
     const todayStudy = await this.prisma.$queryRaw`
-    SELECT SUM(totalHous) as totalHours, historyType, DATE_FORMAT(checkOut, '%Y-%m-%d') as checkOut
+    SELECT SUM(totalHours) as totalHours, historyType, DATE_FORMAT(checkOut, '%Y-%m-%d') as checkOut
     FROM History 
     Where UserId = ${userId} 
     AND historyType ='study'
