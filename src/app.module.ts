@@ -8,6 +8,9 @@ import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { RoomModule } from './room/room.module';
 import { ImageModule } from './image/image.module';
+import { UserDetailModule } from './user-detail/user-detail.module';
+import { RoomSearchModule } from './room-search/room-search.module';
+import { HistoryModule } from './history/history.module';
 
 @Module({
   imports: [
@@ -19,6 +22,9 @@ import { ImageModule } from './image/image.module';
     UserModule,
     RoomModule,
     ImageModule,
+    UserDetailModule,
+    RoomSearchModule,
+    HistoryModule,
   ],
   controllers: [AppController],
   providers: [AppService],
@@ -32,5 +38,6 @@ export class AppModule implements NestModule {
     if (this.isDev) {
       consumer.apply(LoggerMiddleware).forRoutes('*');
     }
+    // mongoose.set('debug', this.isDev);
   }
 }

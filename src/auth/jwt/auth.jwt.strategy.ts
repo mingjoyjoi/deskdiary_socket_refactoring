@@ -3,7 +3,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { UserService } from 'src/user/user.service';
+import { UserService } from '../../user/user.service';
 
 //* JWT 토큰을 이용한 전략 구현
 @Injectable()
@@ -25,6 +25,8 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     if (payload.type === 'user' || payload.type === 'admin') {
       user = await this.userService.findUserByUserId(payload.userId);
     }
+
+    console.timeLog('User fetched:', user);
     if (!user || (payload.type !== 'user' && payload.type !== 'admin')) {
       throw new UnauthorizedException();
     }
