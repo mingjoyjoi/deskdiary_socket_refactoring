@@ -144,7 +144,7 @@ export class HistoryService {
     FROM History
     WHERE historyType = 'hobby'
     AND checkOut >= DATE_ADD(NOW(), INTERVAL -30 DAY) 
-    AND UserId = '${userId}'
+    AND UserId = ${userId}
     GROUP BY checkOut`;
 
     const moonthlyStudyHistory = await this.prisma.$queryRaw`
