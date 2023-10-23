@@ -16,7 +16,7 @@ export class JwtKakaoStrategy extends PassportStrategy(KaKaoStrategy, 'kakao') {
     accessToken: string,
     refreshToken: string,
     profile: any,
-    done: Function,
+    done: (error: string | null, user?: any) => void,
   ) {
     const { id, displayName, _json } = profile;
     const kakaoAccount = _json.kakao_account;
