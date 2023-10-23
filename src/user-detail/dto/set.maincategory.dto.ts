@@ -1,13 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsInt,
-  IsNotEmpty,
-  Max,
-  MaxLength,
-  IsOptional,
-  Min,
-  IsString,
-} from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class SetMainCategoryDto {
   @IsNotEmpty()
@@ -17,5 +9,5 @@ export class SetMainCategoryDto {
     example: '학습',
     required: true,
   })
-  readonly mainCategory: String;
+  readonly mainCategory: string;
 }

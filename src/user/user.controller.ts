@@ -11,7 +11,17 @@ import {
   UseInterceptors,
   UploadedFile,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiTags,
+  ApiResponse,
+} from '@nestjs/swagger';
+import {
+  UpdatePasswordExample,
+  GetProfileExample,
+  UpdateProfileExample,
+} from './user.response.exampes';
 import { Response } from 'express';
 import { JwtAuthGuard } from '../auth/jwt/jwt-auth.guard';
 
@@ -48,7 +58,14 @@ export class UserController {
   @ApiBearerAuth()
   @ApiOperation({
     summary: '비밀번호 수정',
-    description: '회원의 비밀번호를 수정합니다.',
+  })
+  @ApiResponse({
+    status: 200,
+    description:
+      '유저의 현재 비밀번호가 일치한 것을 확인하고 수정할 비밀번호와 확인을 통해 비밀번호를 수정합니다.',
+    content: {
+      examples: UpdatePasswordExample,
+    },
   })
   @UseGuards(JwtAuthGuard)
   async updatePassword(
@@ -70,7 +87,13 @@ export class UserController {
   @ApiBearerAuth()
   @ApiOperation({
     summary: '프로필 조회',
-    description: '회원의 닉네임과 프로필 이미지를 조회합니다.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: '유저의 닉네임을 조회합니다.',
+    content: {
+      examples: GetProfileExample,
+    },
   })
   @UseGuards(JwtAuthGuard)
   async getProfile(@Req() req: any) {
@@ -83,7 +106,13 @@ export class UserController {
   @ApiBearerAuth()
   @ApiOperation({
     summary: '프로필 수정',
-    description: '회원의 닉네임과 프로필 이미지를 수정합니다.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: '유저의 닉네임을 수정합니다.',
+    content: {
+      examples: UpdateProfileExample,
+    },
   })
   @UseGuards(JwtAuthGuard)
   async updateProfile(
