@@ -38,5 +38,6 @@ export class AppModule implements NestModule {
     if (this.isDev) {
       consumer.apply(LoggerMiddleware).forRoutes('*');
     }
+    // mongoose.set('debug', this.isDev);
   }
 }

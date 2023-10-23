@@ -2,18 +2,18 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty } from 'class-validator';
 
 export class CheckoutRoomRequestDto {
-  @IsNotEmpty({ message: '방 체크인 시간이 필요합니다.' })
+  @IsNotEmpty({ message: '방 체크인 날짜가 필요합니다.' })
   @ApiProperty({
-    description: '방 체크인 시간',
-    example: '2023-10-16T14:00:00Z',
+    description: '방 체크인 날짜',
+    example: '2023-10-16',
     required: true,
   })
   readonly checkIn: Date;
 
-  @IsNotEmpty({ message: '방 체크아웃 시간이 필요합니다.' })
+  @IsNotEmpty({ message: '방 체크아웃 날짜가 필요합니다.' })
   @ApiProperty({
-    description: '방 체크아웃 시간',
-    example: '2023-10-16T16:30:00Z',
+    description: '방 체크아웃 날짜',
+    example: '2023-10-16',
     required: true,
   })
   readonly checkOut: Date;
