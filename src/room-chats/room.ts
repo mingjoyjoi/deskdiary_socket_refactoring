@@ -1,29 +1,15 @@
-const example_RoomModel = {
-  uuid: 'ddtfn4rjhnk3',
-  roomInfo: {
-    maxHead: 8,
-    owner: 'socket.id',
-    userList: {
-      clientid1: { nickname: '민정'},
-      clientid2: { nickname: '쥐새끼' },
-      clientid3: { nickname: '짱친승일' },
-    },
-  },
-};
-
 //uuid.roomInfo.userList 객체에서 clientId3
-const a = {
+const socketModel = {
   clientId: 'slkdjads',
-  room: 
+  uuid: 'dflksjkflsdf',
 };
 
-
-const example_Room2Model = {
+const RoomModel = {
   uuid: 'ddtfn4rjhnk3',
   owner: 'socket.id',
   userList: {
-      clientid1: {  nickname: '민정' },
-      clientid2: { nickname: '쥐새끼' }, 
-      clientid3: { nickname: '짱친승일' },
+    clientid1: { nickname: '민정' },
+    clientid2: { nickname: '민정2' },
+    clientid3: { nickname: '민정3' },
   },
 };
