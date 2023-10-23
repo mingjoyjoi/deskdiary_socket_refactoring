@@ -95,7 +95,7 @@ export class HistoryService {
     Where UserId = ${userId} 
     AND historyType ='hobby'
     AND checkOut >= DATE_ADD(NOW(), INTERVAL -1 DAY)
-    GROUP BY checkOut`;
+    GROUP BY DATE_FORMAT(checkOut, '%Y-%m-%d')`;
 
     const todayStudy = await this.prisma.$queryRaw`
     SELECT SUM(totalHours) as totalHours, historyType, DATE_FORMAT(checkOut, '%Y-%m-%d') as checkOut
@@ -103,7 +103,7 @@ export class HistoryService {
     Where UserId = ${userId} 
     AND historyType ='study'
     AND checkOut >= DATE_ADD(NOW(), INTERVAL -1 DAY)
-    GROUP BY checkOut`;
+    GROUP BY DATE_FORMAT(checkOut, '%Y-%m-%d')`;
 
     const todayHistory = {
       goaltime: goaltimeData.goalTime,
@@ -124,7 +124,8 @@ export class HistoryService {
     WHERE historyType = 'hobby'
     AND checkOut >= DATE_ADD(NOW(), INTERVAL -7 DAY) 
     AND UserId = ${userId}
-    GROUP BY checkOut`;
+    GROUP BY DATE_FORMAT(checkOut, '%Y-%m-%d')
+    ORDER BY checkOut`;
 
     const weeklyStudyHistory = await this.prisma.$queryRaw`
     SELECT SUM(totalHours) AS totalHours, historyType, DATE_FORMAT(checkOut, '%Y-%m-%d') as checkOut
@@ -132,7 +133,8 @@ export class HistoryService {
     WHERE historyType = 'study'
     AND checkOut >= DATE_ADD(NOW(), INTERVAL -7 DAY) 
     AND UserId = ${userId}
-    GROUP BY checkOut`;
+    GROUP BY DATE_FORMAT(checkOut, '%Y-%m-%d')
+    ORDER BY checkOut`;
 
     return { weeklyHobby: weeklyHobbyHistory, weeklyStudy: weeklyStudyHistory };
   }
@@ -147,7 +149,8 @@ export class HistoryService {
     WHERE historyType = 'hobby'
     AND checkOut >= DATE_ADD(NOW(), INTERVAL -30 DAY)
     AND UserId = ${userId}
-    GROUP BY checkOut`;
+    GROUP BY DATE_FORMAT(checkOut, '%Y-%m-%d')
+    ORDER BY checkOut`;
 
     const monthlyStudyHistory = await this.prisma.$queryRaw`
     SELECT SUM(totalHours) AS totalHours, historyType, DATE_FORMAT(checkOut, '%Y-%m-%d') as checkOut
@@ -155,7 +158,8 @@ export class HistoryService {
     WHERE historyType = 'study'
     AND checkOut >= DATE_ADD(NOW(), INTERVAL -30 DAY)
     AND UserId = ${userId}
-    GROUP BY checkOut`;
+    GROUP BY DATE_FORMAT(checkOut, '%Y-%m-%d')
+    ORDER BY checkOut`;
 
     return {
       monthlyHobby: monthlyHobbyHistory,
