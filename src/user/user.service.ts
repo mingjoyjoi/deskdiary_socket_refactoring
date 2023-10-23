@@ -193,12 +193,15 @@ export class UserService {
     });
   }
 
-  //? 프로필 조회 및 수정
+  // 프로필 조회 및 수정
   async getProfile(userId: number) {
     const user = await this.prisma.user.findUnique({
       where: { userId },
       select: {
+        email: true,
         nickname: true,
+        provider: true,
+        profileImage: true,
       },
     });
     if (!user) {
