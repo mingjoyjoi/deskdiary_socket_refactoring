@@ -1,13 +1,14 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { RtcRole, RtcTokenBuilder } from 'agora-access-token';
-import { ImageService } from 'src/image/image.service';
-import { UserService } from 'src/user/user.service';
+import { ImageService } from '../image/image.service';
+import { UserService } from '../user/user.service';
 import { v4 as uuidv4 } from 'uuid';
 import { RoomException } from '../exception/room.exception';
 import { UserException } from '../exception/user.exception';
 import { PrismaService } from '../prisma/prisma.service';
 import { CheckoutRoomRequestDto } from './dto/checkout-room.dto';
 import { CreateRoomRequestDto } from './dto/create-room-request.dto';
+// import { createRandomRoom } from './room.seed';
 
 export interface ThumbnailUploadResult {
   message: string;
@@ -44,7 +45,7 @@ export class RoomService {
       ownerId: userId,
       count: 0,
     };
-    console.log(newRoom);
+
     // await this.roomRepository.createRoom(newRoom);
     const createdRoom = await this.prisma.room.create({
       data: newRoom,
@@ -228,4 +229,14 @@ export class RoomService {
       roomThumbnail: uploadedFile.Location,
     };
   }
+  // async addRandomRoomToDatabase() {
+  //   const ownerId = 1; // 이 값은 실제로 데이터베이스에 있는 사용자 ID여야 합니다.
+  //   const randomRoom = createRandomRoom(ownerId);
+
+  //   const createdRoom = await this.prisma.room.create({
+  //     data: randomRoom,
+  //   });
+
+  //   console.log(createdRoom);
+  // }
 }

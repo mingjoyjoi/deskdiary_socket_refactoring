@@ -1,15 +1,15 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-import { JwtConfigService } from 'src/config/jwt.config.service';
-import { PrismaModule } from 'src/prisma/prisma.module';
-import { UserModule } from 'src/user/user.module';
+import { JwtConfigService } from '../config/jwt.config.service';
+import { PrismaModule } from '../prisma/prisma.module';
+import { UserModule } from '../user/user.module';
 import { JwtStrategy } from './jwt/auth.jwt.strategy';
-import { UserService } from 'src/user/user.service';
+import { UserService } from '../user/user.service';
 import { HttpModule } from '@nestjs/axios';
 import { AuthController } from './auth.controller';
 import { JwtKakaoStrategy } from './kakao/jwt-social-kakao-strategy';
-import { ImageModule } from 'src/image/image.module';
+import { ImageModule } from '../image/image.module';
 
 @Module({
   imports: [

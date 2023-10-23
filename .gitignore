@@ -4,6 +4,10 @@
 /.env
 /.env.docker
 /.scripts
+e2e.spec.ts
+rabbit.png
+room.seed.ts
+room.seed.service.ts
 
 # Logs
 logs

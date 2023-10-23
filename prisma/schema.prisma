@@ -28,7 +28,7 @@ model User {
   History History[]
   Report Report[]
   UserRoom UserRoom[]
-  UserDetail UserDetail?
+  UserDetail UserDetail[]
    // Follower 관계 설정
   followers     Follow[] @relation("Followers")
   // Following 관계 설정
@@ -95,7 +95,7 @@ model UserDetail{
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  User          User?     @relation(fields: [UserId], references: [userId])
+  User          User     @relation(fields: [UserId], references: [userId])
 }
 
 model UserRoom {
