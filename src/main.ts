@@ -7,7 +7,6 @@ import { AppModule } from './app.module';
 import { CorsConfig, SwaggerConfig } from './config';
 // import { RoomSeedService } from './room/room.seed.service';
 
-
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   // const roomSeedService = app.get(RoomSeedService);
