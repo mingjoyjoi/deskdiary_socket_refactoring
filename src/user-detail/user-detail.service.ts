@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { SetGoalTimeDto } from './dto/set.goaltime.dto';
 import { SetMainCategoryDto } from './dto/set.maincategory.dto';
-import { UserService } from 'src/user/user.service';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class UserDetailService {

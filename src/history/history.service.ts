@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { UserException } from '../exception/user.exception';
 import { PrismaService } from '../prisma/prisma.service';
-import { UserService } from 'src/user/user.service';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class HistoryService {
@@ -76,5 +76,87 @@ export class HistoryService {
     LIMIT 5
   `;
     return hobbyHistory;
+  }
+
+  //1일 =학습 누적시간, 목표시간
+  async getTodayLearningHistory(userId: number) {
+    const user = await this.userService.findUserByUserId(userId);
+    if (!user) throw UserException.userNotFound();
+    const goaltimeData = await this.prisma.userDetail.findUnique({
+      where: { UserId: userId },
+      select: {
+        goalTime: true,
+      },
+    });
+
+    const todayHobby = await this.prisma.$queryRaw`
+    SELECT SUM(totalHous) as todalHours, historyType 
+    FROM history 
+    Where UserId = ${userId} 
+    AND historyType ='hobby'
+    AND checkOut >= DATE_ADD(NOW(), INTERVAL -1 DAY)`;
+
+    const todayStudy = await this.prisma.$queryRaw`
+    SELECT SUM(totalHous) as todalHours, historyType 
+    FROM history 
+    Where UserId = ${userId} 
+    AND historyType ='study'
+    AND checkOut >= DATE_ADD(NOW(), INTERVAL -1 DAY)`;
+
+    const todayHistory = {
+      goaltime: goaltimeData.goalTime,
+      studyTotalHours: todayHobby[0].todalHours,
+      hobbyTotalHours: todayStudy[0].todalHours,
+    };
+    return todayHistory;
+  }
+
+  async getWeeklyLearningHistory(userId: number) {
+    //7일 = 최근 7일의 학습누적시간, 날짜
+    const user = await this.userService.findUserByUserId(userId);
+    if (!user) throw UserException.userNotFound();
+    const weeklyHobbyHistory = await this.prisma.$queryRaw`
+    SELECT SUM(totalHours) AS totalHours, historyType, checkOut
+    FROM History
+    WHERE historyType = 'hobby'
+    AND checkOut >= DATE_ADD(NOW(), INTERVAL -7 DAY) 
+    AND UserId = '${userId}'
+    GROUP BY checkOut`;
+
+    const weeklyStudyHistory = await this.prisma.$queryRaw`
+    SELECT SUM(totalHours) AS totalHours, historyType, checkOut
+    FROM History
+    WHERE historyType = 'study'
+    AND checkOut >= DATE_ADD(NOW(), INTERVAL -7 DAY) 
+    AND UserId = '${userId}'
+    GROUP BY checkOut`;
+
+    return { weeklyHobby: weeklyHobbyHistory, weeklyStudy: weeklyStudyHistory };
+  }
+
+  async getMonthlyLearningHistory(userId: number) {
+    //30일 = 최근 30일의 학습누적시간, 날짜
+    const user = await this.userService.findUserByUserId(userId);
+    if (!user) throw UserException.userNotFound();
+    const moonthlyHobbyHistory = await this.prisma.$queryRaw`
+    SELECT SUM(totalHours) AS totalHours, historyType, checkOut
+    FROM History
+    WHERE historyType = 'hobby'
+    AND checkOut >= DATE_ADD(NOW(), INTERVAL -30 DAY) 
+    AND UserId = '${userId}'
+    GROUP BY checkOut`;
+
+    const moonthlyStudyHistory = await this.prisma.$queryRaw`
+    SELECT SUM(totalHours) AS totalHours, historyType, checkOut
+    FROM History
+    WHERE historyType = 'study'
+    AND checkOut >= DATE_ADD(NOW(), INTERVAL -30 DAY) 
+    AND UserId = '${userId}'
+    GROUP BY checkOut`;
+
+    return {
+      moonthlyHobby: moonthlyHobbyHistory,
+      weeklyStudy: moonthlyStudyHistory,
+    };
   }
 }
