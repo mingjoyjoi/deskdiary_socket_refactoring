@@ -8,6 +8,7 @@ export const CorsConfig: CorsOptions = {
     'X-Requested-With',
     'Content-Type',
     'Accept',
+    'Authorization',
   ],
   exposedHeaders: ['Authorization'],
   credentials: true,

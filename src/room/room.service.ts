@@ -8,6 +8,7 @@ import { UserException } from '../exception/user.exception';
 import { PrismaService } from '../prisma/prisma.service';
 import { CheckoutRoomRequestDto } from './dto/checkout-room.dto';
 import { CreateRoomRequestDto } from './dto/create-room-request.dto';
+import { createRandomRoom } from './room.seed';
 
 export interface ThumbnailUploadResult {
   message: string;
@@ -227,5 +228,15 @@ export class RoomService {
       message: '썸네일이 성공적으로 업로드되었습니다',
       roomThumbnail: uploadedFile.Location,
     };
+  }
+  async addRandomRoomToDatabase() {
+    const ownerId = 1; // 이 값은 실제로 데이터베이스에 있는 사용자 ID여야 합니다.
+    const randomRoom = createRandomRoom(ownerId);
+
+    const createdRoom = await this.prisma.room.create({
+      data: randomRoom,
+    });
+
+    console.log(createdRoom);
   }
 }
