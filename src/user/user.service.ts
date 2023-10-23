@@ -158,7 +158,7 @@ export class UserService {
           email,
           nickname,
           snsId,
-          provider: 'Kakao',
+          provider: provider,
           password: 'KAKAO_SNS_LOGIN',
         },
       });
@@ -199,7 +199,6 @@ export class UserService {
       where: { userId },
       select: {
         nickname: true,
-        profileImage: true,
       },
     });
     if (!user) {
