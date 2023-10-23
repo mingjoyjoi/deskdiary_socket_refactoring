@@ -53,7 +53,7 @@ export class HistoryController {
     return await this.historyService.hobbyRankings();
   }
 
-  @Get('today-learning-history')
+  @Get('learning-history/today')
   @ApiOperation({
     summary: '1일 학습 기록 조회',
   })
@@ -68,7 +68,7 @@ export class HistoryController {
     return await this.historyService.getTodayLearningHistory(userId);
   }
 
-  @Get('weekly-learning-history')
+  @Get('learning-history/weekly')
   @ApiOperation({
     summary: '7일 학습 기록 조회',
   })
@@ -83,7 +83,7 @@ export class HistoryController {
     return await this.historyService.getWeeklyLearningHistory(userId);
   }
 
-  @Get('monthly-learning-history')
+  @Get('learning-history/monthly')
   @ApiOperation({
     summary: '30일 학습 기록 조회',
   })
