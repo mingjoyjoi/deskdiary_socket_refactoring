@@ -248,4 +248,14 @@ export class UserService {
       },
     });
   }
+
+  async deleteUser(userId: number) {
+    const deletedUser = await this.prisma.user.delete({
+      where: { userId },
+    });
+    if (!deletedUser) {
+      throw new NotFoundException(`${userId}를 찾을 수 없습니다.`);
+    }
+    return deletedUser;
+  }
 }
