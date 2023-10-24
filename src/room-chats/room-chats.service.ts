@@ -11,7 +11,7 @@ import { InjectModel } from '@nestjs/mongoose';
 
 @Injectable()
 export class RoomchatsService {
-  private logger = new Logger('chat');
+  private logger = new Logger('AppService');
   constructor(
     @InjectModel(SocketModel.name)
     private readonly socketModel: Model<SocketModel>,
@@ -21,7 +21,7 @@ export class RoomchatsService {
     this.logger.log('constructor');
   }
   joinRoom(client: Socket, server: Server, iRoomRequest: IRoomRequest) {
-    const { uuid, nickname } = iRoomRequest;
+    const { uuid, nickname, img } = iRoomRequest;
     //방이 있는지 체크
     const data = this.roomModel.findOne({ uuid });
     if (!data) {
@@ -29,23 +29,27 @@ export class RoomchatsService {
     } else {
       this.updateRoom(client, data, iRoomRequest);
     }
-    server.to(uuid).emit('new_user', nickname);
+    server.to(uuid).emit('new_user', { nickname, img });
     //this.emitEventForUserList(client, server, uuid);
   }
 
-  createRoom(client: Socket, { nickname, uuid }: IRoomRequest) {
+  createRoom(client: Socket, { nickname, uuid, img }: IRoomRequest) {
     const newRoom = { uuid: uuid, owner: client.id, userList: {} };
-    newRoom.userList = { [client.id]: { nickname } };
+    newRoom.userList = { [client.id]: { nickname, img } };
     this.roomModel.create(newRoom);
     const newUser = { clientId: client.id, uuid: uuid, nickname: nickname };
     this.socketModel.create(newUser);
   }
 
-  updateRoom(client: Socket, roomData: any, { uuid, nickname }: IRoomRequest) {
+  updateRoom(
+    client: Socket,
+    roomData: any,
+    { uuid, nickname, img }: IRoomRequest,
+  ) {
     const newUser = { clientId: client.id, uuid: uuid, nickname: nickname };
     this.socketModel.create(newUser);
     const findRoom = roomData;
-    findRoom.userList[client.id] = { nickname };
+    findRoom.userList[client.id] = { nickname, img };
     this.socketModel.findOne({ uuid }).then((room) => {
       room = findRoom;
       return room.save();
@@ -69,32 +73,45 @@ export class RoomchatsService {
 
   async leaveRoom(client: Socket, server: Server, uuid: string) {
     const data = await this.roomModel.findOne({ uuid });
+
     if (!data) {
       return server
         .to(client.id)
         .emit('error-room', '해당되는 방을 찾을 수 없습니다.');
     }
-    //오너이면 방삭제
+
+    // 오너인 경우 방 삭제
     // if (this.isOwner(data, client)) {
     //   await this.deleteDocumentByUuid(uuid);
     //   return server.to(uuid).emit('user-list', {});
     // }
 
-    //data에서 client.id 부분만 유저리스트에서 제거하기
+    // 유저리스트에서 클라이언트 ID 제거
     delete data.userList[client.id];
-    await this.roomModel.findOne({ uuid }).then((room) => {
-      room = data;
-      return room.save();
-    });
-    const user = await this.socketModel.findOne({ clientId: client.id });
-    //유저리스트 보내주기
-    server.to(uuid).emit('leave-user', user.nickname);
+
+    // 업데이트된 데이터를 저장
+    await this.roomModel.findOneAndUpdate({ uuid }, data);
+
+    // 클라이언트 ID에 해당하는 사용자를 찾아 삭제
+    const user = await this.socketModel
+      .findOneAndDelete({ clientId: client.id })
+      .exec();
+
+    if (!user) {
+      return server
+        .to(client.id)
+        .emit('error-room', '해당되는 클라이언트 ID를 찾을 수 없습니다.');
+    }
+
+    server.to(uuid).emit('leave-user', user?.nickname);
+
+    // 유저리스트 보내주기
     //this.emitEventForUserList(client, server, uuid);
   }
 
   isOwner(findRoom: any, client: Socket): boolean {
-    const findOwnerNickname = findRoom['userList'][findRoom.owner].nickname;
-    const findMyNickname = findRoom['userList'][client.id].nickname;
+    const findOwnerNickname = findRoom['userList'][findRoom.owner]?.nickname;
+    const findMyNickname = findRoom['userList'][client.id]?.nickname;
     return findOwnerNickname === findMyNickname;
   }
 
@@ -124,36 +141,43 @@ export class RoomchatsService {
   }
 
   async disconnectClient(client: Socket, server: Server) {
-    //clientId 바탕으로 방정보 찾음 uuid 찾음
+    // 클라이언트 ID를 기반으로 사용자 정보 조회
     const user = await this.socketModel.findOne({ clientId: client.id });
+    if (!user) {
+      return server
+        .to(client.id)
+        .emit('error-room', '해당되는 클라이언트 ID를 찾을 수 없습니다.');
+    }
+
     const uuid = user.uuid;
     const nickname = user.nickname;
+
+    // 클라이언트 ID에 해당하는 사용자를 삭제
     await this.socketModel.findOneAndDelete({ clientId: client.id }).exec();
 
+    // 방 정보 조회
     const data = await this.roomModel.findOne({ uuid: uuid });
     if (!data) {
       return server
         .to(client.id)
         .emit('error-room', '해당되는 방을 찾을 수 없습니다.');
     }
+
+    // 유저리스트에서 클라이언트 ID 제거
     delete data.userList[client.id];
-    await this.roomModel.findOne({ uuid: uuid }).then((room) => {
-      room = data;
-      return room.save();
-    });
-    if (!user) {
-      return server
-        .to(client.id)
-        .emit('error-room', '해당되는 클라이언트 ID를 찾을 수 없습니다.');
-    } else {
-      server.to(uuid).emit('disconnect_user', nickname);
-      this.logger.log(`disconnected : ${client.id}`);
-    }
 
-    //await this.leaveRoomRequestToApiServer(uuid);
+    // 업데이트된 데이터를 저장
+    await this.roomModel.findOneAndUpdate({ uuid }, data);
 
-    //유저리스트 보내주기
-    //this.emitEventForUserList(client, server, uuid);
+    // 방에 대한 disconnect_user 이벤트 발송
+    server.to(uuid).emit('disconnect_user', nickname);
+
+    // 로깅
+    this.logger.log(`disconnected: ${client.id}`);
+
+    // await this.leaveRoomRequestToApiServer(uuid);
+    // 유저리스트 보내주기
+    // this.emitEventForUserList(client, server, uuid);
   }
 
   // async leaveRoomRequestToApiServer(uuid): Promise<void> {
