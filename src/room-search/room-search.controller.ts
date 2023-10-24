@@ -1,6 +1,13 @@
-import { Controller, Get } from '@nestjs/common';
-import { ApiOperation, ApiTags, ApiResponse } from '@nestjs/swagger';
+import { Controller, Get, UseGuards, Req } from '@nestjs/common';
+import {
+  ApiOperation,
+  ApiTags,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
+import { Request } from 'express';
 import { RoomSearchService } from './room-search.service';
+import { JwtAuthGuard } from '../auth/jwt/jwt-auth.guard';
 
 @ApiTags('Room 조회 API')
 @Controller()
@@ -117,5 +124,20 @@ export class RoomSearchController {
   })
   async getLatestRoomsTop10() {
     return await this.roomSearchService.LatestRoomsTop10();
+  }
+
+  @Get('/rooms/my-created')
+  @ApiOperation({
+    summary: '내가 만든 방 정보 조회',
+  })
+  @ApiResponse({
+    status: 200,
+    description: '해당 유저가 owner로 등록된 방 목록을 조회 합니다.',
+  })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  async getOwnersRooms(@Req() req: Request) {
+    const userId = req.user['userId'];
+    return await this.roomSearchService.OwnersRooms(userId);
   }
 }

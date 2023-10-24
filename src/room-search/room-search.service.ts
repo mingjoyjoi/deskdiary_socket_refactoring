@@ -90,4 +90,11 @@ export class RoomSearchService {
       take: 10,
     });
   }
+
+  async OwnersRooms(userId: number) {
+    const rooms = await this.prisma.room.findMany({
+      where: { ownerId: userId },
+    });
+    return rooms;
+  }
 }
