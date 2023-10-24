@@ -1,8 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
-import { LocalDateTime } from '@js-joda/core';
 import { IRoomRequest } from './room-chats.interface';
-import { LocalDateTime } from '@js-joda/core';
 //import axios from 'axios';
 import { Model } from 'mongoose';
 import { Socket as SocketModel } from './models/sockets.model';
@@ -16,14 +14,14 @@ export class RoomchatsService {
   private logger = new Logger('chat');
   constructor(
     @InjectModel(SocketModel.name)
-    @InjectModel(RoomModel.name)
     private readonly socketModel: Model<SocketModel>,
+    @InjectModel(RoomModel.name)
     private readonly roomModel: Model<RoomModel>,
   ) {
     this.logger.log('constructor');
   }
   joinRoom(client: Socket, server: Server, iRoomRequest: IRoomRequest) {
-    const { uuid } = iRoomRequest;
+    const { uuid, nickname } = iRoomRequest;
     //방이 있는지 체크
     const data = this.roomModel.findOne({ uuid });
     if (!data) {
@@ -31,20 +29,20 @@ export class RoomchatsService {
     } else {
       this.updateRoom(client, data, iRoomRequest);
     }
-    this.emitEventForUserList(client, server, uuid);
+    server.to(uuid).emit('new_user', nickname);
+    //this.emitEventForUserList(client, server, uuid);
   }
 
   createRoom(client: Socket, { nickname, uuid }: IRoomRequest) {
     const newRoom = { uuid: uuid, owner: client.id, userList: {} };
     newRoom.userList = { [client.id]: { nickname } };
-    //uuid를 키값, newRoom을 value로 넣기
     this.roomModel.create(newRoom);
-    const newUser = { clientId: client.id, uuid: uuid };
+    const newUser = { clientId: client.id, uuid: uuid, nickname: nickname };
     this.socketModel.create(newUser);
   }
 
   updateRoom(client: Socket, roomData: any, { uuid, nickname }: IRoomRequest) {
-    const newUser = { clientId: client.id, uuid: uuid };
+    const newUser = { clientId: client.id, uuid: uuid, nickname: nickname };
     this.socketModel.create(newUser);
     const findRoom = roomData;
     findRoom.userList[client.id] = { nickname };
@@ -88,9 +86,10 @@ export class RoomchatsService {
       room = data;
       return room.save();
     });
-
+    const user = await this.socketModel.findOne({ clientId: client.id });
     //유저리스트 보내주기
-    this.emitEventForUserList(client, server, uuid);
+    server.to(uuid).emit('leave-user', user.nickname);
+    //this.emitEventForUserList(client, server, uuid);
   }
 
   isOwner(findRoom: any, client: Socket): boolean {
@@ -111,7 +110,7 @@ export class RoomchatsService {
         .to(client.id)
         .emit('error-room', '해당되는 방을 찾을 수 없습니다.');
     }
-    server.to(uuid).emit('user-list', data.userList);
+    server.to(uuid).emit('user-list', data['userList']);
   }
 
   async deleteDocumentByUuid(uuid: string): Promise<any> {
@@ -127,14 +126,10 @@ export class RoomchatsService {
   async disconnectClient(client: Socket, server: Server) {
     //clientId 바탕으로 방정보 찾음 uuid 찾음
     const user = await this.socketModel.findOne({ clientId: client.id });
-    if (!user) {
-      return server
-        .to(client.id)
-        .emit('error-room', '해당되는 클라이언트 ID를 찾을 수 없습니다.');
-    }
     const uuid = user.uuid;
-
+    const nickname = user.nickname;
     await this.socketModel.findOneAndDelete({ clientId: client.id }).exec();
+
     const data = await this.roomModel.findOne({ uuid: uuid });
     if (!data) {
       return server
@@ -146,10 +141,19 @@ export class RoomchatsService {
       room = data;
       return room.save();
     });
+    if (!user) {
+      return server
+        .to(client.id)
+        .emit('error-room', '해당되는 클라이언트 ID를 찾을 수 없습니다.');
+    } else {
+      server.to(uuid).emit('disconnect_user', nickname);
+      this.logger.log(`disconnected : ${client.id}`);
+    }
+
     //await this.leaveRoomRequestToApiServer(uuid);
 
     //유저리스트 보내주기
-    this.emitEventForUserList(client, server, uuid);
+    //this.emitEventForUserList(client, server, uuid);
   }
 
   // async leaveRoomRequestToApiServer(uuid): Promise<void> {

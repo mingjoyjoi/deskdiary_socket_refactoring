@@ -1,6 +1,6 @@
 //uuid.roomInfo.userList 객체에서 clientId3
 const socketModel = {
-  clientId: 'slkdjads',
+  socketId: 'slkdjads',
   uuid: 'dflksjkflsdf',
 };
 

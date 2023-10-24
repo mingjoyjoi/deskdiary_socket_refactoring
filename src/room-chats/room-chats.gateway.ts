@@ -26,17 +26,17 @@ export class RoomchatsGateway
   constructor(private readonly roomchatsService: RoomchatsService) {}
 
   //메시지를 방에 있는 유저들에게 보냄
-
   @SubscribeMessage('msgToServer')
   handleMessage(
     @ConnectedSocket() client: Socket,
-    @MessageBody() { uuid, message, nickname }: IMessage,
+    @MessageBody() { uuid, message, nickname, img }: IMessage,
   ): void {
     const emitMessage: IMessage = {
       message: `${message} from ${NODE_PORT}`,
       time: LocalDateTime.now().plusHours(9),
       nickname,
       uuid,
+      img,
     };
     this.logger.log(emitMessage);
 

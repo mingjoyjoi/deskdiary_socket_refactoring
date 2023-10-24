@@ -11,7 +11,6 @@ const options: SchemaOptions = {
 @Schema(options)
 export class Socket extends Document {
   @Prop({
-    unique: true,
     required: true,
   })
   @IsNotEmpty()
@@ -24,6 +23,10 @@ export class Socket extends Document {
   @IsNotEmpty()
   @IsString()
   uuid: string;
+
+  @Prop()
+  @IsString()
+  nickname: string;
 }
 
 export const SocketSchema = SchemaFactory.createForClass(Socket);
