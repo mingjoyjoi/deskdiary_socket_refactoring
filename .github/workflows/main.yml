@@ -105,6 +105,7 @@ jobs:
           echo AWS_SECRET_KEY=${{ secrets.AWS_SECRET_KEY }} >> .env
           echo AGORA_APP_ID=${{ secrets.AGORA_APP_ID }} >> .env
           echo AGORA_APP_CERTIFICATE=${{ secrets.AGORA_APP_CERTIFICATE }} >> .env
+          echo MONGO_URL=${{ secrets.MONGO_URL }} >> .env
           docker stop deskdiary-server || true
           docker rm deskdiary-server || true
           docker run --env-file ./.env -d -p 80:4000 --name deskdiary-server --restart always namhyeonjae/deskdiary-server:latest
