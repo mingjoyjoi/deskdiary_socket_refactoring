@@ -10,6 +10,7 @@ room.seed.service.ts
 room.seed.ts
 history.seed.ts
 history.service.seed.ts
+room.ts
 
 
 # Logs

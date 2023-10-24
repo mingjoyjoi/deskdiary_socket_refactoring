@@ -11,12 +11,16 @@ import { ImageModule } from './image/image.module';
 import { UserDetailModule } from './user-detail/user-detail.module';
 import { RoomSearchModule } from './room-search/room-search.module';
 import { HistoryModule } from './history/history.module';
+import { MongooseModule } from '@nestjs/mongoose';
+import * as mongoose from 'mongoose';
+import { RoomchatsModule } from './room-chats/room-chats.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    MongooseModule.forRoot(process.env.MONGO_URL),
     PrismaModule,
     AuthModule,
     UserModule,
@@ -25,6 +29,7 @@ import { HistoryModule } from './history/history.module';
     UserDetailModule,
     RoomSearchModule,
     HistoryModule,
+    RoomchatsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
@@ -38,6 +43,6 @@ export class AppModule implements NestModule {
     if (this.isDev) {
       consumer.apply(LoggerMiddleware).forRoutes('*');
     }
-    // mongoose.set('debug', this.isDev);
+    mongoose.set('debug', this.isDev);
   }
 }
