@@ -77,7 +77,6 @@ export class HistoryService {
   `;
     return hobbyHistory;
   }
-
   //1일 =학습 누적시간, 목표시간
   async getTodayLearningHistory(userId: number) {
     const user = await this.userService.findUserByUserId(userId);
@@ -91,24 +90,20 @@ export class HistoryService {
     if (!goaltimeData) return { message: '등록된 목표시간이 없습니다.' };
 
     const todayHobby = await this.prisma.$queryRaw`
-    SELECT SUM(totalHours) as totalHours, historyType, DATE_FORMAT(checkOut, '%Y-%m-%d') as checkout 
-    FROM History 
-    SELECT SUM(totalHous) as totalHours, historyType 
+    SELECT SUM(totalHours) as totalHours, historyType, DATE_FORMAT(checkOut, '%Y-%m-%d') as checkOut 
     FROM History 
     Where UserId = ${userId} 
     AND historyType ='hobby'
     AND checkOut >= DATE_ADD(NOW(), INTERVAL -1 DAY)
-    GROUP BY checkout
-    ORDER BY checkout`;
+    GROUP BY DATE_FORMAT(checkOut, '%Y-%m-%d')`;
 
     const todayStudy = await this.prisma.$queryRaw`
-    SELECT SUM(totalHours) as totalHours, historyType, DATE_FORMAT(checkOut, '%Y-%m-%d') as checkout
-    FROM History 
-    SELECT SUM(totalHous) as totalHours, historyType 
+    SELECT SUM(totalHours) as totalHours, historyType, DATE_FORMAT(checkOut, '%Y-%m-%d') as checkOut
     FROM History 
     Where UserId = ${userId} 
     AND historyType ='study'
-    AND checkOut >= DATE_ADD(NOW(), INTERVAL -1 DAY)`;
+    AND checkOut >= DATE_ADD(NOW(), INTERVAL -1 DAY)
+    GROUP BY DATE_FORMAT(checkOut, '%Y-%m-%d')`;
 
     const todayHistory = {
       goaltime: goaltimeData.goalTime,
@@ -122,48 +117,53 @@ export class HistoryService {
     //7일 = 최근 7일의 학습누적시간, 날짜
     const user = await this.userService.findUserByUserId(userId);
     if (!user) throw UserException.userNotFound();
+
     const weeklyHobbyHistory = await this.prisma.$queryRaw`
-    SELECT SUM(totalHours) AS totalHours, historyType, checkOut
+    SELECT SUM(totalHours) AS totalHours, historyType, DATE_FORMAT(checkOut, '%Y-%m-%d') as checkOut
     FROM History
     WHERE historyType = 'hobby'
     AND checkOut >= DATE_ADD(NOW(), INTERVAL -7 DAY) 
     AND UserId = ${userId}
-    GROUP BY checkOut`;
+    GROUP BY DATE_FORMAT(checkOut, '%Y-%m-%d')
+    ORDER BY checkOut`;
 
     const weeklyStudyHistory = await this.prisma.$queryRaw`
-    SELECT SUM(totalHours) AS totalHours, historyType, checkOut
+    SELECT SUM(totalHours) AS totalHours, historyType, DATE_FORMAT(checkOut, '%Y-%m-%d') as checkOut
     FROM History
     WHERE historyType = 'study'
     AND checkOut >= DATE_ADD(NOW(), INTERVAL -7 DAY) 
     AND UserId = ${userId}
-    GROUP BY checkOut`;
+    GROUP BY DATE_FORMAT(checkOut, '%Y-%m-%d')
+    ORDER BY checkOut`;
 
     return { weeklyHobby: weeklyHobbyHistory, weeklyStudy: weeklyStudyHistory };
   }
 
   async getMonthlyLearningHistory(userId: number) {
-    //30일 = 최근 30일의 학습누적시간, 날짜
     const user = await this.userService.findUserByUserId(userId);
     if (!user) throw UserException.userNotFound();
-    const moonthlyHobbyHistory = await this.prisma.$queryRaw`
-    SELECT SUM(totalHours) AS totalHours, historyType, checkOut
+
+    const monthlyHobbyHistory = await this.prisma.$queryRaw`
+    SELECT SUM(totalHours) AS totalHours, historyType, DATE_FORMAT(checkOut, '%Y-%m-%d') as checkOut
     FROM History
     WHERE historyType = 'hobby'
-    AND checkOut >= DATE_ADD(NOW(), INTERVAL -30 DAY) 
+    AND checkOut >= DATE_ADD(NOW(), INTERVAL -30 DAY)
     AND UserId = ${userId}
-    GROUP BY checkOut`;
+    GROUP BY DATE_FORMAT(checkOut, '%Y-%m-%d')
+    ORDER BY checkOut`;
 
-    const moonthlyStudyHistory = await this.prisma.$queryRaw`
-    SELECT SUM(totalHours) AS totalHours, historyType, checkOut
+    const monthlyStudyHistory = await this.prisma.$queryRaw`
+    SELECT SUM(totalHours) AS totalHours, historyType, DATE_FORMAT(checkOut, '%Y-%m-%d') as checkOut
     FROM History
     WHERE historyType = 'study'
-    AND checkOut >= DATE_ADD(NOW(), INTERVAL -30 DAY) 
+    AND checkOut >= DATE_ADD(NOW(), INTERVAL -30 DAY)
     AND UserId = ${userId}
-    GROUP BY checkOut`;
+    GROUP BY DATE_FORMAT(checkOut, '%Y-%m-%d')
+    ORDER BY checkOut`;
 
     return {
-      moonthlyHobby: moonthlyHobbyHistory,
-      weeklyStudy: moonthlyStudyHistory,
+      monthlyHobby: monthlyHobbyHistory,
+      monthlyStudy: monthlyStudyHistory,
     };
   }
 }
