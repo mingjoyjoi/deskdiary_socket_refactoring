@@ -30,9 +30,7 @@ export class AuthController {
       {
         // res.cookie('token', jwtToken, { httpOnly: true, sameSite: 'strict' });
         res.redirect(
-          `http://localhost:3000/auth?accessToken=${encodeURIComponent(
-            jwtToken,
-          )}`,
+          `http://localhost:3000?accessToken=${encodeURIComponent(jwtToken)}`,
         );
       }
       console.log(res.cookie);
