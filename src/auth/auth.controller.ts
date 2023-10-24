@@ -34,7 +34,7 @@ export class AuthController {
         // // 홈화면으로 리다이렉트
         // res.redirect('http://localhost:3000');
         res.cookie('token', jwtToken, {
-          httpOnly: true,
+          httpOnly: false,
           sameSite: 'none',
           secure: true,
         });
