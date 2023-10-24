@@ -33,6 +33,7 @@ export class AuthController {
           `http://localhost:3000?accessToken=${encodeURIComponent(jwtToken)}`,
         );
       }
+      console.log(res.cookie);
     } catch (error) {
       res.status(400).send(error.message || '로그인에 실패하였습니다.');
     }
