@@ -9,9 +9,9 @@
 //   uuid: 'ddtfn4rjhnk3',
 //   owner: 'socket.id',
 //   userList: {
-//     clientid1: { nickname: '민정' },
-//     clientid2: { nickname: '민정2' },
-//     clientid3: { nickname: '민정3' },
+//     clientid1: { nickname: '민정' , img : 'skdajksld'},
+//     clientid2: { nickname: '민정2', img : 'skdajksld'},
+//     clientid3: { nickname: '민정3', img : 'skdajksld'},
 //   },
 // };
 
