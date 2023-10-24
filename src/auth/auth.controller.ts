@@ -27,18 +27,11 @@ export class AuthController {
         email: savedKakaoUser.email,
         type: 'user',
       });
-      //헤더로 보내기
       {
-        // res.setHeader('Authorization', `Bearer ${jwtToken}`);
-        // res.status(200).json({ message: '로그인 성공', token: jwtToken });
-        // // 홈화면으로 리다이렉트
-        // res.redirect('http://localhost:3000');
-        res.cookie('token', jwtToken, {
-          httpOnly: false,
-          sameSite: 'none',
-          secure: true,
-        });
-        res.redirect('http://localhost:3000');
+        // res.cookie('token', jwtToken, { httpOnly: true, sameSite: 'strict' });
+        res.redirect(
+          `http://localhost:3000?accessToken=${encodeURIComponent(jwtToken)}`,
+        );
       }
       console.log(res.cookie);
     } catch (error) {
