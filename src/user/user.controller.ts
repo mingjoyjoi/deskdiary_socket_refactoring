@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   HttpCode,
+  Delete,
   Post,
   Put,
   Res,
@@ -25,7 +26,7 @@ import {
 } from './user.response.exampes';
 import { Response } from 'express';
 import { JwtAuthGuard } from '../auth/jwt/jwt-auth.guard';
-
+import { Request } from 'express';
 import { UserService } from './user.service';
 import { JoinUserDto } from './dto/join.user.dto';
 import { LoginUserDto } from './dto/login.user.dto';
@@ -33,13 +34,13 @@ import { UpdateProfileDto } from './dto/update.profile.dto';
 import { UpdatePasswordDto } from './dto/update.password.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 
-@ApiTags('Join')
-@Controller('auth')
+@ApiTags('User API')
+@Controller()
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @ApiOperation({ summary: '회원가입' })
-  @Post('join')
+  @Post('auth/join')
   @HttpCode(200)
   async createUserAccount(@Body() joinuserDto: JoinUserDto) {
     return await this.userService.signUp(joinuserDto);
@@ -47,7 +48,7 @@ export class UserController {
 
   @ApiBearerAuth()
   @ApiOperation({ summary: '로그인' })
-  @Post('login')
+  @Post('auth/login')
   async login(
     @Body() loginuserDto: LoginUserDto,
     @Res() res: Response,
@@ -55,7 +56,7 @@ export class UserController {
     await this.userService.login(loginuserDto, res);
   }
 
-  @Put('password')
+  @Put('me/password')
   @ApiBearerAuth()
   @ApiOperation({
     summary: '비밀번호 수정',
@@ -87,9 +88,23 @@ export class UserController {
   // async logout(@Body() loginuserDto: LoginUserDto) {
   //   return await this.userService.logout(loginuserDto.email);
   // }
+  @Delete('me')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: '회원탈퇴',
+  })
+  @ApiResponse({
+    status: 200,
+    description: '회원탈퇴가 완료되며, 탈퇴한 회원정보가 반환됩니다.',
+  })
+  @UseGuards(JwtAuthGuard)
+  async deleteUser(@Req() req: Request) {
+    const userId = req.user['userId'];
+    return this.userService.deleteUser(userId);
+  }
 
   // 마이페이지 유저 정보 조회 (프로필이미지, 닉네임, 이메일, 목표 시간 등)
-  @Get('profile')
+  @Get('me/profile')
   @ApiBearerAuth()
   @ApiOperation({
     summary: '프로필 조회',
@@ -108,7 +123,7 @@ export class UserController {
     return this.userService.getProfile(userId);
   }
 
-  @Put('profile')
+  @Put('me/profile')
   @ApiBearerAuth()
   @ApiOperation({
     summary: '프로필 수정',
@@ -128,7 +143,7 @@ export class UserController {
     const userId = req.user['userId'];
     return this.userService.updateProfile(userId, updateProfileDto);
   }
-  @Post('profile/image')
+  @Post('me/profile/image')
   @ApiBearerAuth()
   @ApiOperation({
     summary: '프로필 이미지 수정',
