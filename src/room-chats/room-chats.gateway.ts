@@ -29,14 +29,13 @@ export class RoomchatsGateway
   @SubscribeMessage('msgToServer')
   handleMessage(
     @ConnectedSocket() client: Socket,
-    @MessageBody() { uuid, message, nickname, img }: IMessage,
+    @MessageBody() { uuid, message, nickname }: IMessage,
   ): void {
     const emitMessage: IMessage = {
       message: `${message} from ${NODE_PORT}`,
       time: LocalDateTime.now().plusHours(9),
       nickname,
       uuid,
-      img,
     };
     this.logger.log(emitMessage);
 
@@ -47,7 +46,7 @@ export class RoomchatsGateway
   @SubscribeMessage('joinRoom')
   handleJoinRoom(
     @ConnectedSocket() client: Socket,
-    @MessageBody() { nickname, uuid }: IRoomRequest,
+    @MessageBody() { nickname, uuid, img }: IRoomRequest,
   ): void {
     client.leave(client.id);
     client.join(uuid);
@@ -55,6 +54,7 @@ export class RoomchatsGateway
     this.roomchatsService.joinRoom(client, this.server, {
       nickname,
       uuid,
+      img,
     });
   }
 
