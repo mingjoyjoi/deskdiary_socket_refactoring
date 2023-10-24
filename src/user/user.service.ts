@@ -146,7 +146,7 @@ export class UserService {
     snsId: string;
     provider: string;
   }): Promise<User> {
-    const { email, nickname, snsId, provider } = user;
+    const { email, nickname, snsId } = user;
 
     let existingUser = await this.prisma.user.findUnique({
       where: { email },
@@ -158,7 +158,7 @@ export class UserService {
           email,
           nickname,
           snsId,
-          provider: provider,
+          provider: 'Kakao',
           password: 'KAKAO_SNS_LOGIN',
         },
       });

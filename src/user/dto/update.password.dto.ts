@@ -29,6 +29,10 @@ export class UpdatePasswordDto {
   })
   readonly newPassword: string;
 
+  isDifferent(): boolean {
+    return this.password !== this.newPassword;
+  }
+
   @IsString()
   @IsNotEmpty()
   @Transform(({ value, obj }) => {
