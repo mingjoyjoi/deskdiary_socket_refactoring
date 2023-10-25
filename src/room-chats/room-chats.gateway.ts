@@ -51,16 +51,25 @@ export class RoomchatsGateway
     @ConnectedSocket() client: Socket,
     @MessageBody() { nickname, uuid, img }: IRoomRequest,
   ): WsResponse<any> {
+    console.log('소켓아이디 leave 하기 전');
     client.leave(client.id);
+
+    console.log('방 참석 전');
+
     client.join(uuid);
+
+    console.log('방 참석 후 new-user 이벤트 날리기 전');
+
+    client.to(uuid).emit('new-user', nickname);
+
+    console.log('new-user 이벤트 날린 후 ');
+    return { event: 'joinRoom', data: { success: true } };
 
     this.roomchatsService.joinRoom(client, this.server, {
       nickname,
       uuid,
       img,
     });
-
-    return { event: 'joinRoom', data: { success: true } };
   }
 
   //방을 삭제함
