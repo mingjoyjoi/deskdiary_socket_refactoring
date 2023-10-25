@@ -42,7 +42,7 @@ export class RoomchatsService {
       this.roomModel.create({
         uuid,
         owner: client.id,
-        userList: nickname,
+        userList: null,
       });
     }
     const newUser = { clientId: client.id, uuid: uuid, nickname: nickname };

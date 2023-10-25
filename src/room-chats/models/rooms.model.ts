@@ -15,8 +15,8 @@ export class Room extends Document {
   @Prop()
   owner: string;
 
-  @Prop() // userList의 타입을 명시적으로 지정
-  userList: any;
+  @Prop({ type: Object || string, required: false }) // userList의 타입을 명시적으로 지정
+  userList: object;
 }
 
 export const RoomSchema = SchemaFactory.createForClass(Room);
