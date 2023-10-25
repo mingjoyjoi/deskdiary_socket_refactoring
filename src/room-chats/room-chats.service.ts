@@ -21,7 +21,7 @@ export class RoomchatsService {
     this.logger.log('constructor');
   }
   joinRoom(client: Socket, server: Server, iRoomRequest: IRoomRequest) {
-    const { uuid } = iRoomRequest;
+    const { uuid, nickname } = iRoomRequest;
     //방이 있는지 체크
     const data = this.roomModel.findOne({ uuid });
     if (!data) {
@@ -30,7 +30,8 @@ export class RoomchatsService {
       this.updateRoom(client, data, iRoomRequest);
     }
     //server.to(uuid).emit('new_user', { nickname, img });
-    this.emitEventForUserList(client, server, uuid);
+    client.to(uuid).emit('new_user', `${nickname} 이 방에 참여함`);
+    //this.emitEventForUserList(client, server, uuid);
   }
 
   createRoom(client: Socket, { nickname, uuid, img }: IRoomRequest) {
