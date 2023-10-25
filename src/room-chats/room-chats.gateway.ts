@@ -60,7 +60,7 @@ export class RoomchatsGateway
 
     console.log('방 참석 후 new-user 이벤트 날리기 전');
 
-    client.to(uuid).emit('new-user', nickname);
+    client.emit('new-user', nickname);
 
     console.log('new-user 이벤트 날린 후 ');
     return { event: 'joinRoom', data: { success: true } };
