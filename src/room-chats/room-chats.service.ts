@@ -36,7 +36,15 @@ export class RoomchatsService {
   createRoom(client: Socket, { nickname, uuid, img }: IRoomRequest) {
     const newRoom = { uuid: uuid, owner: client.id, userList: {} };
     newRoom.userList = { [client.id]: { nickname, img } };
-    this.roomModel.create(newRoom);
+    console.log('newRoom 몽고에 이거 넣고싶은데..', newRoom);
+    const data = this.roomModel.create(newRoom);
+    if (!data) {
+      this.roomModel.create({
+        uuid,
+        owner: client.id,
+        userList: null,
+      });
+    }
     const newUser = { clientId: client.id, uuid: uuid, nickname: nickname };
     this.socketModel.create(newUser);
   }
@@ -50,23 +58,20 @@ export class RoomchatsService {
     this.socketModel.create(newUser);
     const findRoom = roomData;
     findRoom.userList[client.id] = { nickname, img };
-    this.socketModel.findOne({ uuid }).then((room) => {
-      room = findRoom;
-      return room.save();
-    });
+    this.roomModel.findOneAndUpdate({ uuid }, findRoom);
   }
 
   async removeRoom(client: Socket, server: Server, uuid: string) {
     const data = this.roomModel.find({ uuid });
     if (!data) {
-      return server
+      return client
         .to(client.id)
         .emit('error-room', '해당되는 방을 찾을 수 없습니다.');
     }
     if (this.isOwner(data, client)) {
       await this.deleteDocumentByUuid(uuid);
       await this.socketModel.deleteMany({ uuid });
-      return server.to(uuid).emit('user-list', {});
+      return client.to(uuid).emit('user-list', {});
     }
     client.leave(uuid);
   }
@@ -75,7 +80,7 @@ export class RoomchatsService {
     const data = await this.roomModel.findOne({ uuid });
 
     if (!data) {
-      return server
+      return client
         .to(client.id)
         .emit('error-room', '해당되는 방을 찾을 수 없습니다.');
     }
@@ -98,7 +103,7 @@ export class RoomchatsService {
       .exec();
 
     if (!user) {
-      return server
+      return client
         .to(client.id)
         .emit('error-room', '해당되는 클라이언트 ID를 찾을 수 없습니다.');
     }
@@ -119,7 +124,7 @@ export class RoomchatsService {
     // 클라이언트 ID를 기반으로 사용자 정보 조회
     const user = await this.socketModel.findOne({ clientId: client.id });
     if (!user) {
-      return server
+      return client
         .to(client.id)
         .emit('error-room', '해당되는 클라이언트 ID를 찾을 수 없습니다.');
     }
@@ -133,7 +138,7 @@ export class RoomchatsService {
     // 방 정보 조회
     const data = await this.roomModel.findOne({ uuid: uuid });
     if (!data) {
-      return server
+      return client
         .to(client.id)
         .emit('error-room', '해당되는 방을 찾을 수 없습니다.');
     }
@@ -162,11 +167,11 @@ export class RoomchatsService {
   emitEventForUserList(client: Socket, server: Server, uuid: string) {
     const data = this.roomModel.findOne({ uuid });
     if (!data) {
-      return server
+      return client
         .to(client.id)
         .emit('error-room', '해당되는 방을 찾을 수 없습니다.');
     }
-    server.to(uuid).emit('user-list', data['userList']);
+    client.to(uuid).emit('user-list', data['userList']);
     //   userList: {
     //     clientid1: { nickname: '민정' , img : 'skdajksld'},
     //     clientid2: { nickname: '민정2', img : 'skdajksld'},
