@@ -47,15 +47,21 @@ export class RoomchatsGateway
   handleJoinRoom(
     @ConnectedSocket() client: Socket,
     @MessageBody() { nickname, uuid, img }: IRoomRequest,
-  ): void {
+  ) {
     client.leave(client.id);
     client.join(uuid);
+
+    // 성공 응답 보내기
+    return { event: 'joinRoom', data: { success: true } };
 
     this.roomchatsService.joinRoom(client, this.server, {
       nickname,
       uuid,
       img,
     });
+
+    // 성공 응답 보내기
+    return { event: 'joinRoom', data: { success: true } };
   }
 
   //방을 삭제함
