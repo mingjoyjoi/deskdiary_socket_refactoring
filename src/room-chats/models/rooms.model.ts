@@ -15,7 +15,7 @@ export class Room extends Document {
   @Prop()
   owner: string;
 
-  @Prop({ type: Object }) // userList의 타입을 명시적으로 지정
+  @Prop({ type: Object, required: false }) // userList의 타입을 명시적으로 지정
   userList: object;
 }
 

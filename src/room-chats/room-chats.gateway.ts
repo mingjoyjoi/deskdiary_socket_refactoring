@@ -7,6 +7,7 @@ import {
   WebSocketServer,
   ConnectedSocket,
   MessageBody,
+  WsResponse,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
@@ -30,7 +31,7 @@ export class RoomchatsGateway
   handleMessage(
     @ConnectedSocket() client: Socket,
     @MessageBody() { uuid, message, nickname }: IMessage,
-  ): void {
+  ): WsResponse<any> {
     const emitMessage: IMessage = {
       message: `${message} from ${NODE_PORT}`,
       time: LocalDateTime.now().plusHours(9),
@@ -39,7 +40,9 @@ export class RoomchatsGateway
     };
     this.logger.log(emitMessage);
 
-    this.server.to(uuid).emit('msgToClient', emitMessage);
+    client.to(uuid).emit('msgToClient', emitMessage);
+
+    return { event: 'msgToServer', data: { success: true } };
   }
 
   //방에 참석함
@@ -47,12 +50,9 @@ export class RoomchatsGateway
   handleJoinRoom(
     @ConnectedSocket() client: Socket,
     @MessageBody() { nickname, uuid, img }: IRoomRequest,
-  ) {
+  ): WsResponse<any> {
     client.leave(client.id);
     client.join(uuid);
-
-    // 성공 응답 보내기
-    return { event: 'joinRoom', data: { success: true } };
 
     this.roomchatsService.joinRoom(client, this.server, {
       nickname,
@@ -60,7 +60,6 @@ export class RoomchatsGateway
       img,
     });
 
-    // 성공 응답 보내기
     return { event: 'joinRoom', data: { success: true } };
   }
 
@@ -69,8 +68,9 @@ export class RoomchatsGateway
   handleRemoveRoom(
     @ConnectedSocket() client: Socket,
     @MessageBody() { uuid }: IRoomRequest,
-  ): void {
+  ): WsResponse<any> {
     this.roomchatsService.removeRoom(client, this.server, uuid);
+    return { event: 'removeRoom', data: { success: true } };
   }
 
   //방을 떠남
@@ -78,9 +78,10 @@ export class RoomchatsGateway
   handleLeaveRoom(
     @ConnectedSocket() client: Socket,
     @MessageBody() { uuid }: IRoomRequest,
-  ): void {
+  ): WsResponse<any> {
     client.leave(uuid);
     this.roomchatsService.leaveRoom(client, this.server, uuid);
+    return { event: 'leave-room', data: { success: true } };
   }
 
   afterInit() {
