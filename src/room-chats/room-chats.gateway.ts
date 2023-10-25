@@ -39,8 +39,10 @@ export class RoomchatsGateway
       uuid,
     };
     this.logger.log(emitMessage);
+    console.log('소켓이 참여한 방', client.rooms);
+    console.log('방에 참가한 소켓에 메시지 뿌림');
 
-    client.to(uuid).emit('msgToClient', emitMessage);
+    this.server.to(uuid).emit('msgToClient', emitMessage);
 
     return { event: 'msgToServer', data: { success: true } };
   }
@@ -54,11 +56,12 @@ export class RoomchatsGateway
     console.log('소켓아이디 leave 하기 전');
     client.leave(client.id);
 
-    console.log('방 참석 전');
-
+    console.log('방 참석 전', client.rooms);
     client.join(uuid);
 
-    console.log('방 참석 후 new-user 이벤트 날리기 전');
+    console.log('방 참석 후', client.rooms);
+
+    console.log(' new-user 이벤트 날리기 전');
 
     client.emit('new-user', nickname);
 
