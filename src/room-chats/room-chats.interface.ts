@@ -1,14 +1,13 @@
-import { LocalDateTime } from '@js-joda/core';
-
 export interface IRoomRequest {
-  uuid: string;
   nickname: string;
+  uuid: string;
   img?: string;
 }
 export interface IMessage {
   language?: string;
-  time?: LocalDateTime;
+  time?: string;
   uuid: string;
   nickname: string;
   message: string;
+  img: string;
 }

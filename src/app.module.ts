@@ -40,9 +40,9 @@ export class AppModule implements NestModule {
 
   // dev mode일 때 HTTP 요청 로그 남기는 부분
   configure(consumer: MiddlewareConsumer) {
+    mongoose.set('debug', this.isDev);
     if (this.isDev) {
       consumer.apply(LoggerMiddleware).forRoutes('*');
     }
-    mongoose.set('debug', this.isDev);
   }
 }

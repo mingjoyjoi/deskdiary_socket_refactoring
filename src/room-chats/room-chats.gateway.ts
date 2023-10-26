@@ -7,15 +7,12 @@ import {
   WebSocketServer,
   ConnectedSocket,
   MessageBody,
-  WsResponse,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
 import { LocalDateTime } from '@js-joda/core';
 import { RoomchatsService } from './room-chats.service';
 import { IMessage, IRoomRequest } from './room-chats.interface';
-
-const NODE_PORT = 4000;
 
 @WebSocketGateway({ cors: true, allowEIO3: true })
 export class RoomchatsGateway
@@ -30,21 +27,22 @@ export class RoomchatsGateway
   @SubscribeMessage('msgToServer')
   handleMessage(
     @ConnectedSocket() client: Socket,
-    @MessageBody() { uuid, message, nickname }: IMessage,
-  ): WsResponse<any> {
+    @MessageBody() { uuid, message, nickname, img }: IMessage,
+  ): void {
+    const localDateTime = LocalDateTime.now();
+    // 현재 시간이 오전(AM) 또는 오후(PM)를 판단
+    const period = localDateTime.hour() < 12 ? 'AM' : 'PM';
+    // 시간은 12시간 형식으로 변환
+    const formattedHour = localDateTime.hour() % 12 || 12;
     const emitMessage: IMessage = {
-      message: `${message} from ${NODE_PORT}`,
-      time: LocalDateTime.now().plusHours(9),
+      message,
+      time: `${formattedHour}:${localDateTime.minute()} ${period}`,
       nickname,
       uuid,
+      img,
     };
     this.logger.log(emitMessage);
-    console.log('소켓이 참여한 방', client.rooms);
-    console.log('방에 참가한 소켓에 메시지 뿌림');
-
     this.server.to(uuid).emit('msgToClient', emitMessage);
-
-    return { event: 'msgToServer', data: { success: true } };
   }
 
   //방에 참석함
@@ -52,21 +50,9 @@ export class RoomchatsGateway
   handleJoinRoom(
     @ConnectedSocket() client: Socket,
     @MessageBody() { nickname, uuid, img }: IRoomRequest,
-  ): WsResponse<any> {
-    console.log('소켓아이디 leave 하기 전');
+  ): void {
     client.leave(client.id);
-
-    console.log('방 참석 전', client.rooms);
     client.join(uuid);
-
-    console.log('방 참석 후', client.rooms);
-
-    console.log(' new-user 이벤트 날리기 전');
-
-    client.emit('new-user', nickname);
-
-    console.log('new-user 이벤트 날린 후 ');
-    return { event: 'joinRoom', data: { success: true } };
 
     this.roomchatsService.joinRoom(client, this.server, {
       nickname,
@@ -80,9 +66,8 @@ export class RoomchatsGateway
   handleRemoveRoom(
     @ConnectedSocket() client: Socket,
     @MessageBody() { uuid }: IRoomRequest,
-  ): WsResponse<any> {
+  ): void {
     this.roomchatsService.removeRoom(client, this.server, uuid);
-    return { event: 'removeRoom', data: { success: true } };
   }
 
   //방을 떠남
@@ -90,10 +75,9 @@ export class RoomchatsGateway
   handleLeaveRoom(
     @ConnectedSocket() client: Socket,
     @MessageBody() { uuid }: IRoomRequest,
-  ): WsResponse<any> {
+  ): void {
     client.leave(uuid);
     this.roomchatsService.leaveRoom(client, this.server, uuid);
-    return { event: 'leave-room', data: { success: true } };
   }
 
   afterInit() {
