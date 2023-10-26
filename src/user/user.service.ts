@@ -208,6 +208,7 @@ export class UserService {
     const user = await this.prisma.user.findUnique({
       where: { userId },
       select: {
+        userId: true,
         email: true,
         nickname: true,
         provider: true,
@@ -247,5 +248,15 @@ export class UserService {
         profileImage: uploadedData.Location,
       },
     });
+  }
+
+  async deleteUser(userId: number) {
+    const deletedUser = await this.prisma.user.delete({
+      where: { userId },
+    });
+    if (!deletedUser) {
+      throw new NotFoundException(`${userId}를 찾을 수 없습니다.`);
+    }
+    return deletedUser;
   }
 }

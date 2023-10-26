@@ -23,7 +23,7 @@ model User {
   History       History[]
   Report        Report[]
   UserRoom      UserRoom[]
-  UserDetail    UserDetail[]
+  UserDetail    UserDetail[] 
    // Follower 관계 설정
   followers     Follow[] @relation("Followers")
   // Following 관계 설정
@@ -32,6 +32,7 @@ model User {
 //일단 enum 제외, creatorId 없애기 ownerId로 통일
 //note은 유의사항
 //uuid는 방생성시 채널 고유값
+
 model Room {
   roomId        Int       @id @default(autoincrement())
   uuid          String    @unique
@@ -50,6 +51,7 @@ model Room {
   Creator       User        @relation(fields: [ownerId], references: [userId], onDelete: Cascade)
   UserRoom      UserRoom[]
 }
+
 model History {
   historyId     Int        @id  @default(autoincrement())
   UserId        Int
@@ -62,6 +64,7 @@ model History {
   User          User       @relation(fields: [UserId], references: [userId], onDelete: Cascade)
 }
 //관계설정할 필요가 있을까? 내 신고목록 조회시 필요할듯, n회 이상 신고당하면 탈퇴 그것도 컬럼 필요! 어디에 추가 ??
+
 model Report {
   reportId      Int       @id
   reporterId    Int
@@ -71,6 +74,7 @@ model Report {
   reportType    String
   User          User      @relation(fields: [reporterId], references: [userId], onDelete: Cascade)
 }
+
 model UserDetail{
   UserDetailId  Int       @id @default(autoincrement())
   UserId        Int       @unique

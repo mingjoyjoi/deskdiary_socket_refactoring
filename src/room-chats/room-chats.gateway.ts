@@ -14,8 +14,6 @@ import { LocalDateTime } from '@js-joda/core';
 import { RoomchatsService } from './room-chats.service';
 import { IMessage, IRoomRequest } from './room-chats.interface';
 
-const NODE_PORT = 4000;
-
 @WebSocketGateway({ cors: true, allowEIO3: true })
 export class RoomchatsGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
@@ -29,16 +27,21 @@ export class RoomchatsGateway
   @SubscribeMessage('msgToServer')
   handleMessage(
     @ConnectedSocket() client: Socket,
-    @MessageBody() { uuid, message, nickname }: IMessage,
+    @MessageBody() { uuid, message, nickname, img }: IMessage,
   ): void {
+    const localDateTime = LocalDateTime.now().plusHours(9);
+    // 현재 시간이 오전(AM) 또는 오후(PM)를 판단
+    const period = localDateTime.hour() < 12 ? 'AM' : 'PM';
+    // 시간은 12시간 형식으로 변환
+    const formattedHour = localDateTime.hour() % 12 || 12;
     const emitMessage: IMessage = {
-      message: `${message} from ${NODE_PORT}`,
-      time: LocalDateTime.now().plusHours(9),
+      message,
+      time: `${formattedHour}:${localDateTime.minute()} ${period}`,
       nickname,
       uuid,
+      img,
     };
     this.logger.log(emitMessage);
-
     this.server.to(uuid).emit('msgToClient', emitMessage);
   }
 
