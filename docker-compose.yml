@@ -42,9 +42,9 @@ services:
 #     depends_on:
 #       - nginx
 #     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
-# networks:
-#   backend:
-#     driver: bridge
+networks:
+  backend:
+    driver: bridge
 # # docker-comose.yaml
 
 # version: '3.7'
