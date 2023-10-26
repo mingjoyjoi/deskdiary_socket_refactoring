@@ -1,7 +1,7 @@
 # Dockerfile
 
 # 1. 운영체제 설치(node 18버전과 npm과 yarn이 모두 설치되어있는 리눅스)
-FROM node:lts-alpine
+FROM node:lts
 
 # 2. 내 컴퓨터에 있는 폴더나 파일을 도커 컴퓨터 안으로 복사하기
 # 명령어를 실행할 워크 디렉토리 생성
@@ -21,7 +21,7 @@ RUN npx prisma generate
 RUN npm run build
 
 # Port (3000) 개방
-EXPOSE 3000
+EXPOSE 4000
 # 서버 실행
 ENTRYPOINT ["npm"]
 CMD ["run", "start:dev"]
