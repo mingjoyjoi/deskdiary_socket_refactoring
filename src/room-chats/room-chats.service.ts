@@ -6,6 +6,7 @@ import { Socket as SocketModel } from './models/sockets.model';
 import { Room as RoomModel } from './models/rooms.model';
 import { Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { Exception } from './exception/exception';
 
 @Injectable()
 export class RoomchatsService {
@@ -60,9 +61,7 @@ export class RoomchatsService {
   async removeRoom(client: Socket, server: Server, uuid: string) {
     const data = this.roomModel.find({ uuid });
     if (!data) {
-      return server
-        .to(client.id)
-        .emit('error-room', '해당되는 방을 찾을 수 없습니다.');
+      return server.to(client.id).emit('error-room', Exception.roomNotFound);
     }
     if (this.isOwner(data, client)) {
       await this.deleteDocumentByUuid(uuid);
@@ -76,9 +75,7 @@ export class RoomchatsService {
     const data = await this.roomModel.findOne({ uuid });
 
     if (!data) {
-      return server
-        .to(client.id)
-        .emit('error-room', '해당되는 방을 찾을 수 없습니다.');
+      return server.to(client.id).emit('error-room', Exception.roomNotFound);
     }
 
     // 유저리스트에서 클라이언트 ID 제거
@@ -93,9 +90,7 @@ export class RoomchatsService {
       .exec();
 
     if (!user) {
-      return client
-        .to(client.id)
-        .emit('error-room', '해당되는 클라이언트 ID를 찾을 수 없습니다.');
+      return client.to(client.id).emit('error-room', Exception.clientNotFound);
     }
 
     // 유저리스트 보내주기
@@ -112,9 +107,7 @@ export class RoomchatsService {
     // 클라이언트 ID를 기반으로 사용자 정보 조회
     const user = await this.socketModel.findOne({ clientId: client.id });
     if (!user) {
-      return client
-        .to(client.id)
-        .emit('error-room', '해당되는 클라이언트 ID를 찾을 수 없습니다.');
+      return client.to(client.id).emit('error-room', Exception.clientNotFound);
     }
 
     const uuid = user.uuid;
@@ -125,9 +118,7 @@ export class RoomchatsService {
     // 방 정보 조회
     const data = await this.roomModel.findOne({ uuid: uuid });
     if (!data) {
-      return client
-        .to(client.id)
-        .emit('error-room', '해당되는 방을 찾을 수 없습니다.');
+      return client.to(client.id).emit('error-room', Exception.roomNotFound);
     }
 
     // 유저리스트에서 클라이언트 ID 제거
@@ -146,9 +137,7 @@ export class RoomchatsService {
   async emitEventForUserList(client: Socket, server: Server, uuid: string) {
     const data = await this.roomModel.findOne({ uuid });
     if (!data) {
-      return server
-        .to(client.id)
-        .emit('error-room', '해당되는 방을 찾을 수 없습니다.');
+      return server.to(client.id).emit('error-room', Exception.roomNotFound);
     }
     server.to(uuid).emit('user-list', data['userList']);
   }

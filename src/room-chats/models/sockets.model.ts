@@ -3,7 +3,6 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, SchemaOptions } from 'mongoose';
 
 const options: SchemaOptions = {
-  id: false,
   collection: 'sockets',
   timestamps: true,
 };
@@ -24,7 +23,10 @@ export class Socket extends Document {
   @IsString()
   uuid: string;
 
-  @Prop()
+  @Prop({
+    required: true,
+  })
+  @IsNotEmpty()
   @IsString()
   nickname: string;
 }
