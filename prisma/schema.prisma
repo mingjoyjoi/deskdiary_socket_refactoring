@@ -55,7 +55,7 @@ model Room {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  Creator       User        @relation(fields: [ownerId], references: [userId])
+  Creator       User        @relation(fields: [ownerId], references: [userId], onDelete: Cascade)
   UserRoom      UserRoom[]
 }
 
@@ -81,7 +81,7 @@ model Report {
   reportImage   String
   reportType    String
 
-  User          User      @relation(fields: [reporterId], references: [userId])
+  User          User      @relation(fields: [reporterId], references: [userId], onDelete: Cascade)
 }
 
 
