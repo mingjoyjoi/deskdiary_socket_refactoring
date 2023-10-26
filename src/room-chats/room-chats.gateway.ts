@@ -29,7 +29,7 @@ export class RoomchatsGateway
     @ConnectedSocket() client: Socket,
     @MessageBody() { uuid, message, nickname, img }: IMessage,
   ): void {
-    const localDateTime = LocalDateTime.now();
+    const localDateTime = LocalDateTime.now().plusHours(9);
     // 현재 시간이 오전(AM) 또는 오후(PM)를 판단
     const period = localDateTime.hour() < 12 ? 'AM' : 'PM';
     // 시간은 12시간 형식으로 변환
