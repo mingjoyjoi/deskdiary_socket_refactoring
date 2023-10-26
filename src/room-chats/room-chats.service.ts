@@ -136,10 +136,13 @@ export class RoomchatsService {
 
   async emitEventForUserList(client: Socket, server: Server, uuid: string) {
     const data = await this.roomModel.findOne({ uuid });
+    const userListObj = data['userList'];
+    const userListArr = Object.values(userListObj).map((user) => user.nickname);
+
     if (!data) {
       return server.to(client.id).emit('error-room', Exception.roomNotFound);
     }
-    server.to(uuid).emit('user-list', data['userList']);
+    server.to(uuid).emit('user-list', userListArr);
   }
 
   async deleteDocumentByUuid(uuid: string): Promise<any> {
