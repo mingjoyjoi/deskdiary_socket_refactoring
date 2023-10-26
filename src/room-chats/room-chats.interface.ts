@@ -4,7 +4,6 @@ export interface IRoomRequest {
   img?: string;
 }
 export interface IMessage {
-  language?: string;
   time?: string;
   uuid: string;
   nickname: string;
