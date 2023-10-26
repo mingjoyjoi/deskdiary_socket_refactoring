@@ -221,7 +221,7 @@ export class RoomController {
   }
 
   @Post('socket/leave/:uuid')
-  @ApiOperation({ summary: '소켓 방 나가기' })
+  //@ApiOperation({ summary: '소켓 방 나가기' })
   async leaveRoomBySocket(
     @Req() req: Request,
     @Param('uuid') uuid: string,
@@ -234,7 +234,7 @@ export class RoomController {
   }
 
   @Delete('socket/:uuid')
-  @ApiOperation({ summary: '소켓 방 삭제' })
+  //@ApiOperation({ summary: '소켓 방 삭제' })
   async deleteRoomBySocket(
     @Req() req: Request,
     @Param('uuid') uuid: string,
