@@ -21,7 +21,7 @@ RUN npx prisma generate
 RUN npm run build
 
 # Port (3000) 개방
-EXPOSE 3000
+EXPOSE 4000
 # 서버 실행
 ENTRYPOINT ["npm"]
-CMD ["run", "start:dev"]
+CMD ["run", "start:prod"]
