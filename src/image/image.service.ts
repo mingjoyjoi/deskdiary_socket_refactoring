@@ -33,7 +33,9 @@ export class ImageService {
 
     const param = {
       Bucket: process.env.AWS_BUCKET_NAME,
-      Key: `${folder}/${Date.now().toString()}-${file.originalname}`,
+      Key: `${folder}/${Date.now().toString()}-${encodeURIComponent(
+        file.originalname,
+      )}`,
       ACL: 'public-read',
       Body: file.buffer,
     };
