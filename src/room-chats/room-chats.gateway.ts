@@ -23,7 +23,7 @@ export class RoomchatsGateway
 
   constructor(private readonly roomchatsService: RoomchatsService) {}
 
-  //메시지를 방에 있는 유저들에게 보냄
+  // 메시지를 방에 있는 유저들에게 보냄
   @SubscribeMessage('msgToServer')
   handleMessage(
     @ConnectedSocket() client: Socket,
@@ -45,7 +45,7 @@ export class RoomchatsGateway
     this.server.to(uuid).emit('msgToClient', emitMessage);
   }
 
-  //방에 참석함
+  // 방에 참석함
   @SubscribeMessage('joinRoom')
   handleJoinRoom(
     @ConnectedSocket() client: Socket,
@@ -61,7 +61,7 @@ export class RoomchatsGateway
     });
   }
 
-  //방을 삭제함
+  // 방을 삭제함
   @SubscribeMessage('removeRoom')
   handleRemoveRoom(
     @ConnectedSocket() client: Socket,
@@ -70,7 +70,7 @@ export class RoomchatsGateway
     this.roomchatsService.removeRoom(client, this.server, uuid);
   }
 
-  //방을 떠남
+  // 방을 떠남
   @SubscribeMessage('leave-room')
   handleLeaveRoom(
     @ConnectedSocket() client: Socket,
