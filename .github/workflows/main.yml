@@ -74,7 +74,9 @@ jobs:
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v3
-
+      # 권한 수정 스텝 추가
+      - name: Fix permissions
+        run: sudo chown -R $(whoami) ./data/certbot/www
       # .env 파일을 생성합니다.
       - name: Create .env file
         run: |
