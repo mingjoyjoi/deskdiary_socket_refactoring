@@ -21,14 +21,15 @@ export class RoomchatsService {
   }
 
   async joinRoom(client: Socket, server: Server, iRoomRequest: IRoomRequest) {
-    const { uuid } = iRoomRequest;
+    const { uuid, nickname } = iRoomRequest;
     const data = await this.roomModel.findOne({ uuid });
     if (!data) {
       await this.createRoom(client, iRoomRequest);
     } else {
       await this.updateRoom(client, data, iRoomRequest);
     }
-    this.emitEventForUserList(client, server, uuid);
+    return server.to(uuid).emit('new-user', nickname);
+    // this.emitEventForUserList(client, server, uuid);
   }
 
   async createRoom(client: Socket, { nickname, uuid, img }: IRoomRequest) {
@@ -55,7 +56,10 @@ export class RoomchatsService {
     await this.socketModel.create(newUser);
     const findRoom = roomData;
     findRoom.userList[client.id] = { nickname, img };
-    await this.roomModel.findOneAndUpdate({ uuid }, findRoom);
+    await this.roomModel.findOneAndUpdate(
+      { uuid },
+      { $set: { userList: findRoom.userList } },
+    );
   }
 
   async removeRoom(client: Socket, server: Server, uuid: string) {
@@ -72,29 +76,28 @@ export class RoomchatsService {
   }
 
   async leaveRoom(client: Socket, server: Server, uuid: string) {
-    const data = await this.roomModel.findOne({ uuid });
-
-    if (!data) {
+    const room = await this.roomModel.findOne({ uuid });
+    if (!room) {
       return server.to(client.id).emit('error-room', Exception.roomNotFound);
     }
-
-    // 유저리스트에서 클라이언트 ID 제거
-    delete data.userList[client.id];
-
-    // 업데이트된 데이터를 저장
-    await this.roomModel.findOneAndUpdate({ uuid }, data);
-
-    // 클라이언트 ID에 해당하는 사용자를 찾아 삭제
-    const user = await this.socketModel
-      .findOneAndDelete({ clientId: client.id })
-      .exec();
-
-    if (!user) {
-      return client.to(client.id).emit('error-room', Exception.clientNotFound);
+    const userId = room.userList[client.id];
+    const nickname = room.userList[client.id]?.nickname;
+    if (userId) {
+      delete room.userList[client.id];
+    } else {
+      return server.to(client.id).emit('error-room', Exception.clientNotFound);
     }
+    // 방 업데이트
+    await this.roomModel.findOneAndUpdate(
+      { uuid },
+      { $set: { userList: room.userList } },
+    );
+    // 사용자 데이터 삭제
+    await this.socketModel.deleteOne({ clientId: client.id });
 
+    return server.to(uuid).emit('left-user', nickname);
     // 유저리스트 보내주기
-    this.emitEventForUserList(client, server, uuid);
+    //this.emitEventForUserList(client, server, uuid);
   }
 
   isOwner(findRoom: any, client: Socket): boolean {
@@ -107,31 +110,29 @@ export class RoomchatsService {
     // 클라이언트 ID를 기반으로 사용자 정보 조회
     const user = await this.socketModel.findOne({ clientId: client.id });
     if (!user) {
-      return client.to(client.id).emit('error-room', Exception.clientNotFound);
+      return server.to(client.id).emit('error-room', Exception.clientNotFound);
     }
-
     const uuid = user.uuid;
-
     // 클라이언트 ID에 해당하는 사용자를 삭제
     await this.socketModel.findOneAndDelete({ clientId: client.id }).exec();
-
     // 방 정보 조회
-    const data = await this.roomModel.findOne({ uuid: uuid });
-    if (!data) {
-      return client.to(client.id).emit('error-room', Exception.roomNotFound);
+    const room = await this.roomModel.findOne({ uuid: uuid });
+    if (!room) {
+      return server.to(client.id).emit('error-room', Exception.roomNotFound);
     }
-
     // 유저리스트에서 클라이언트 ID 제거
-    delete data.userList[client.id];
-
+    const nickname = room.userList[client.id]?.nickname;
+    delete room.userList[client.id];
     // 업데이트된 데이터를 저장
-    await this.roomModel.findOneAndUpdate({ uuid }, data);
-
+    await this.roomModel.findOneAndUpdate(
+      { uuid },
+      { $set: { userList: room.userList } },
+    );
+    server.to(uuid).emit('disconnect_user', nickname);
     // 로깅
     this.logger.log(`disconnected: ${client.id}`);
-
     // 유저리스트 보내주기
-    this.emitEventForUserList(client, server, uuid);
+    //this.emitEventForUserList(client, server, uuid);
   }
 
   async emitEventForUserList(client: Socket, server: Server, uuid: string) {
