@@ -90,7 +90,7 @@ model UserRoom {
   UserId        Int
   RoomId        Int
   User          User      @relation(fields: [UserId], references: [userId], onDelete: Cascade)
-  Room          Room      @relation(fields: [RoomId], references: [roomId])
+  Room          Room      @relation(fields: [RoomId], references: [roomId], onDelete: Cascade)
   @@id([UserId, RoomId])
   @@map("UserRoom")
 }
