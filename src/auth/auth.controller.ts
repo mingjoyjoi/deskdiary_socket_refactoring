@@ -30,7 +30,7 @@ export class AuthController {
       {
         // res.cookie('token', jwtToken, { httpOnly: true, sameSite: 'strict' });
         res.redirect(
-          `http://localhost:3000/auth?accessToken=${encodeURIComponent(
+          `https://deskdiary-fe-brown.vercel.app/auth?accessToken=${encodeURIComponent(
             jwtToken,
           )}`,
         );
