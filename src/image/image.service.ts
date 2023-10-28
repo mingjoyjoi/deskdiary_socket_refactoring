@@ -11,7 +11,7 @@ export interface ObjectStorageData {
 @Injectable()
 export class ImageService {
   private readonly s3: AWS.S3;
-  private readonly FILE_LIMIT_SIZE = 3145728;
+  private readonly FILE_LIMIT_SIZE = 10485760;
   constructor() {
     AWS.config.update({
       region: process.env.AWS_REGION,
