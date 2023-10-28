@@ -18,7 +18,7 @@ import { JwtAuthGuard } from '../auth/jwt/jwt-auth.guard';
 import { Request } from 'express';
 import { UserDetailService } from './user-detail.service';
 
-@ApiTags('me')
+@ApiTags('User detail API')
 @Controller('me/history')
 export class UserDetailController {
   constructor(private readonly userDetailService: UserDetailService) {}

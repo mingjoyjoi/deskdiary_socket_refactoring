@@ -146,7 +146,7 @@ export class UserService {
     snsId: string;
     provider: string;
   }): Promise<User> {
-    const { email, nickname, snsId, provider } = user;
+    const { email, nickname, snsId } = user;
 
     let existingUser = await this.prisma.user.findUnique({
       where: { email },
@@ -158,7 +158,7 @@ export class UserService {
           email,
           nickname,
           snsId,
-          provider: provider,
+          provider: 'Kakao',
           password: 'KAKAO_SNS_LOGIN',
         },
       });
@@ -166,6 +166,16 @@ export class UserService {
 
     return existingUser;
   }
+
+  // -------------- 구글 로그인 ---------------------
+  // async findOrCreateGoogleUser(user: {
+  //   email: string;
+  //   nickname: string;
+  //   snsId: string;
+  //   provider: string;
+  // }): Promise<User> {
+  //   const { email, nickname, snsId, provider } = user;
+  // }
 
   // 비밀번호 수정
   async updatePassword(userId: number, dto: UpdatePasswordDto) {
@@ -198,6 +208,7 @@ export class UserService {
     const user = await this.prisma.user.findUnique({
       where: { userId },
       select: {
+        userId: true,
         email: true,
         nickname: true,
         provider: true,
@@ -237,5 +248,15 @@ export class UserService {
         profileImage: uploadedData.Location,
       },
     });
+  }
+
+  async deleteUser(userId: number) {
+    const deletedUser = await this.prisma.user.delete({
+      where: { userId },
+    });
+    if (!deletedUser) {
+      throw new NotFoundException(`${userId}를 찾을 수 없습니다.`);
+    }
+    return deletedUser;
   }
 }

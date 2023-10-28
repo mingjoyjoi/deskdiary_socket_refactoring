@@ -11,12 +11,16 @@ import { ImageModule } from './image/image.module';
 import { UserDetailModule } from './user-detail/user-detail.module';
 import { RoomSearchModule } from './room-search/room-search.module';
 import { HistoryModule } from './history/history.module';
+import { MongooseModule } from '@nestjs/mongoose';
+import * as mongoose from 'mongoose';
+import { RoomchatsModule } from './room-chats/room-chats.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    MongooseModule.forRoot(process.env.MONGO_URL),
     PrismaModule,
     AuthModule,
     UserModule,
@@ -25,6 +29,7 @@ import { HistoryModule } from './history/history.module';
     UserDetailModule,
     RoomSearchModule,
     HistoryModule,
+    RoomchatsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
@@ -35,9 +40,9 @@ export class AppModule implements NestModule {
 
   // dev mode일 때 HTTP 요청 로그 남기는 부분
   configure(consumer: MiddlewareConsumer) {
+    mongoose.set('debug', this.isDev);
     if (this.isDev) {
       consumer.apply(LoggerMiddleware).forRoutes('*');
     }
-    // mongoose.set('debug', this.isDev);
   }
 }

@@ -66,12 +66,6 @@ export class RoomController {
       examples: RoomResponseExample,
     },
   })
-  @Post()
-  @ApiOperation({ summary: '방 생성' })
-  @ApiResponse({
-    status: 201,
-    description: '방 생성 성공',
-  })
   @ApiConsumes('multipart/form-data')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
@@ -92,7 +86,7 @@ export class RoomController {
     },
   })
   async createRoom(
-    @Req() req: Request,
+    @Req() req: any,
     @Body() createRoomRequestDto: CreateRoomRequestDto,
     @UploadedFile() file: Express.Multer.File,
   ) {
@@ -110,7 +104,7 @@ export class RoomController {
     }
     const s3Data = await this.imageService.uploadImage(file, 'room-thumbnails');
     const roomThumbnail = s3Data.Location;
-    console.log(roomThumbnail);
+    console.log(createRoomRequestDto, userId, roomThumbnail);
     return await this.roomService.createRoom(
       createRoomRequestDto,
       userId,
@@ -221,7 +215,7 @@ export class RoomController {
   }
 
   @Post('socket/leave/:uuid')
-  @ApiOperation({ summary: '소켓 방 나가기' })
+  //@ApiOperation({ summary: '소켓 방 나가기' })
   async leaveRoomBySocket(
     @Req() req: Request,
     @Param('uuid') uuid: string,
@@ -234,7 +228,7 @@ export class RoomController {
   }
 
   @Delete('socket/:uuid')
-  @ApiOperation({ summary: '소켓 방 삭제' })
+  //@ApiOperation({ summary: '소켓 방 삭제' })
   async deleteRoomBySocket(
     @Req() req: Request,
     @Param('uuid') uuid: string,
@@ -264,7 +258,7 @@ export class RoomController {
   //     },
   //   },
   // })
-  // @Post('image')
+  // @Post('room/image')
   // @UseInterceptors(FileInterceptor('file'))
   // async uploadThumbnail(
   //   @Req() req: { user: { userId: number } },

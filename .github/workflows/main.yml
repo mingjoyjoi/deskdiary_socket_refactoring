@@ -68,23 +68,21 @@ jobs:
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGE }}:latest
 
   # ec2 환경에 배포
-  # ec2 환경에 배포
   deploy:
-    # deploy가 시작되려면 build를 완료해야함
-    needs:
-      build
-      # ec2에 설치한 Runner로 job 실행
+    needs: build
     runs-on: [self-hosted, label-desk]
     steps:
+      - name: Pre-Fix permissions
+        run: |
+          sudo chown -R $(whoami) /home/ubuntu/actions-runner/my-org-runner/_work/deskdiary-be/deskdiary-be/data/certbot/www
+
       - name: Checkout Source Code
         uses: actions/checkout@v3
+        with:
+          clean: false
 
-        # DockerHub에서 이미지를 불러온다
-      - name: Pull Docker image from DockerHub
-        run: |
-          docker pull namhyeonjae/deskdiary-server:latest
-        # Docker 컨테이너 실행
-      - name: Run Docker container
+      # .env 파일을 생성합니다.
+      - name: Create .env file
         run: |
           touch .env
           echo "MODE=${{ secrets.MODE }}" >> .env
@@ -95,16 +93,21 @@ jobs:
           echo "RDS_USERNAME=${{ secrets.RDS_USERNAME }}" >> .env
           echo "RDS_DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
           echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
-          echo KAKAO_JS_KEY=${{ secrets.KAKAO_JS_KEY }} >> .env
-          echo KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }} >> .env
-          echo KAKAO_REDIRECT_URI=${{ secrets.KAKAO_REDIRECT_URI }} >> .env
-          echo KAKAO_CALLBACK_URL=${{ secrets.KAKAO_CALLBACK_URL }} >> .env
-          echo AWS_BUCKET_NAME=${{ secrets.AWS_BUCKET_NAME }} >> .env
-          echo AWS_REGION=${{ secrets.AWS_REGION }} >> .env
-          echo AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }} >> .env
-          echo AWS_SECRET_KEY=${{ secrets.AWS_SECRET_KEY }} >> .env
-          echo AGORA_APP_ID=${{ secrets.AGORA_APP_ID }} >> .env
-          echo AGORA_APP_CERTIFICATE=${{ secrets.AGORA_APP_CERTIFICATE }} >> .env
-          docker stop deskdiary-server || true
-          docker rm deskdiary-server || true
-          docker run --env-file ./.env -d -p 80:4000 --name deskdiary-server --restart always namhyeonjae/deskdiary-server:latest
+          echo "KAKAO_JS_KEY=${{ secrets.KAKAO_JS_KEY }}" >> .env
+          echo "KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }}" >> .env
+          echo "KAKAO_REDIRECT_URI=${{ secrets.KAKAO_REDIRECT_URI }}" >> .env
+          echo "KAKAO_CALLBACK_URL=${{ secrets.KAKAO_CALLBACK_URL }}" >> .env
+          echo "AWS_BUCKET_NAME=${{ secrets.AWS_BUCKET_NAME }}" >> .env
+          echo "AWS_REGION=${{ secrets.AWS_REGION }}" >> .env
+          echo "AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }}" >> .env
+          echo "AWS_SECRET_KEY=${{ secrets.AWS_SECRET_KEY }}" >> .env
+          echo "AGORA_APP_ID=${{ secrets.AGORA_APP_ID }}" >> .env
+          echo "AGORA_APP_CERTIFICATE=${{ secrets.AGORA_APP_CERTIFICATE }}" >> .env
+          echo "MONGO_URL=${{ secrets.MONGO_URL }}" >> .env
+
+      # Docker Compose를 이용하여 서비스를 배포합니다.
+      - name: Deploy using Docker Compose
+        run: |
+          docker-compose down || true  # 기존에 동작 중인 컨테이너를 종료합니다.
+          docker-compose pull  # DockerHub에서 최신 이미지를 가져옵니다.
+          docker-compose up -d  # Docker Compose로 서비스를 백그라운드에서 실행합니다.
