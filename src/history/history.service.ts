@@ -96,7 +96,7 @@ export class HistoryService {
     FROM History
     WHERE UserId = ${userId}
     AND historyType ='hobby'
-    AND DATE(checkIn) = CURDATE()
+    AND DATE(checkIn) = DATE(DATE_ADD(NOW(), INTERVAL 9 HOUR))
     GROUP BY DATE_FORMAT(checkIn, '%Y-%m-%d')`;
 
     const todayStudy = await this.prisma.$queryRaw`
@@ -104,7 +104,7 @@ export class HistoryService {
     FROM History
     WHERE UserId = ${userId}
     AND historyType ='study'
-    AND DATE(checkIn) = CURDATE()
+    AND DATE(checkIn) = DATE(DATE_ADD(NOW(), INTERVAL 9 HOUR))
     GROUP BY DATE_FORMAT(checkIn, '%Y-%m-%d')`;
 
     const todayHistory = {
@@ -124,7 +124,7 @@ export class HistoryService {
     SELECT SUM(totalHours) AS totalHours, historyType, DATE_FORMAT(checkIn, '%Y-%m-%d') as checkIn
     FROM History
     WHERE historyType = 'hobby'
-    AND checkIn >= DATE_ADD(NOW(), INTERVAL -7 DAY) 
+    AND checkIn >= DATE_ADD(DATE_ADD(NOW(), INTERVAL 9 HOUR), INTERVAL -7 DAY) 
     AND UserId = ${userId}
     GROUP BY DATE_FORMAT(checkIn, '%Y-%m-%d')
     ORDER BY checkIn`;
@@ -133,7 +133,7 @@ export class HistoryService {
     SELECT SUM(totalHours) AS totalHours, historyType, DATE_FORMAT(checkIn, '%Y-%m-%d') as checkIn
     FROM History
     WHERE historyType = 'study'
-    AND checkIn >= DATE_ADD(NOW(), INTERVAL -7 DAY) 
+    AND checkIn >= DATE_ADD(DATE_ADD(NOW(), INTERVAL 9 HOUR), INTERVAL -7 DAY) 
     AND UserId = ${userId}
     GROUP BY DATE_FORMAT(checkIn, '%Y-%m-%d')
     ORDER BY checkIn`;
@@ -149,7 +149,7 @@ export class HistoryService {
     SELECT SUM(totalHours) AS totalHours, historyType, DATE_FORMAT(checkIn, '%Y-%m-%d') as checkIn
     FROM History
     WHERE historyType = 'hobby'
-    AND checkIn >= DATE_ADD(NOW(), INTERVAL -30 DAY)
+    AND checkIn >= DATE_ADD(DATE_ADD(NOW(), INTERVAL 9 HOUR), INTERVAL -30 DAY)
     AND UserId = ${userId}
     GROUP BY DATE_FORMAT(checkIn, '%Y-%m-%d')
     ORDER BY checkIn`;
@@ -158,7 +158,7 @@ export class HistoryService {
     SELECT SUM(totalHours) AS totalHours, historyType, DATE_FORMAT(checkIn, '%Y-%m-%d') as checkIn
     FROM History
     WHERE historyType = 'study'
-    AND checkIn >= DATE_ADD(NOW(), INTERVAL -30 DAY)
+    AND checkIn >= DATE_ADD(DATE_ADD(NOW(), INTERVAL 9 HOUR), INTERVAL -30 DAY)
     AND UserId = ${userId}
     GROUP BY DATE_FORMAT(checkIn, '%Y-%m-%d')
     ORDER BY checkIn`;
