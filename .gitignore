@@ -3,7 +3,7 @@
 /node_modules
 /.env
 /.env.docker
-/.scripts
+scripts
 e2e.spec.ts
 rabbit.png
 room.seed.service.ts
