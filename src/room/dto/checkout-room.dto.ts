@@ -5,7 +5,7 @@ export class CheckoutRoomRequestDto {
   @IsNotEmpty({ message: '방 체크인 날짜가 필요합니다.' })
   @ApiProperty({
     description: '방 체크인 날짜',
-    example: '2023-10-16',
+    example: '2023-10-27T07:12:01.929Z',
     required: true,
   })
   readonly checkIn: Date;
@@ -13,7 +13,7 @@ export class CheckoutRoomRequestDto {
   @IsNotEmpty({ message: '방 체크아웃 날짜가 필요합니다.' })
   @ApiProperty({
     description: '방 체크아웃 날짜',
-    example: '2023-10-16',
+    example: '2023-10-27T07:12:01.929Z',
     required: true,
   })
   readonly checkOut: Date;
