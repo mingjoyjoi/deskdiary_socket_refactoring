@@ -92,25 +92,25 @@ export class HistoryService {
     if (!goaltimeData) return { message: '등록된 목표시간이 없습니다.' };
 
     const todayHobby = await this.prisma.$queryRaw`
-    SELECT SUM(totalHours) as totalHours, historyType, DATE_FORMAT(checkIn, '%Y-%m-%d') as checkIn 
-    FROM History 
-    Where UserId = ${userId} 
+    SELECT SUM(totalHours) as totalHours, historyType, DATE_FORMAT(checkIn, '%Y-%m-%d') as checkIn
+    FROM History
+    WHERE UserId = ${userId}
     AND historyType ='hobby'
-    AND checkIn >= DATE_ADD(NOW(), INTERVAL -1 DAY)
+    AND DATE(checkIn) = CURDATE()
     GROUP BY DATE_FORMAT(checkIn, '%Y-%m-%d')`;
 
     const todayStudy = await this.prisma.$queryRaw`
     SELECT SUM(totalHours) as totalHours, historyType, DATE_FORMAT(checkIn, '%Y-%m-%d') as checkIn
-    FROM History 
-    Where UserId = ${userId} 
+    FROM History
+    WHERE UserId = ${userId}
     AND historyType ='study'
-    AND checkIn >= DATE_ADD(NOW(), INTERVAL -1 DAY)
+    AND DATE(checkIn) = CURDATE()
     GROUP BY DATE_FORMAT(checkIn, '%Y-%m-%d')`;
 
     const todayHistory = {
       goaltime: goaltimeData.goalTime,
-      studyTotalHours: todayStudy[1]?.totalHours ?? 0,
-      hobbyTotalHours: todayHobby[1]?.totalHours ?? 0,
+      studyTotalHours: todayStudy[0]?.totalHours ?? 0,
+      hobbyTotalHours: todayHobby[0]?.totalHours ?? 0,
     };
     return todayHistory;
   }
