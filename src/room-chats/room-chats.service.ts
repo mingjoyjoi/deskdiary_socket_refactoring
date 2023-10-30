@@ -7,6 +7,8 @@ import { Room as RoomModel } from './models/rooms.model';
 import { Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Exception } from './exception/exception';
+import axios from 'axios';
+import { baseURL } from './constant/url.constant';
 
 @Injectable()
 export class RoomchatsService {
@@ -35,14 +37,7 @@ export class RoomchatsService {
   async createRoom(client: Socket, { nickname, uuid, img }: IRoomRequest) {
     const newRoom = { uuid: uuid, owner: client.id, userList: {} };
     newRoom.userList = { [client.id]: { nickname, img } };
-    const data = await this.roomModel.create(newRoom);
-    if (!data) {
-      await this.roomModel.create({
-        uuid,
-        owner: client.id,
-        userList: null,
-      });
-    }
+    await this.roomModel.create(newRoom);
     const newUser = { clientId: client.id, uuid: uuid, nickname: nickname };
     await this.socketModel.create(newUser);
   }
@@ -128,6 +123,7 @@ export class RoomchatsService {
       { uuid },
       { $set: { userList: room.userList } },
     );
+    await this.leaveRoomRequestToApiServer(uuid);
     server.to(uuid).emit('disconnect_user', nickname);
     // 로깅
     this.logger.log(`disconnected: ${client.id}`);
@@ -149,5 +145,14 @@ export class RoomchatsService {
   async deleteDocumentByUuid(uuid: string): Promise<any> {
     const result = await this.roomModel.findOneAndDelete({ uuid }).exec();
     return result;
+  }
+
+  async leaveRoomRequestToApiServer(uuid: string): Promise<void> {
+    const headers = {
+      'socket-secret-key': process.env.SOCKET_SECRET_KEY ?? '',
+    };
+    await axios.post(`${baseURL}/room/socket/leave/${uuid}`, undefined, {
+      headers,
+    });
   }
 }
