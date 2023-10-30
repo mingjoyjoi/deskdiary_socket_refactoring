@@ -11,7 +11,7 @@ room.seed.ts
 history.seed.ts
 history.service.seed.ts
 room.ts
-
+init-letsencrypt.sh
 
 # Logs
 logs
