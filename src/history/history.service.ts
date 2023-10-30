@@ -54,11 +54,12 @@ export class HistoryService {
   async studyRankings() {
     // checkout 7일치만으로 수정하기
     const studyHistory = await this.prisma.$queryRaw`
-    SELECT SUM(totalHours) AS totalHours, historyType, nickname
-    FROM History
+    SELECT SUM(totalHours) AS totalHours, historyType, profileImage, A.nickname
+    FROM History A LEFT JOIN User B
+    ON A.UserId = B.userId
     WHERE historyType = 'study' 
     AND checkIn >= DATE_ADD(NOW(), INTERVAL -7 DAY) 
-    GROUP BY UserId
+    GROUP BY A.UserId
     ORDER BY totalHours DESC
     LIMIT 5
   `;
@@ -67,11 +68,12 @@ export class HistoryService {
 
   async hobbyRankings() {
     const hobbyHistory = await this.prisma.$queryRaw`
-    SELECT SUM(totalHours) AS totalHours, historyType, nickname
-    FROM History
-    WHERE historyType = 'hobby'
+    SELECT SUM(totalHours) AS totalHours, historyType, profileImage, A.nickname
+    FROM History A LEFT JOIN User B
+    ON A.UserId = B.userId
+    WHERE historyType = 'hobby' 
     AND checkIn >= DATE_ADD(NOW(), INTERVAL -7 DAY) 
-    GROUP BY UserId
+    GROUP BY A.UserId
     ORDER BY totalHours DESC
     LIMIT 5
   `;
