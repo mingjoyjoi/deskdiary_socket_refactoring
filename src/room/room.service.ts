@@ -135,7 +135,6 @@ export class RoomService {
 
     const user = await this.userService.findUserByUserId(userId);
     if (!user) throw UserException.userNotFound();
-    const nickname = user.nickname;
 
     const roomId = findRoom.roomId;
     const recordedHistory = await this.prisma.history.create({
@@ -144,7 +143,6 @@ export class RoomService {
         checkOut,
         historyType,
         totalHours: totalSeconds,
-        nickname,
         UserId: userId,
         RoomId: roomId,
       },
