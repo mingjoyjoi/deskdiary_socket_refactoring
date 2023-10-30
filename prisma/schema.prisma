@@ -1,16 +1,12 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
-
 datasource db {
   provider = "mysql"
   url      = env("RDS_DATABASE_URL")
 }
-
-
 model User {
   userId        Int      @id @default(autoincrement())
   email         String       @unique
@@ -23,7 +19,6 @@ model User {
   refreshToken  String?
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
-
   Room          Room[]
   History       History[]
   Report        Report[]
@@ -34,11 +29,10 @@ model User {
   // Following 관계 설정
   following     Follow[] @relation("Following")
 }
-
-
 //일단 enum 제외, creatorId 없애기 ownerId로 통일
-//note은 유의사항 
-//uuid는 방생성시 채널 고유값 
+//note은 유의사항
+//uuid는 방생성시 채널 고유값
+
 model Room {
   roomId        Int       @id @default(autoincrement())
   uuid          String    @unique
@@ -46,7 +40,7 @@ model Room {
   agoraToken    String    @unique
   title         String
   note          String?
-  ownerId       Int       
+  ownerId       Int
   nowHeadcount  Int       @default(0)
   maxHeadcount  Int
   roomThumbnail String?
@@ -54,7 +48,6 @@ model Room {
   count         Int       @default(0)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-
   Creator       User        @relation(fields: [ownerId], references: [userId], onDelete: Cascade)
   UserRoom      UserRoom[]
 }
@@ -67,11 +60,10 @@ model History {
   checkOut      DateTime
   totalHours    Int?
   historyType   String
-
   User          User       @relation(fields: [UserId], references: [userId], onDelete: Cascade)
 }
+//관계설정할 필요가 있을까? 내 신고목록 조회시 필요할듯, n회 이상 신고당하면 탈퇴 그것도 컬럼 필요! 어디에 추가 ??
 
-//관계설정할 필요가 있을까? 내 신고목록 조회시 필요할듯, n회 이상 신고당하면 탈퇴 그것도 컬럼 필요! 어디에 추가 ?? 
 model Report {
   reportId      Int       @id
   reporterId    Int
@@ -79,10 +71,8 @@ model Report {
   content       String
   reportImage   String
   reportType    String
-
   User          User      @relation(fields: [reporterId], references: [userId], onDelete: Cascade)
 }
-
 
 model UserDetail{
   UserDetailId  Int       @id @default(autoincrement())
@@ -91,41 +81,32 @@ model UserDetail{
   mainCategory  String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-
   User          User     @relation(fields: [UserId], references: [userId], onDelete: Cascade)
 }
-
 //아직 이 관계 테이블 활용 못하는 상태임.
-//유저가 방 참여할때마다 테이블 업데이트(유저아이디, 참여한 방아이디 조합)하기 로직 추가하면 최근 참여한 방목록 조회시 추후 이 관계 테이블 이용가능 
+//유저가 방 참여할때마다 테이블 업데이트(유저아이디, 참여한 방아이디 조합)하기 로직 추가하면 최근 참여한 방목록 조회시 추후 이 관계 테이블 이용가능
 model UserRoom {
   UserId        Int
   RoomId        Int
-
   User          User      @relation(fields: [UserId], references: [userId], onDelete: Cascade)
   Room          Room      @relation(fields: [RoomId], references: [roomId], onDelete: Cascade)
- 
+
   @@id([UserId, RoomId])
   @@map("UserRoom")
-
 }
-
 model Follow {
   followerId    Int
   followingId   Int
-
   // Follower 관계 설정
   follower      User     @relation("Followers", fields: [followerId], references: [userId], onDelete: Cascade)
   // Following 관계 설정
   following     User     @relation("Following", fields: [followingId], references: [userId], onDelete: Cascade)
   @@id([followerId, followingId])
 }
-
-
 // enum UserRole {
 //   USER
 //   ADMIN
 // }
-
 // enum Category {
 //    STUDY
 //    HOBBY

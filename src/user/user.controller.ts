@@ -11,6 +11,7 @@ import {
   UseGuards,
   UseInterceptors,
   UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -73,6 +74,11 @@ export class UserController {
     @Req() req: any,
     @Body() updatePasswordDto: UpdatePasswordDto,
   ) {
+    if (!updatePasswordDto.isDifferent()) {
+      throw new BadRequestException(
+        '현재 비밀번호와 새로운 비밀번호가 일치하면 안됩니다',
+      );
+    }
     const userId = req.user['userId'];
     return this.userService.updatePassword(userId, updatePasswordDto);
   }
