@@ -35,7 +35,8 @@ export class HistoryController {
   })
   @ApiResponse({
     status: 200,
-    description: '스터디룸 7일 누적시간 기준 상위 5명의 유저를 조회합니다.',
+    description:
+      '스터디룸 7일 누적시간(초) 기준 상위 5명의 유저에 대한 정보를 조회합니다.',
   })
   async getStudyRankings() {
     return await this.historyService.studyRankings();
@@ -47,7 +48,8 @@ export class HistoryController {
   })
   @ApiResponse({
     status: 200,
-    description: '취미룸 7일 누적시간 기준  상위 5명의 유저를  조회합니다.',
+    description:
+      '취미룸 7일 누적시간(초) 기준  상위 5명의 유저에 대한 정보를 조회합니다.',
   })
   async getHobbyRankings() {
     return await this.historyService.hobbyRankings();
@@ -59,7 +61,8 @@ export class HistoryController {
   })
   @ApiResponse({
     status: 200,
-    description: '1일 동안의 해당 유저의 학습기록 데이터를 조회합니다.',
+    description:
+      '1일 동안의 해당 유저의 학습기록 데이터를 조회합니다. 누적시간 단위는 초(s) 입니다.',
   })
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
@@ -74,7 +77,8 @@ export class HistoryController {
   })
   @ApiResponse({
     status: 200,
-    description: '일주일 동안의 해당 유저의 학습기록 데이터를 조회합니다.',
+    description:
+      '일주일 동안의 해당 유저의 학습기록 데이터를 조회합니다. 누적시간 단위는 초(s) 입니다.',
   })
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
@@ -89,7 +93,8 @@ export class HistoryController {
   })
   @ApiResponse({
     status: 200,
-    description: '한달 동안의 해당 유저의 학습기록 데이터를 조회합니다.',
+    description:
+      '한달 동안의 해당 유저의 학습기록 데이터를 조회합니다. 누적시간 단위는 초(s) 입니다.',
   })
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
