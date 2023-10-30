@@ -109,8 +109,8 @@ export class HistoryService {
 
     const todayHistory = {
       goaltime: goaltimeData.goalTime,
-      studyTotalHours: todayStudy[0]?.totalHours ?? 0,
-      hobbyTotalHours: todayHobby[0]?.totalHours ?? 0,
+      studyTotalHours: todayStudy[1]?.totalHours ?? 0,
+      hobbyTotalHours: todayHobby[1]?.totalHours ?? 0,
     };
     return todayHistory;
   }
