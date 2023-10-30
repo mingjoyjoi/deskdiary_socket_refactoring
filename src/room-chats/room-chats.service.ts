@@ -30,8 +30,8 @@ export class RoomchatsService {
     } else {
       await this.updateRoom(client, data, iRoomRequest);
     }
-    return server.to(uuid).emit('new-user', nickname);
-    // this.emitEventForUserList(client, server, uuid);
+    //return server.to(uuid).emit('new-user', nickname);
+    this.emitEventForUserList(client, server, uuid, nickname);
   }
 
   async createRoom(client: Socket, { nickname, uuid, img }: IRoomRequest) {
@@ -90,9 +90,9 @@ export class RoomchatsService {
     // 사용자 데이터 삭제
     await this.socketModel.deleteOne({ clientId: client.id });
 
-    return server.to(uuid).emit('left-user', nickname);
+    //return server.to(uuid).emit('left-user', nickname);
     // 유저리스트 보내주기
-    //this.emitEventForUserList(client, server, uuid);
+    this.emitEventForUserList(client, server, uuid, nickname);
   }
 
   isOwner(findRoom: any, client: Socket): boolean {
@@ -124,14 +124,19 @@ export class RoomchatsService {
       { $set: { userList: room.userList } },
     );
     await this.leaveRoomRequestToApiServer(uuid);
-    server.to(uuid).emit('disconnect_user', nickname);
+    //server.to(uuid).emit('disconnect_user', nickname);
+    this.emitEventForUserList(client, server, uuid, nickname);
     // 로깅
     this.logger.log(`disconnected: ${client.id}`);
     // 유저리스트 보내주기
-    //this.emitEventForUserList(client, server, uuid);
   }
 
-  async emitEventForUserList(client: Socket, server: Server, uuid: string) {
+  async emitEventForUserList(
+    client: Socket,
+    server: Server,
+    uuid: string,
+    nickname: string,
+  ) {
     const data = await this.roomModel.findOne({ uuid });
     const userListObj = data['userList'];
     const userListArr = Object.values(userListObj).map((user) => user.nickname);
@@ -139,7 +144,7 @@ export class RoomchatsService {
     if (!data) {
       return server.to(client.id).emit('error-room', Exception.roomNotFound);
     }
-    server.to(uuid).emit('user-list', userListArr);
+    server.to(uuid).emit('user-list', { nickname, userListArr });
   }
 
   async deleteDocumentByUuid(uuid: string): Promise<any> {
