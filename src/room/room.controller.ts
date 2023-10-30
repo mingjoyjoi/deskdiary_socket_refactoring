@@ -215,7 +215,7 @@ export class RoomController {
   }
 
   @Post('socket/leave/:uuid')
-  //@ApiOperation({ summary: '소켓 방 나가기' })
+  @ApiOperation({ summary: '소켓 방 나가기' })
   async leaveRoomBySocket(
     @Req() req: Request,
     @Param('uuid') uuid: string,
@@ -227,18 +227,18 @@ export class RoomController {
     return false;
   }
 
-  @Delete('socket/:uuid')
-  //@ApiOperation({ summary: '소켓 방 삭제' })
-  async deleteRoomBySocket(
-    @Req() req: Request,
-    @Param('uuid') uuid: string,
-  ): Promise<boolean> {
-    const key = req.header('socket-secret-key');
-    if (key === process.env.SOCKET_SECRET_KEY) {
-      return await this.roomService.deleteRoomFromSocket(uuid);
-    }
-    return false;
-  }
+  // @Delete('socket/:uuid')
+  // @ApiOperation({ summary: '소켓 방 삭제' })
+  // async deleteRoomBySocket(
+  //   @Req() req: Request,
+  //   @Param('uuid') uuid: string,
+  // ): Promise<boolean> {
+  //   const key = req.header('socket-secret-key');
+  //   if (key === process.env.SOCKET_SECRET_KEY) {
+  //     return await this.roomService.deleteRoomFromSocket(uuid);
+  //   }
+  //   return false;
+  // }
 
   // @UseGuards(JwtAuthGuard)
   // @ApiBearerAuth()
