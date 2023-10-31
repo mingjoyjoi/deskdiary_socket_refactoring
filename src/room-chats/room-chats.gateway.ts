@@ -32,9 +32,10 @@ export class RoomchatsGateway
     const localDateTime = LocalDateTime.now().plusHours(9);
     const period = localDateTime.hour() < 12 ? 'AM' : 'PM';
     const formattedHour = localDateTime.hour() % 12 || 12;
+    const minute = localDateTime.minute().toString().padStart(2, '0');
     const emitMessage: IMessage = {
       message,
-      time: `${formattedHour}:${localDateTime.minute()} ${period}`,
+      time: `${formattedHour}:${minute} ${period}`,
       nickname,
       uuid,
       img,
@@ -51,7 +52,6 @@ export class RoomchatsGateway
   ): void {
     client.leave(client.id);
     client.join(uuid);
-
     this.roomchatsService.joinRoom(client, this.server, {
       nickname,
       uuid,
