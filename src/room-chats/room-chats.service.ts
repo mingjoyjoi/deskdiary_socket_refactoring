@@ -31,7 +31,7 @@ export class RoomchatsService {
       await this.updateRoom(client, data, iRoomRequest);
     }
     //return server.to(uuid).emit('new-user', nickname);
-    this.emitEventForUserList(client, server, uuid, nickname);
+    this.emitEventForUserList(client, server, uuid, nickname, 'new-user');
   }
 
   async createRoom(client: Socket, { nickname, uuid, img }: IRoomRequest) {
@@ -65,7 +65,7 @@ export class RoomchatsService {
     if (this.isOwner(data, client)) {
       await this.deleteDocumentByUuid(uuid);
       await this.socketModel.deleteMany({ uuid });
-      return server.to(uuid).emit('user-list', {});
+      return server.to(uuid).emit('remove-users', {});
     }
     client.leave(uuid);
   }
@@ -92,7 +92,7 @@ export class RoomchatsService {
 
     //return server.to(uuid).emit('left-user', nickname);
     // 유저리스트 보내주기
-    this.emitEventForUserList(client, server, uuid, nickname);
+    this.emitEventForUserList(client, server, uuid, nickname, 'leave-user');
   }
 
   isOwner(findRoom: any, client: Socket): boolean {
@@ -125,7 +125,7 @@ export class RoomchatsService {
     );
     await this.leaveRoomRequestToApiServer(uuid);
     //server.to(uuid).emit('disconnect_user', nickname);
-    this.emitEventForUserList(client, server, uuid, nickname);
+    this.emitEventForUserList(client, server, uuid, nickname, 'leave-user');
     this.logger.log(`disconnected: ${client.id}`);
   }
 
@@ -134,6 +134,7 @@ export class RoomchatsService {
     server: Server,
     uuid: string,
     nickname: string,
+    userEvent: string,
   ) {
     const data = await this.roomModel.findOne({ uuid });
     if (!data) {
@@ -142,7 +143,7 @@ export class RoomchatsService {
     const userListObj = data['userList'];
     const userListArr = Object.values(userListObj);
 
-    server.to(uuid).emit('user-list', { nickname, userListArr });
+    server.to(uuid).emit(userEvent, { nickname, userListArr });
   }
 
   async deleteDocumentByUuid(uuid: string): Promise<any> {
