@@ -29,6 +29,13 @@ export class Socket extends Document {
   @IsNotEmpty()
   @IsString()
   nickname: string;
+
+  @Prop({
+    required: true,
+  })
+  @IsNotEmpty()
+  @IsString()
+  userId: string;
 }
 
 export const SocketSchema = SchemaFactory.createForClass(Socket);

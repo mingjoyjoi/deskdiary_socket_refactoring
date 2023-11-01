@@ -54,7 +54,7 @@ export class HistoryService {
   async studyRankings() {
     // checkout 7일치만으로 수정하기
     const studyHistory = await this.prisma.$queryRaw`
-    SELECT SUM(totalHours) AS totalHours, historyType, profileImage, A.nickname
+    SELECT SUM(totalHours) AS totalHours, historyType, profileImage, B.nickname
     FROM History A LEFT JOIN User B
     ON A.UserId = B.userId
     WHERE historyType = 'study' 
@@ -68,7 +68,7 @@ export class HistoryService {
 
   async hobbyRankings() {
     const hobbyHistory = await this.prisma.$queryRaw`
-    SELECT SUM(totalHours) AS totalHours, historyType, profileImage, A.nickname
+    SELECT SUM(totalHours) AS totalHours, historyType, profileImage, B.nickname
     FROM History A LEFT JOIN User B
     ON A.UserId = B.userId
     WHERE historyType = 'hobby' 
