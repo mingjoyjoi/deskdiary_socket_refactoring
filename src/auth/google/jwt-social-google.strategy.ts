@@ -1,24 +1,47 @@
-// import { PassportStrategy } from '@nestjs/passport';
-// import { Strategy } from 'passport-google-oauth20';
+import { PassportStrategy } from '@nestjs/passport';
+import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
+import { Injectable } from '@nestjs/common';
 
-// export class JwtGoogleStrategy extends PassportStrategy(Strategy, 'google') {
-//   constructor() {
-//     super({
-//       clientID: process.env.GOOGLE_CLIENT_ID, // Google Client ID
-//       clientSecret: process.env.GOOGLE_CLIENT_SECRET, // Google Client Secret
-//       callbackURL: process.env.GOOGLE_CALLBACK_URL, // Google Callback URL
-//       scope: ['email', 'profile'],
-//     });
-//   }
+@Injectable()
+export class JwtGoogleStrategy extends PassportStrategy(
+  GoogleStrategy,
+  'google',
+) {
+  constructor() {
+    super({
+      clientID: process.env.GOOGLE_CLIENT_ID, // Google Client ID
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET, // Google Client Secret
+      callbackURL: process.env.GOOGLE_CALLBACK_URL, // Google Callback URL
+      scope: ['email', 'profile'],
+    });
+  }
 
-//   async validate(accessToken: string, refreshToken: string, profile) {
-//     console.log(accessToken, refreshToken, profile);
+  //   async validate(
+  //     accessToken: string,
+  //     refreshToken: string,
+  //     profile: any,
+  //     done: (error: string | null, user?: any) => void,
+  //   ) {
+  //     const { id, displayName, _json } = profile;
+  //     // const email = _json.email;
+  //     const googleAccount = _json.google_account;
 
-//     return {
-//       email: profile.emails[0].value,
-//       password: '12093812093',
-//       name: profile.displayName,
-//       age: 0,
-//     };
-//   }
-// }
+  //     const user = {
+  //       email: googleAccount.email,
+  //       profile: displayName,
+  //       snsId: String(profile.id),
+  //       googleId: id,
+  //     };
+  //     done(null, user);
+
+  async validate(accessToken: string, refreshToken: string, profile) {
+    console.log(accessToken, refreshToken, profile);
+
+    return {
+      email: profile.emails[0].value,
+      password: '12093812093',
+      name: profile.displayName,
+      age: 0,
+    };
+  }
+}
