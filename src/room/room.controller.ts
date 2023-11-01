@@ -95,7 +95,7 @@ export class RoomController {
     console.log(file);
     if (!file) {
       const roomThumbnail =
-        'https://heavy-hips-s3.s3.ap-northeast-2.amazonaws.com/test/1698850316206-KakaoTalk_Photo.png';
+        'https://heavy-hips-s3.s3.ap-northeast-2.amazonaws.com/test/1698851533228-KakaoTalk_Photo_.jpeg';
       return await this.roomService.createRoom(
         createRoomRequestDto,
         userId,
