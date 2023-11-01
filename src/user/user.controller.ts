@@ -159,4 +159,9 @@ export class UserController {
     const userId = req.user['userId'];
     return this.userService.updateProfileImage(userId, file);
   }
+
+  @Post('/verifyEmail')
+  async sendVerification(@Body() body) {
+    return await this.userService.sendVerification(body.email);
+  }
 }
