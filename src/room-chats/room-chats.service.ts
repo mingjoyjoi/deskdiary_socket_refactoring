@@ -123,7 +123,7 @@ export class RoomchatsService {
       { uuid },
       { $set: { userList: room.userList } },
     );
-    await this.leaveRoomRequestToApiServer(uuid);
+    // await this.leaveRoomRequestToApiServer(uuid);
     server.to(uuid).emit('disconnect_user', nickname);
     // 로깅
     this.logger.log(`disconnected: ${client.id}`);
