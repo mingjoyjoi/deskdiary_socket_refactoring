@@ -40,8 +40,8 @@ export class JwtGoogleStrategy extends PassportStrategy(
     return {
       email: profile.emails[0].value,
       password: '12093812093',
-      name: profile.displayName,
-      age: 0,
+      nickname: profile.displayName,
+      snsId: String(profile.id),
     };
   }
 }
