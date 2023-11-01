@@ -10,6 +10,8 @@ import { HttpModule } from '@nestjs/axios';
 import { AuthController } from './auth.controller';
 import { JwtKakaoStrategy } from './kakao/jwt-social-kakao-strategy';
 import { ImageModule } from '../image/image.module';
+import { JwtGoogleStrategy } from './google/jwt-social-google.strategy';
+import { EmailService } from './email/email.service';
 
 @Module({
   imports: [
@@ -23,7 +25,14 @@ import { ImageModule } from '../image/image.module';
     ImageModule,
   ],
   controllers: [AuthController],
-  providers: [JwtStrategy, JwtConfigService, UserService, JwtKakaoStrategy], //JwtKakaoStrategy
+  providers: [
+    JwtStrategy,
+    JwtConfigService,
+    UserService,
+    JwtKakaoStrategy,
+    JwtGoogleStrategy,
+    EmailService,
+  ],
   exports: [JwtStrategy, JwtConfigService],
 })
 export class AuthModule {}
