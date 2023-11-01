@@ -24,7 +24,7 @@ export class RoomchatsService {
 
   async joinRoom(client: Socket, server: Server, iRoomRequest: IRoomRequest) {
     const { uuid, nickname, userId } = iRoomRequest;
-    const exist = this.socketModel.findOne({ userId: userId });
+    const exist = await this.socketModel.findOne({ userId: userId });
     if (exist) {
       return server
         .to(client.id)
