@@ -83,14 +83,7 @@ export class HistoryService {
   async getTodayLearningHistory(userId: number) {
     const user = await this.userService.findUserByUserId(userId);
     if (!user) throw UserException.userNotFound();
-    const goaltimeData = await this.prisma.userDetail.findUnique({
-      where: { UserId: userId },
-      select: {
-        goalTime: true,
-      },
-    });
-    if (!goaltimeData) return { message: '등록된 목표시간이 없습니다.' };
-
+    //목표시간 없으면 0 넣기
     const todayHobby = await this.prisma.$queryRaw`
     SELECT SUM(totalHours) as totalHours, historyType, DATE_FORMAT(checkIn, '%Y-%m-%d') as checkIn
     FROM History
@@ -107,8 +100,15 @@ export class HistoryService {
     AND DATE(checkIn) = DATE(DATE_ADD(NOW(), INTERVAL 9 HOUR))
     GROUP BY DATE_FORMAT(checkIn, '%Y-%m-%d')`;
 
+    const goaltimeData = await this.prisma.userDetail.findUnique({
+      where: { UserId: userId },
+      select: {
+        goalTime: true,
+      },
+    });
+    const goaltime = goaltimeData ? goaltimeData.goalTime : 0;
     const todayHistory = {
-      goaltime: goaltimeData.goalTime,
+      goaltime,
       studyTotalHours: todayStudy[0]?.totalHours ?? 0,
       hobbyTotalHours: todayHobby[0]?.totalHours ?? 0,
     };

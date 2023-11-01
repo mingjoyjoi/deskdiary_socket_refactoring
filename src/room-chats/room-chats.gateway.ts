@@ -48,7 +48,7 @@ export class RoomchatsGateway
   @SubscribeMessage('joinRoom')
   handleJoinRoom(
     @ConnectedSocket() client: Socket,
-    @MessageBody() { nickname, uuid, img }: IRoomRequest,
+    @MessageBody() { nickname, uuid, img, userId }: IRoomRequest,
   ): void {
     client.leave(client.id);
     client.join(uuid);
@@ -56,6 +56,7 @@ export class RoomchatsGateway
       nickname,
       uuid,
       img,
+      userId,
     });
   }
 
