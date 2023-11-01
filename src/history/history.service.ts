@@ -92,19 +92,19 @@ export class HistoryService {
     if (!goaltimeData) return { message: '등록된 목표시간이 없습니다.' };
 
     const todayHobby = await this.prisma.$queryRaw`
-    SELECT SUM(totalHours) as totalHours, historyType, DATE_FORMAT(checkIn, '%Y-%m-%d') as checkIn 
-    FROM History 
-    Where UserId = ${userId} 
+    SELECT SUM(totalHours) as totalHours, historyType, DATE_FORMAT(checkIn, '%Y-%m-%d') as checkIn
+    FROM History
+    WHERE UserId = ${userId}
     AND historyType ='hobby'
-    AND checkIn >= DATE_ADD(NOW(), INTERVAL -1 DAY)
+    AND DATE(checkIn) = DATE(DATE_ADD(NOW(), INTERVAL 9 HOUR))
     GROUP BY DATE_FORMAT(checkIn, '%Y-%m-%d')`;
 
     const todayStudy = await this.prisma.$queryRaw`
     SELECT SUM(totalHours) as totalHours, historyType, DATE_FORMAT(checkIn, '%Y-%m-%d') as checkIn
-    FROM History 
-    Where UserId = ${userId} 
+    FROM History
+    WHERE UserId = ${userId}
     AND historyType ='study'
-    AND checkIn >= DATE_ADD(NOW(), INTERVAL -1 DAY)
+    AND DATE(checkIn) = DATE(DATE_ADD(NOW(), INTERVAL 9 HOUR))
     GROUP BY DATE_FORMAT(checkIn, '%Y-%m-%d')`;
 
     const todayHistory = {
@@ -124,7 +124,7 @@ export class HistoryService {
     SELECT SUM(totalHours) AS totalHours, historyType, DATE_FORMAT(checkIn, '%Y-%m-%d') as checkIn
     FROM History
     WHERE historyType = 'hobby'
-    AND checkIn >= DATE_ADD(NOW(), INTERVAL -7 DAY) 
+    AND checkIn >= DATE_ADD(DATE_ADD(NOW(), INTERVAL 9 HOUR), INTERVAL -7 DAY) 
     AND UserId = ${userId}
     GROUP BY DATE_FORMAT(checkIn, '%Y-%m-%d')
     ORDER BY checkIn`;
@@ -133,7 +133,7 @@ export class HistoryService {
     SELECT SUM(totalHours) AS totalHours, historyType, DATE_FORMAT(checkIn, '%Y-%m-%d') as checkIn
     FROM History
     WHERE historyType = 'study'
-    AND checkIn >= DATE_ADD(NOW(), INTERVAL -7 DAY) 
+    AND checkIn >= DATE_ADD(DATE_ADD(NOW(), INTERVAL 9 HOUR), INTERVAL -7 DAY) 
     AND UserId = ${userId}
     GROUP BY DATE_FORMAT(checkIn, '%Y-%m-%d')
     ORDER BY checkIn`;
@@ -149,7 +149,7 @@ export class HistoryService {
     SELECT SUM(totalHours) AS totalHours, historyType, DATE_FORMAT(checkIn, '%Y-%m-%d') as checkIn
     FROM History
     WHERE historyType = 'hobby'
-    AND checkIn >= DATE_ADD(NOW(), INTERVAL -30 DAY)
+    AND checkIn >= DATE_ADD(DATE_ADD(NOW(), INTERVAL 9 HOUR), INTERVAL -30 DAY)
     AND UserId = ${userId}
     GROUP BY DATE_FORMAT(checkIn, '%Y-%m-%d')
     ORDER BY checkIn`;
@@ -158,7 +158,7 @@ export class HistoryService {
     SELECT SUM(totalHours) AS totalHours, historyType, DATE_FORMAT(checkIn, '%Y-%m-%d') as checkIn
     FROM History
     WHERE historyType = 'study'
-    AND checkIn >= DATE_ADD(NOW(), INTERVAL -30 DAY)
+    AND checkIn >= DATE_ADD(DATE_ADD(NOW(), INTERVAL 9 HOUR), INTERVAL -30 DAY)
     AND UserId = ${userId}
     GROUP BY DATE_FORMAT(checkIn, '%Y-%m-%d')
     ORDER BY checkIn`;
