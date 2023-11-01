@@ -23,7 +23,14 @@ export class RoomchatsService {
   }
 
   async joinRoom(client: Socket, server: Server, iRoomRequest: IRoomRequest) {
-    const { uuid, nickname } = iRoomRequest;
+    const { uuid, nickname, userId } = iRoomRequest;
+    const exist = this.socketModel.findOne({ userId: userId });
+    if (exist) {
+      return server
+        .to(client.id)
+        .emit('joinError', '이미 방에 접속한 사용자 입니다.');
+    }
+    client.join(uuid);
     const data = await this.roomModel.findOne({ uuid });
     if (!data) {
       await this.createRoom(client, iRoomRequest);
@@ -34,20 +41,33 @@ export class RoomchatsService {
     this.emitEventForUserList(client, server, uuid, nickname, 'new-user');
   }
 
-  async createRoom(client: Socket, { nickname, uuid, img }: IRoomRequest) {
+  async createRoom(
+    client: Socket,
+    { nickname, uuid, img, userId }: IRoomRequest,
+  ) {
     const newRoom = { uuid: uuid, owner: client.id, userList: {} };
     newRoom.userList = { [client.id]: { nickname, img } };
     await this.roomModel.create(newRoom);
-    const newUser = { clientId: client.id, uuid: uuid, nickname: nickname };
+    const newUser = {
+      clientId: client.id,
+      uuid: uuid,
+      nickname: nickname,
+      userId: userId,
+    };
     await this.socketModel.create(newUser);
   }
 
   async updateRoom(
     client: Socket,
     roomData: any,
-    { uuid, nickname, img }: IRoomRequest,
+    { uuid, nickname, img, userId }: IRoomRequest,
   ) {
-    const newUser = { clientId: client.id, uuid: uuid, nickname: nickname };
+    const newUser = {
+      clientId: client.id,
+      uuid: uuid,
+      nickname: nickname,
+      userId: userId,
+    };
     await this.socketModel.create(newUser);
     const findRoom = roomData;
     findRoom.userList[client.id] = { nickname, img };
@@ -58,7 +78,7 @@ export class RoomchatsService {
   }
 
   async removeRoom(client: Socket, server: Server, uuid: string) {
-    const data = this.roomModel.find({ uuid });
+    const data = this.roomModel.findOne({ uuid });
     if (!data) {
       return server.to(client.id).emit('error-room', Exception.roomNotFound);
     }
