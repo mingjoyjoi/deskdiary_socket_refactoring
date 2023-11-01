@@ -14,6 +14,11 @@ COPY . /app
 # 프로젝트에 사용되는 모듈 설치
 RUN npm install
 
+# # Artillery 설치
+# RUN npm install -g artillery
+
+# RUN npm install uuid
+
 # Prisma 클라이언트 생성
 RUN npx prisma generate
 

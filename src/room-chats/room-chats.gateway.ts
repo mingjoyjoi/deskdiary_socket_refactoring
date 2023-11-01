@@ -88,7 +88,7 @@ export class RoomchatsGateway
   }
 
   handleDisconnect(@ConnectedSocket() client: Socket) {
-    this.logger.log('disconnected');
+    this.logger.log(`disconnected: ${client.id}`);
     this.roomchatsService.disconnectClient(client, this.server);
   }
 }
