@@ -26,6 +26,7 @@ export class RoomchatsService {
     const { uuid, nickname, userId } = iRoomRequest;
     const exist = await this.socketModel.findOne({ userId: userId });
     if (exist) {
+      await this.leaveRoomRequestToApiServer(uuid);
       return client.emit('joinError', '이미 방에 접속한 사용자 입니다.');
     }
     client.leave(client.id);
