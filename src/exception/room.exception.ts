@@ -55,4 +55,11 @@ export class RoomException {
       message: '방의 참여자가 가득찼습니다.',
     });
   }
+
+  static roomUserexists(): HttpException {
+    return new BadRequestException({
+      statusCode: HttpStatus.BAD_REQUEST,
+      message: '방안에 사용자가 존재하는 경우 삭제할 수 없습니다.',
+    });
+  }
 }
