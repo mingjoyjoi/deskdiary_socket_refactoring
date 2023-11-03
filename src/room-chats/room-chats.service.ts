@@ -176,8 +176,29 @@ export class RoomchatsService {
     const headers = {
       'socket-secret-key': process.env.SOCKET_SECRET_KEY ?? '',
     };
-    await axios.post(`${baseURL}/room/socket/leave/${uuid}`, undefined, {
-      headers,
-    });
+
+    try {
+      const response = await axios.post(
+        `${baseURL}/room/socket/leave/${uuid}`,
+        undefined,
+        {
+          headers,
+        },
+      );
+      // 성공한 경우의 처리
+      console.log('요청 성공:', response.data);
+    } catch (error) {
+      if (error.response) {
+        // 서버 응답이 있는 경우 (HTTP 상태 코드가 2xx가 아닌 경우)
+        console.error('HTTP 에러 상태 코드:', error.response.status);
+        console.error('HTTP 에러 응답 데이터:', error.response.data);
+      } else if (error.request) {
+        // 요청은 완료되었지만 서버 응답이 없는 경우
+        console.error('요청에 응답이 없습니다.');
+      } else {
+        // 요청을 보내기 전에 발생한 에러
+        console.error('요청을 보내는 중에 에러 발생:', error.message);
+      }
+    }
   }
 }
