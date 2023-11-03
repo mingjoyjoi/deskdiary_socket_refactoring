@@ -46,7 +46,7 @@ export class RoomchatsService {
     { nickname, uuid, img, userId }: IRoomRequest,
   ) {
     const newRoom = { uuid: uuid, owner: client.id, userList: {} };
-    newRoom.userList = { [client.id]: { nickname, img } };
+    newRoom.userList = { [client.id]: { nickname, img, userId } };
     await this.roomModel.create(newRoom);
     const newUser = {
       clientId: client.id,
@@ -70,7 +70,7 @@ export class RoomchatsService {
     };
     await this.socketModel.create(newUser);
     const findRoom = roomData;
-    findRoom.userList[client.id] = { nickname, img };
+    findRoom.userList[client.id] = { nickname, img, userId };
     await this.roomModel.findOneAndUpdate(
       { uuid },
       { $set: { userList: findRoom.userList } },
