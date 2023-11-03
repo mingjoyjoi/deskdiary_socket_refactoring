@@ -5,6 +5,7 @@ import * as cookieParser from 'cookie-parser';
 import { join } from 'path';
 import { AppModule } from './app.module';
 import { CorsConfig, SwaggerConfig } from './config';
+import { HttpExceptionFilter } from './filter/http-exception.filter';
 // import { RoomSeedService } from './room/room.seed.service';
 
 async function bootstrap() {
@@ -17,7 +18,7 @@ async function bootstrap() {
       transform: true,
     }),
   );
-
+  app.useGlobalFilters(new HttpExceptionFilter());
   app.useStaticAssets(join(__dirname, '..', 'public'));
   app.useStaticAssets(join(__dirname, '..', 'static'), {
     prefix: '/static/',
