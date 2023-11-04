@@ -16,7 +16,7 @@ import { User } from '@prisma/client';
 import { UpdatePasswordDto } from './dto/update.password.dto';
 import { ImageService } from '../image/image.service';
 import { EmailService } from '../auth/email/email.service';
-import { randomNickname } from './constant/random-nickname';
+//import { randomNickname } from './constant/random-nickname';
 
 @Injectable()
 export class UserService {
@@ -170,7 +170,7 @@ export class UserService {
       existingUser = await this.prisma.user.create({
         data: {
           email,
-          nickname: randomNickname,
+          nickname: `엉덩${Math.floor(Math.random() * 100)}호`,
           snsId,
           provider: 'Kakao',
           password: 'KAKAO_SNS_LOGIN',
@@ -198,7 +198,7 @@ export class UserService {
       existingUser = await this.prisma.user.create({
         data: {
           email,
-          nickname: randomNickname,
+          nickname: `엉덩${Math.floor(Math.random() * 100)}호`,
           snsId,
           provider: 'Google',
           password: 'GOOGLE_SNS_LOGIN',
