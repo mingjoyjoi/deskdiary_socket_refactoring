@@ -3,9 +3,8 @@ import { NextFunction, Request, Response } from 'express';
 
 @Injectable()
 export class LoggerMiddleware implements NestMiddleware {
-  private logger = new Logger('HTTP'); // HTTP 프로토콜에 대한 logger
+  private logger = new Logger('HTTP');
   use(req: Request, res: Response, next: NextFunction) {
-    // response가 완료 (finish event)되면 로그를 남김
     res.on('finish', () => {
       this.logger.log(
         `${req.ip} ${req.method}, ${res.statusCode}`,
