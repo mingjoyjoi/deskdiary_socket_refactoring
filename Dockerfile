@@ -14,6 +14,8 @@ COPY . /app
 # 프로젝트에 사용되는 모듈 설치
 RUN npm install
 
+# pm2 설치
+RUN npm install pm2 -g
 # # Artillery 설치
 # RUN npm install -g artillery
 
@@ -25,8 +27,9 @@ RUN npx prisma generate
 # Nest.js 빌드
 RUN npm run build
 
-# Port (3000) 개방
+# Port (4000) 개방
 EXPOSE 4000
-# 서버 실행
-ENTRYPOINT ["npm"]
-CMD ["run", "start:dev"]
+
+# 서버 실행 (클러스터 모드로 최대 인스턴스 수 실행)
+ENTRYPOINT ["pm2-runtime"]
+CMD ["dist/main.js", "-i", "max"]
