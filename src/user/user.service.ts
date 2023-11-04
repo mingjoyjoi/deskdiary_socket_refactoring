@@ -160,7 +160,7 @@ export class UserService {
     snsId: string;
     provider: string;
   }): Promise<User> {
-    const { email, snsId } = user;
+    const { email, snsId, nickname } = user;
 
     let existingUser = await this.prisma.user.findUnique({
       where: { email },
@@ -170,7 +170,7 @@ export class UserService {
       existingUser = await this.prisma.user.create({
         data: {
           email,
-          nickname: `엉덩${Math.floor(Math.random() * 100)}호`,
+          nickname,
           snsId,
           provider: 'Kakao',
           password: 'KAKAO_SNS_LOGIN',
@@ -188,7 +188,7 @@ export class UserService {
     snsId: string;
     provider: string;
   }): Promise<User> {
-    const { email, snsId } = user;
+    const { email, snsId, nickname } = user;
 
     let existingUser = await this.prisma.user.findUnique({
       where: { email },
@@ -198,7 +198,7 @@ export class UserService {
       existingUser = await this.prisma.user.create({
         data: {
           email,
-          nickname: `엉덩${Math.floor(Math.random() * 100)}호`,
+          nickname,
           snsId,
           provider: 'Google',
           password: 'GOOGLE_SNS_LOGIN',
