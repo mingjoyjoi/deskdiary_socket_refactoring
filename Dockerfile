@@ -15,7 +15,7 @@ COPY . /app
 RUN npm install
 
 # pm2 설치
-# RUN npm install pm2 -g
+RUN npm install pm2 -g
 # # Artillery 설치
 # RUN npm install -g artillery
 
@@ -30,8 +30,8 @@ RUN npm run build
 # Port (4000) 개방
 EXPOSE 4000
 
-# 서버 실행 (클러스터 모드로 최대 인스턴스 수 실행)
-ENTRYPOINT ["npm"]
-CMD ["run", "start:dev"]
-# ENTRYPOINT ["pm2-runtime"]
-# CMD ["dist/main.js", "-i", "max"]
+# 서버 실행
+# ENTRYPOINT ["npm"]
+# CMD ["run", "start:dev"]
+ENTRYPOINT ["pm2-runtime"]
+CMD ["dist/main.js"]
