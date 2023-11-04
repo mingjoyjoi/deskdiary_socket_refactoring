@@ -38,7 +38,7 @@ export class JwtGoogleStrategy extends PassportStrategy(
   async validate(accessToken: string, refreshToken: string, profile) {
     console.log(accessToken, refreshToken, profile);
 
-    const randomNickname = this.authService.generateUniqueNickname();
+    const randomNickname = await this.authService.generateUniqueNickname();
     return {
       email: profile.emails[0].value,
       password: '12093812093',

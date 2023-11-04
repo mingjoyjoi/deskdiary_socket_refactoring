@@ -21,7 +21,7 @@ export class JwtKakaoStrategy extends PassportStrategy(KaKaoStrategy, 'kakao') {
   ) {
     const { id, _json } = profile;
     const kakaoAccount = _json.kakao_account;
-    const randomNickname = this.authService.generateUniqueNickname();
+    const randomNickname = await this.authService.generateUniqueNickname();
     const user = {
       email: kakaoAccount.email,
       nickname: randomNickname,
