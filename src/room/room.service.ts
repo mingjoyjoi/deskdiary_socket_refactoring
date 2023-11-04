@@ -159,7 +159,7 @@ export class RoomService {
     });
     if (!findRoom) throw RoomException.roomNotFound();
     //방안에 유저가 있는 경우 에러띄움
-    // if (findRoom.nowHeadcount) throw RoomException.roomUserexists();
+    if (findRoom.nowHeadcount) throw RoomException.roomUserexists();
     if (userId != findRoom.ownerId) throw UserException.userUnauthorized();
     const deleteResult = await this.prisma.room.delete({
       where: { uuid: uuid },
