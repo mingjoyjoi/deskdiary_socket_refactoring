@@ -16,6 +16,7 @@ import { User } from '@prisma/client';
 import { UpdatePasswordDto } from './dto/update.password.dto';
 import { ImageService } from '../image/image.service';
 import { EmailService } from '../auth/email/email.service';
+import { randomNickname } from './constant/random-nickname';
 
 @Injectable()
 export class UserService {
@@ -31,12 +32,23 @@ export class UserService {
     const { email, nickname, password } = joinuserDto;
 
     // 이메일 중복 확인
-    const existingUser = await this.prisma.user.findUnique({
+    const existingUserByEmail = await this.prisma.user.findUnique({
       where: { email },
     });
-    if (existingUser) {
+    if (existingUserByEmail) {
       throw new HttpException(
         '이메일이 이미 사용중입니다.',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const existingUserByNickname = await this.prisma.user.findFirst({
+      where: { nickname },
+    });
+
+    if (existingUserByNickname) {
+      throw new HttpException(
+        '닉네임이 이미 사용중입니다.',
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -148,7 +160,7 @@ export class UserService {
     snsId: string;
     provider: string;
   }): Promise<User> {
-    const { email, nickname, snsId } = user;
+    const { email, snsId } = user;
 
     let existingUser = await this.prisma.user.findUnique({
       where: { email },
@@ -158,7 +170,7 @@ export class UserService {
       existingUser = await this.prisma.user.create({
         data: {
           email,
-          nickname,
+          nickname: randomNickname,
           snsId,
           provider: 'Kakao',
           password: 'KAKAO_SNS_LOGIN',
@@ -176,7 +188,7 @@ export class UserService {
     snsId: string;
     provider: string;
   }): Promise<User> {
-    const { email, nickname, snsId } = user;
+    const { email, snsId } = user;
 
     let existingUser = await this.prisma.user.findUnique({
       where: { email },
@@ -186,7 +198,7 @@ export class UserService {
       existingUser = await this.prisma.user.create({
         data: {
           email,
-          nickname,
+          nickname: randomNickname,
           snsId,
           provider: 'Google',
           password: 'GOOGLE_SNS_LOGIN',
