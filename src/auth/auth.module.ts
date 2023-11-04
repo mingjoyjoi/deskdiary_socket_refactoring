@@ -12,6 +12,7 @@ import { JwtKakaoStrategy } from './kakao/jwt-social-kakao-strategy';
 import { ImageModule } from '../image/image.module';
 import { JwtGoogleStrategy } from './google/jwt-social-google.strategy';
 import { EmailService } from './email/email.service';
+import { AuthService } from './auth.service';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { EmailService } from './email/email.service';
     JwtStrategy,
     JwtConfigService,
     UserService,
+    AuthService,
     JwtKakaoStrategy,
     JwtGoogleStrategy,
     EmailService,
