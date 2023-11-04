@@ -1,13 +1,14 @@
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { Injectable } from '@nestjs/common';
+import { AuthService } from '../auth.service';
 
 @Injectable()
 export class JwtGoogleStrategy extends PassportStrategy(
   GoogleStrategy,
   'google',
 ) {
-  constructor() {
+  constructor(private readonly authService: AuthService) {
     super({
       clientID: process.env.GOOGLE_CLIENT_ID, // Google Client ID
       clientSecret: process.env.GOOGLE_CLIENT_SECRET, // Google Client Secret
@@ -37,10 +38,11 @@ export class JwtGoogleStrategy extends PassportStrategy(
   async validate(accessToken: string, refreshToken: string, profile) {
     console.log(accessToken, refreshToken, profile);
 
+    const randomNickname = this.authService.generateUniqueNickname();
     return {
       email: profile.emails[0].value,
       password: '12093812093',
-      nickname: profile.displayName,
+      nickname: randomNickname,
       snsId: String(profile.id),
     };
   }
