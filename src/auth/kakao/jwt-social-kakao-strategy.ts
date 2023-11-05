@@ -2,7 +2,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Strategy as KaKaoStrategy } from 'passport-kakao';
 import { Injectable } from '@nestjs/common';
 import { AuthService } from '../auth.service';
-//수정
+
 @Injectable()
 export class JwtKakaoStrategy extends PassportStrategy(KaKaoStrategy, 'kakao') {
   constructor(private readonly authService: AuthService) {
