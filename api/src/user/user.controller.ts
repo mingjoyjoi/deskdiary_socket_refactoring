@@ -56,6 +56,16 @@ export class UserController {
     await this.userService.login(loginuserDto, res);
   }
 
+  @Post('refresh')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '리프레시 토큰으로 액세스 토큰 재발급' })
+  @ApiResponse({ status: 200, description: '새 액세스 토큰 발급됨' })
+  @ApiResponse({ status: 401, description: '인증 실패' })
+  async renewAccessToken(@Req() req, @Res() res) {
+    const refreshToken = req.cookies['RefreshToken']; // 쿠키에서 리프레시 토큰을 가져옵니다.
+    return this.userService.renewAccessToken(refreshToken, res);
+  }
+
   @Put('me/password')
   @ApiBearerAuth()
   @ApiOperation({

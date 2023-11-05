@@ -3,6 +3,7 @@ import {
   HttpStatus,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
@@ -92,47 +93,50 @@ export class UserService {
       secret: process.env.JWT_REFRESH_SECRET,
     });
 
+    const refreshTokenHash = await bcrypt.hash(refreshToken, 10);
     await this.prisma.user.update({
       where: { userId: user.userId },
-      data: { refreshToken },
+      data: { refreshToken: refreshTokenHash },
     });
 
     res.setHeader('Authorization', `Bearer ${accessToken}`);
-    // res.cookie('RefreshToken', refreshToken, {
-    //   httpOnly: true,
-    //   secure: true,
-    // });
-    res.json({ message: '로그인에 성공하였습니다.', token: accessToken });
+    res.cookie('RefreshToken', refreshToken, {
+      httpOnly: true,
+      secure: true,
+    });
+    res.json({
+      message: '로그인에 성공하였습니다.',
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+    });
   }
 
-  // async renewAccessToken(refreshToken: string, res: Response): Promise<void> {
-  //   let userId: number;
-  //   try {
-  //     const decoded = this.jwtService.verify(refreshToken, {
-  //       secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
-  //     });
-  //     userId = decoded.userId;
-  //   } catch (error) {
-  //     throw new UnauthorizedException('유효하지 않은 refreshToken 입니다.');
-  //   }
+  async renewAccessToken(refreshToken: string, res: Response): Promise<void> {
+    let userId: number;
+    try {
+      const decoded = this.jwtService.verify(refreshToken, {
+        secret: process.env.JWT_REFRESH_SECRET,
+      });
+      userId = decoded.userId;
+    } catch (error) {
+      throw new UnauthorizedException('유효하지 않은 refreshToken 입니다.');
+    }
 
-  //   const user = await this.prisma.user.findUnique({
-  //     where: { userid: userId },
-  //     select: { userid: true, refreshToken: true },
-  //   });
+    const user = await this.prisma.user.findUnique({
+      where: { userId: userId },
+      select: { refreshToken: true },
+    });
 
-  //   if (!user || user.refreshToken !== refreshToken) {
-  //     throw new UnauthorizedException('유효하지 않은 refreshToken 입니다.');
-  //   }
+    if (!user || !(await bcrypt.compare(refreshToken, user.refreshToken))) {
+      throw new UnauthorizedException('유효하지 않은 refreshToken 입니다.');
+    }
 
-  //   const jwtPayload = { userId: user.userid, type: 'User' };
-  //   const newAccessToken = this.jwtService.sign(jwtPayload, {
-  //     expiresIn: '5m',
-  //     secret: this.configService.get<string>('JWT_SECRET'),
-  //   });
-  //   res.setHeader('Authorization', `Bearer ${newAccessToken}`);
-  //   res.json({ message: '로그인에 성공하였습니다.' });
-  // }
+    const jwtPayload = { userId: userId, type: 'user' };
+    const jwtSignOptions = this.jwtconfigService.getJwtSignOptions();
+    const newAccessToken = this.jwtService.sign(jwtPayload, jwtSignOptions);
+    res.setHeader('Authorization', `Bearer ${newAccessToken}`);
+    res.json({ message: '로그인에 성공하였습니다.' });
+  }
 
   async logout(email: string) {
     await this.prisma.user.update({
