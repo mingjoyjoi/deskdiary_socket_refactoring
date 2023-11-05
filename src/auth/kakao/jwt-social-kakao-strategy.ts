@@ -28,7 +28,6 @@ export class JwtKakaoStrategy extends PassportStrategy(KaKaoStrategy, 'kakao') {
       snsId: String(profile.id),
       kakaoId: id,
     };
-
     done(null, user);
   }
 }
