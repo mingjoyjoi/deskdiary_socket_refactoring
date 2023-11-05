@@ -1,6 +1,6 @@
 # Workflow title
 # 명시하지 않는 경우 파일의 경로가 타이틀이 된다.
-name: deskdiary-cicd
+name: deskdiary-socket-server-cicd
 
 # 이벤트
 # main 브랜치에 push나 pull request가 일어난우경우
