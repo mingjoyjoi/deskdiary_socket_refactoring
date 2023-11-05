@@ -1,11 +1,11 @@
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy as KaKaoStrategy } from 'passport-kakao';
 import { Injectable } from '@nestjs/common';
+import { AuthService } from '../auth.service';
 
 @Injectable()
 export class JwtKakaoStrategy extends PassportStrategy(KaKaoStrategy, 'kakao') {
-  authService: any;
-  constructor() {
+  constructor(private readonly authService: AuthService) {
     super({
       clientID: process.env.KAKAO_CLIENT_ID,
       clientSecret: process.env.KAKAO_CLIENT_SECRET,
@@ -17,8 +17,7 @@ export class JwtKakaoStrategy extends PassportStrategy(KaKaoStrategy, 'kakao') {
     accessToken: string,
     refreshToken: string,
     profile: any,
-    // eslint-disable-next-line @typescript-eslint/ban-types
-    done: Function,
+    done: (error: string | null, user?: any) => void,
   ) {
     const { id, _json } = profile;
     const kakaoAccount = _json.kakao_account;
