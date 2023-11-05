@@ -15,6 +15,8 @@ import { JwtConfigService } from '../config/jwt.config.service';
 import { User } from '@prisma/client';
 import { UpdatePasswordDto } from './dto/update.password.dto';
 import { ImageService } from '../image/image.service';
+import { EmailService } from '../auth/email/email.service';
+//import { randomNickname } from './constant/random-nickname';
 
 @Injectable()
 export class UserService {
@@ -23,18 +25,30 @@ export class UserService {
     private readonly jwtconfigService: JwtConfigService,
     private readonly jwtService: JwtService,
     private readonly imageService: ImageService,
+    private readonly emailService: EmailService,
   ) {}
 
   async signUp(joinuserDto: JoinUserDto) {
     const { email, nickname, password } = joinuserDto;
 
     // 이메일 중복 확인
-    const existingUser = await this.prisma.user.findUnique({
+    const existingUserByEmail = await this.prisma.user.findUnique({
       where: { email },
     });
-    if (existingUser) {
+    if (existingUserByEmail) {
       throw new HttpException(
         '이메일이 이미 사용중입니다.',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const existingUserByNickname = await this.prisma.user.findFirst({
+      where: { nickname },
+    });
+
+    if (existingUserByNickname) {
+      throw new HttpException(
+        '닉네임이 이미 사용중입니다.',
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -146,7 +160,7 @@ export class UserService {
     snsId: string;
     provider: string;
   }): Promise<User> {
-    const { email, nickname, snsId } = user;
+    const { email, snsId, nickname } = user;
 
     let existingUser = await this.prisma.user.findUnique({
       where: { email },
@@ -168,14 +182,32 @@ export class UserService {
   }
 
   // -------------- 구글 로그인 ---------------------
-  // async findOrCreateGoogleUser(user: {
-  //   email: string;
-  //   nickname: string;
-  //   snsId: string;
-  //   provider: string;
-  // }): Promise<User> {
-  //   const { email, nickname, snsId, provider } = user;
-  // }
+  async findOrCreateGoogleUser(user: {
+    email: string;
+    nickname: string;
+    snsId: string;
+    provider: string;
+  }): Promise<User> {
+    const { email, snsId, nickname } = user;
+
+    let existingUser = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!existingUser) {
+      existingUser = await this.prisma.user.create({
+        data: {
+          email,
+          nickname,
+          snsId,
+          provider: 'Google',
+          password: 'GOOGLE_SNS_LOGIN',
+        },
+      });
+    }
+
+    return existingUser;
+  }
 
   // 비밀번호 수정
   async updatePassword(userId: number, dto: UpdatePasswordDto) {
@@ -258,5 +290,30 @@ export class UserService {
       throw new NotFoundException(`${userId}를 찾을 수 없습니다.`);
     }
     return deletedUser;
+  }
+
+  async sendVerification(email: string) {
+    const verifyToken = this.generateRandomNumber();
+
+    console.log('캐싱할 데이터: ', email, verifyToken);
+    // TODO: verifyToken이랑 이메일 캐싱
+
+    await this.sendVerifyToken(email, verifyToken);
+  }
+
+  async sendVerifyToken(email: string, verifyToken: number) {
+    await this.emailService.sendVerifyToken(email, verifyToken);
+  }
+
+  async verifyEmail(email: string, verifyToken: number) {
+    console.log('verifyEmail: ', email, verifyToken);
+    // TODO: 캐싱된 데이터 찾기. 있으면 200, 없으면 Exception
+    return;
+  }
+
+  private generateRandomNumber(): number {
+    const minm = 100000;
+    const maxm = 999999;
+    return Math.floor(Math.random() * (maxm - minm + 1)) + minm;
   }
 }

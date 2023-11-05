@@ -95,7 +95,7 @@ export class RoomController {
     console.log(file);
     if (!file) {
       const roomThumbnail =
-        'https://heavy-hips-s3.s3.ap-northeast-2.amazonaws.com/room-thumbnails/1697631199431-dog.jpeg';
+        'https://heavy-hips-s3.s3.ap-northeast-2.amazonaws.com/test/1698868660966-thumbnail11.jpeg';
       return await this.roomService.createRoom(
         createRoomRequestDto,
         userId,
@@ -215,7 +215,7 @@ export class RoomController {
   }
 
   @Post('socket/leave/:uuid')
-  //@ApiOperation({ summary: '소켓 방 나가기' })
+  @ApiOperation({ summary: '소켓 방 나가기' })
   async leaveRoomBySocket(
     @Req() req: Request,
     @Param('uuid') uuid: string,
@@ -227,18 +227,18 @@ export class RoomController {
     return false;
   }
 
-  @Delete('socket/:uuid')
-  //@ApiOperation({ summary: '소켓 방 삭제' })
-  async deleteRoomBySocket(
-    @Req() req: Request,
-    @Param('uuid') uuid: string,
-  ): Promise<boolean> {
-    const key = req.header('socket-secret-key');
-    if (key === process.env.SOCKET_SECRET_KEY) {
-      return await this.roomService.deleteRoomFromSocket(uuid);
-    }
-    return false;
-  }
+  // @Delete('socket/:uuid')
+  // @ApiOperation({ summary: '소켓 방 삭제' })
+  // async deleteRoomBySocket(
+  //   @Req() req: Request,
+  //   @Param('uuid') uuid: string,
+  // ): Promise<boolean> {
+  //   const key = req.header('socket-secret-key');
+  //   if (key === process.env.SOCKET_SECRET_KEY) {
+  //     return await this.roomService.deleteRoomFromSocket(uuid);
+  //   }
+  //   return false;
+  // }
 
   // @UseGuards(JwtAuthGuard)
   // @ApiBearerAuth()

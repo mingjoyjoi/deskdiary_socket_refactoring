@@ -56,7 +56,6 @@ model History {
   historyId     Int        @id  @default(autoincrement())
   UserId        Int
   RoomId        Int
-  nickname      String
   checkIn       DateTime
   checkOut      DateTime
   totalHours    Int?
@@ -91,6 +90,7 @@ model UserRoom {
   RoomId        Int
   User          User      @relation(fields: [UserId], references: [userId], onDelete: Cascade)
   Room          Room      @relation(fields: [RoomId], references: [roomId], onDelete: Cascade)
+
   @@id([UserId, RoomId])
   @@map("UserRoom")
 }

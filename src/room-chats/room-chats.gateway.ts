@@ -30,13 +30,12 @@ export class RoomchatsGateway
     @MessageBody() { uuid, message, nickname, img }: IMessage,
   ): void {
     const localDateTime = LocalDateTime.now().plusHours(9);
-    // 현재 시간이 오전(AM) 또는 오후(PM)를 판단
     const period = localDateTime.hour() < 12 ? 'AM' : 'PM';
-    // 시간은 12시간 형식으로 변환
     const formattedHour = localDateTime.hour() % 12 || 12;
+    const minute = localDateTime.minute().toString().padStart(2, '0');
     const emitMessage: IMessage = {
       message,
-      time: `${formattedHour}:${localDateTime.minute()} ${period}`,
+      time: `${formattedHour}:${minute} ${period}`,
       nickname,
       uuid,
       img,
@@ -49,15 +48,15 @@ export class RoomchatsGateway
   @SubscribeMessage('joinRoom')
   handleJoinRoom(
     @ConnectedSocket() client: Socket,
-    @MessageBody() { nickname, uuid, img }: IRoomRequest,
+    @MessageBody() { nickname, uuid, img, userId }: IRoomRequest,
   ): void {
     client.leave(client.id);
     client.join(uuid);
-
     this.roomchatsService.joinRoom(client, this.server, {
       nickname,
       uuid,
       img,
+      userId,
     });
   }
 
@@ -89,6 +88,7 @@ export class RoomchatsGateway
   }
 
   handleDisconnect(@ConnectedSocket() client: Socket) {
+    this.logger.log(`disconnected: ${client.id}`);
     this.roomchatsService.disconnectClient(client, this.server);
   }
 }

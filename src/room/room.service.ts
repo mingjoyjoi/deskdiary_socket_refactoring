@@ -135,7 +135,6 @@ export class RoomService {
 
     const user = await this.userService.findUserByUserId(userId);
     if (!user) throw UserException.userNotFound();
-    const nickname = user.nickname;
 
     const roomId = findRoom.roomId;
     const recordedHistory = await this.prisma.history.create({
@@ -144,7 +143,6 @@ export class RoomService {
         checkOut,
         historyType,
         totalHours: totalSeconds,
-        nickname,
         UserId: userId,
         RoomId: roomId,
       },
@@ -160,7 +158,8 @@ export class RoomService {
       where: { uuid: uuid },
     });
     if (!findRoom) throw RoomException.roomNotFound();
-
+    //방안에 유저가 있는 경우 에러띄움
+    if (findRoom.nowHeadcount) throw RoomException.roomUserexists();
     if (userId != findRoom.ownerId) throw UserException.userUnauthorized();
     const deleteResult = await this.prisma.room.delete({
       where: { uuid: uuid },

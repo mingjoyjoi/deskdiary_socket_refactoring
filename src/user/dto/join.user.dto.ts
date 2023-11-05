@@ -4,6 +4,7 @@ import {
   IsNotEmpty,
   IsString,
   Matches,
+  MaxLength,
   MinLength,
 } from 'class-validator';
 
@@ -19,9 +20,8 @@ export class JoinUserDto {
 
   @IsString()
   @IsNotEmpty({ message: '닉네임이 비어 있으면 안됩니다' })
-  @Matches(/^[a-zA-Z0-9\uAC00-\uD7A3]*$/, {
-    message: '닉네임은 한글, 알파벳, 숫자만 포함해야 합니다',
-  })
+  @MinLength(2)
+  @MaxLength(5)
   @ApiProperty({
     description: '사용자의 닉네임',
     example: '무거운엉덩이123abc',
