@@ -16,8 +16,6 @@ import { User } from '@prisma/client';
 import { UpdatePasswordDto } from './dto/update.password.dto';
 import { ImageService } from '../image/image.service';
 import { EmailService } from '../auth/email/email.service';
-//import { randomNickname } from './constant/random-nickname';
-
 @Injectable()
 export class UserService {
   constructor(
@@ -263,6 +261,17 @@ export class UserService {
     if (!existingUser) {
       throw new NotFoundException(`${userId}를 찾을 수 없습니다.`);
     }
+    const { nickname } = dto;
+    const existingUserByNickname = await this.prisma.user.findFirst({
+      where: { nickname },
+    });
+
+    if (existingUserByNickname) {
+      throw new HttpException(
+        '닉네임이 이미 사용중입니다.',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
     return await this.prisma.user.update({
       where: { userId },
       data: dto,
@@ -278,6 +287,28 @@ export class UserService {
       where: { userId },
       data: {
         profileImage: uploadedData.Location,
+      },
+    });
+  }
+
+  async deleteProfileImage(userId: number) {
+    const user = await this.prisma.user.findUnique({
+      where: { userId },
+      select: { profileImage: true },
+    });
+    if (user && user.profileImage) {
+      const url = new URL(user.profileImage);
+      const fileName = url.pathname.substring(1);
+      try {
+        await this.imageService.deleteImage(fileName);
+      } catch (error) {
+        throw new Error('S3에서 이미지를 삭제하는 데 실패했습니다.');
+      }
+    }
+    return this.prisma.user.update({
+      where: { userId },
+      data: {
+        profileImage: null,
       },
     });
   }
