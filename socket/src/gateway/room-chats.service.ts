@@ -23,7 +23,8 @@ export class RoomchatsService {
   }
 
   async joinRoom(client: Socket, server: Server, iRoomRequest: IRoomRequest) {
-    const { uuid, nickname } = iRoomRequest;
+    const { uuid, userId, nickname } = iRoomRequest;
+    console.log('조인룸서비스', { nickname, uuid, userId });
     const data = await this.roomModel.findOne({ uuid });
     if (!data) {
       await this.createRoom(client, iRoomRequest);
