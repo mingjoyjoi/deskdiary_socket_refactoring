@@ -95,3 +95,4 @@ jobs:
           docker-compose down || true  # 기존에 동작 중인 컨테이너를 종료합니다.
           docker-compose pull  # DockerHub에서 최신 이미지를 가져옵니다.
           docker-compose up -d  # Docker Compose로 서비스를 백그라운드에서 실행합니다.
+        working-directory: ./socket
