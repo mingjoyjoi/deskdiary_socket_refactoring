@@ -90,6 +90,10 @@ jobs:
           echo "SOCKET_SECRET_KEY=${{ secrets.SOCKET_SECRET_KEY }}" >> .env
 
       # Docker Compose를 이용하여 서비스를 배포합니다.
+      - name: List directory contents
+        run: ls -la
+        working-directory: ./socket
+
       - name: Deploy using Docker Compose
         run: |
           docker-compose down || true  # 기존에 동작 중인 컨테이너를 종료합니다.

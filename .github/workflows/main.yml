@@ -116,6 +116,9 @@ jobs:
           echo "GOOGLE_SCOPE_PROFILE=${{ secrets.GOOGLE_SCOPE_PROFILE }}" >> .env
           echo "GOOGLE_SCOPE_EMAIL=${{ secrets.GOOGLE_SCOPE_EMAIL }}" >> .env
 
+      - name: List directory contents
+        run: ls -la
+        working-directory: ./api
       # Docker Compose를 이용하여 서비스를 배포합니다.
       - name: Deploy using Docker Compose
         run: |
