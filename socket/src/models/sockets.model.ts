@@ -35,7 +35,7 @@ export class Socket extends Document {
   })
   @IsNotEmpty()
   @IsString()
-  userId: string;
+  userId: number;
 }
 
 export const SocketSchema = SchemaFactory.createForClass(Socket);
