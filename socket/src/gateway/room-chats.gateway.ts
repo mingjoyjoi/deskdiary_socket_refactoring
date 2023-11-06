@@ -50,7 +50,6 @@ export class RoomchatsGateway
     @ConnectedSocket() client: Socket,
     @MessageBody() { nickname, uuid, img, userId }: IRoomRequest,
   ): void {
-    console.log('조인룸', { nickname, uuid, img, userId });
     client.leave(client.id);
     client.join(uuid);
     this.roomchatsService.joinRoom(client, this.server, {
