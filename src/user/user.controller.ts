@@ -154,10 +154,18 @@ export class UserController {
     @Req() req: any,
     @UploadedFile() file: Express.Multer.File,
   ) {
-    console.log('updateProfileImage called');
-    console.log(file);
-    const userId = req.user['userId'];
+    const userId = req.user.userId;
     return this.userService.updateProfileImage(userId, file);
+  }
+  @Delete('me/profile/image')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: '프로필 이미지 삭제',
+  })
+  @UseGuards(JwtAuthGuard)
+  async removeProfileImage(@Req() req: any) {
+    const userId = req.user.userId;
+    return await this.userService.deleteProfileImage(userId);
   }
 
   @Post('/verifyEmail')
