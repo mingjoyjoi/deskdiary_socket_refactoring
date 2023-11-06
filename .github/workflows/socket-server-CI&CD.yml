@@ -88,6 +88,7 @@ jobs:
           echo "MONGO_URL=${{ secrets.MONGO_URL }}" >> .env
           echo "API_SERVER_URL=${{ secrets.API_SERVER_URL }}" >> .env
           echo "SOCKET_SECRET_KEY=${{ secrets.SOCKET_SECRET_KEY }}" >> .env
+        working-directory: ./socket
 
       # Docker Compose를 이용하여 서비스를 배포합니다.
       - name: List directory contents
