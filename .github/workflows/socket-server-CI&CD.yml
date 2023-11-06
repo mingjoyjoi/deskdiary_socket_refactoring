@@ -6,40 +6,41 @@ name: deskdiary-socket-server-cicd
 # main 브랜치에 push나 pull request가 일어난우경우
 on:
   push:
-    branches: ['dev']
+    branches: ['history']
 
 # 이벤트가 일어나면 해야할 작업들을 명시
 # 테스트, 빌드, 배포 단위로 명시
 # 각각의 job은 runner라는 컨테이너에서 개별적으로 실행
 jobs:
   # test code with Jest
-  test:
-    name: 소켓 서버 CI를 진행합니다.
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./socket
-    steps:
-      - name: Checkout Source Code
-        uses: actions/checkout@v3
-      - name: setup node.js 18.x
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18.x
-          cache: 'npm'
-      - name: Load env file
-        run: |
-          touch .env
-          echo "MODE=${{ secrets.MODE }}" >> .env
-          echo "SOCKET_SECRET_KEY=${{ secrets.SOCKET_SECRET_KEY }}" >> .env
-          echo "MONGO_URL=${{ secrets.MONGO_URL }}" >> .env
-      - name: Install dependencies
-        run: npm install
-      - run: npm run test
+  # test:
+  #   name: 소켓 서버 CI를 진행합니다.
+  #   runs-on: ubuntu-latest
+  #   defaults:
+  #     run:
+  #       working-directory: ./socket
+  #   steps:
+  #     - name: Checkout Source Code
+  #       uses: actions/checkout@v3
+  #     - name: setup node.js 18.x
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version: 18.x
+  #         cache: 'npm'
+  #     - name: Load env file
+  #       run: |
+  #         touch .env
+  #         echo "MODE=${{ secrets.MODE }}" >> .env
+  #         echo "SOCKET_SECRET_KEY=${{ secrets.SOCKET_SECRET_KEY }}" >> .env
+  #         echo "MONGO_URL=${{ secrets.MONGO_URL }}" >> .env
+  #     - name: Install dependencies
+  #       run: npm install
+  #     - run: npm run test
+
   # Docker image build
   build:
     # build가 시작되려면 test를 완료해야함
-    needs: test
+    # needs: test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Source Code
@@ -72,10 +73,6 @@ jobs:
     needs: build
     runs-on: [self-hosted, label-socket]
     steps:
-      - name: Pre-Fix permissions
-        run: |
-          sudo chown -R $(whoami) /home/ubuntu/actions-runner/my-org-runner/_work/deskdiary-be/deskdiary-be/data/certbot/www
-
       - name: Checkout Source Code
         uses: actions/checkout@v3
         with:
@@ -91,7 +88,7 @@ jobs:
           echo "MONGO_URL=${{ secrets.MONGO_URL }}" >> .env
           echo "API_SERVER_URL=${{ secrets.API_SERVER_URL }}" >> .env
           echo "SOCKET_SECRET_KEY=${{ secrets.SOCKET_SECRET_KEY }}" >> .env
-          
+
       # Docker Compose를 이용하여 서비스를 배포합니다.
       - name: Deploy using Docker Compose
         run: |

@@ -13,7 +13,6 @@ import { RoomSearchModule } from './room-search/room-search.module';
 import { HistoryModule } from './history/history.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import * as mongoose from 'mongoose';
-import { RoomchatsModule } from './room-chats/room-chats.module';
 
 @Module({
   imports: [
@@ -29,7 +28,6 @@ import { RoomchatsModule } from './room-chats/room-chats.module';
     UserDetailModule,
     RoomSearchModule,
     HistoryModule,
-    RoomchatsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

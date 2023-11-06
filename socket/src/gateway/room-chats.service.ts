@@ -2,13 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { IRoomRequest } from './room-chats.interface';
 import { Model } from 'mongoose';
-import { Socket as SocketModel } from './models/sockets.model';
-import { Room as RoomModel } from './models/rooms.model';
+import { Socket as SocketModel } from '../models/sockets.model';
+import { Room as RoomModel } from '../models/rooms.model';
 import { Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Exception } from './exception/exception';
+import { Exception } from '../exception/exception';
 import axios from 'axios';
-import { baseURL } from './constant/url.constant';
+import { baseURL } from '../constant/url.constant';
 
 @Injectable()
 export class RoomchatsService {
@@ -23,54 +23,34 @@ export class RoomchatsService {
   }
 
   async joinRoom(client: Socket, server: Server, iRoomRequest: IRoomRequest) {
-    const { uuid, nickname, userId } = iRoomRequest;
-    const exist = await this.socketModel.findOne({ userId: userId });
-    if (exist) {
-      await this.leaveRoomRequestToApiServer(uuid);
-      return client.emit('joinError', '이미 방에 접속한 사용자 입니다.');
-    }
-    client.leave(client.id);
-    client.join(uuid);
+    const { uuid, nickname } = iRoomRequest;
     const data = await this.roomModel.findOne({ uuid });
     if (!data) {
       await this.createRoom(client, iRoomRequest);
     } else {
       await this.updateRoom(client, data, iRoomRequest);
     }
-    //return server.to(uuid).emit('new-user', nickname);
-    this.emitEventForUserList(client, server, uuid, nickname, 'new-user');
+    return server.to(uuid).emit('new-user', nickname);
+    // this.emitEventForUserList(client, server, uuid);
   }
 
-  async createRoom(
-    client: Socket,
-    { nickname, uuid, img, userId }: IRoomRequest,
-  ) {
+  async createRoom(client: Socket, { nickname, uuid, img }: IRoomRequest) {
     const newRoom = { uuid: uuid, owner: client.id, userList: {} };
-    newRoom.userList = { [client.id]: { nickname, img, userId } };
+    newRoom.userList = { [client.id]: { nickname, img } };
     await this.roomModel.create(newRoom);
-    const newUser = {
-      clientId: client.id,
-      uuid: uuid,
-      nickname: nickname,
-      userId: userId,
-    };
+    const newUser = { clientId: client.id, uuid: uuid, nickname: nickname };
     await this.socketModel.create(newUser);
   }
 
   async updateRoom(
     client: Socket,
     roomData: any,
-    { uuid, nickname, img, userId }: IRoomRequest,
+    { uuid, nickname, img }: IRoomRequest,
   ) {
-    const newUser = {
-      clientId: client.id,
-      uuid: uuid,
-      nickname: nickname,
-      userId: userId,
-    };
+    const newUser = { clientId: client.id, uuid: uuid, nickname: nickname };
     await this.socketModel.create(newUser);
     const findRoom = roomData;
-    findRoom.userList[client.id] = { nickname, img, userId };
+    findRoom.userList[client.id] = { nickname, img };
     await this.roomModel.findOneAndUpdate(
       { uuid },
       { $set: { userList: findRoom.userList } },
@@ -78,14 +58,14 @@ export class RoomchatsService {
   }
 
   async removeRoom(client: Socket, server: Server, uuid: string) {
-    const data = this.roomModel.findOne({ uuid });
+    const data = this.roomModel.find({ uuid });
     if (!data) {
       return server.to(client.id).emit('error-room', Exception.roomNotFound);
     }
     if (this.isOwner(data, client)) {
       await this.deleteDocumentByUuid(uuid);
       await this.socketModel.deleteMany({ uuid });
-      return server.to(uuid).emit('remove-users', {});
+      return server.to(uuid).emit('user-list', {});
     }
     client.leave(uuid);
   }
@@ -110,9 +90,9 @@ export class RoomchatsService {
     // 사용자 데이터 삭제
     await this.socketModel.deleteOne({ clientId: client.id });
 
-    //return server.to(uuid).emit('left-user', nickname);
+    return server.to(uuid).emit('left-user', nickname);
     // 유저리스트 보내주기
-    this.emitEventForUserList(client, server, uuid, nickname, 'leave-user');
+    //this.emitEventForUserList(client, server, uuid);
   }
 
   isOwner(findRoom: any, client: Socket): boolean {
@@ -143,28 +123,23 @@ export class RoomchatsService {
       { uuid },
       { $set: { userList: room.userList } },
     );
-
     await this.leaveRoomRequestToApiServer(uuid);
-    //server.to(uuid).emit('disconnect_user', nickname);
-    this.emitEventForUserList(client, server, uuid, nickname, 'leave-user');
+    server.to(uuid).emit('disconnect_user', nickname);
+    // 로깅
     this.logger.log(`disconnected: ${client.id}`);
+    // 유저리스트 보내주기
+    this.emitEventForUserList(client, server, uuid);
   }
 
-  async emitEventForUserList(
-    client: Socket,
-    server: Server,
-    uuid: string,
-    nickname: string,
-    userEvent: string,
-  ) {
+  async emitEventForUserList(client: Socket, server: Server, uuid: string) {
     const data = await this.roomModel.findOne({ uuid });
+    const userListObj = data['userList'];
+    const userListArr = Object.values(userListObj).map((user) => user.nickname);
+
     if (!data) {
       return server.to(client.id).emit('error-room', Exception.roomNotFound);
     }
-    const userListObj = data['userList'];
-    const userListArr = Object.values(userListObj);
-
-    server.to(uuid).emit(userEvent, { nickname, userListArr });
+    server.to(uuid).emit('user-list', userListArr);
   }
 
   async deleteDocumentByUuid(uuid: string): Promise<any> {
@@ -176,29 +151,8 @@ export class RoomchatsService {
     const headers = {
       'socket-secret-key': process.env.SOCKET_SECRET_KEY ?? '',
     };
-
-    try {
-      const response = await axios.post(
-        `${baseURL}/room/socket/leave/${uuid}`,
-        undefined,
-        {
-          headers,
-        },
-      );
-      // 성공한 경우의 처리
-      console.log('요청 성공:', response.data);
-    } catch (error) {
-      if (error.response) {
-        // 서버 응답이 있는 경우 (HTTP 상태 코드가 2xx가 아닌 경우)
-        console.error('HTTP 에러 상태 코드:', error.response.status);
-        console.error('HTTP 에러 응답 데이터:', error.response.data);
-      } else if (error.request) {
-        // 요청은 완료되었지만 서버 응답이 없는 경우
-        console.error('요청에 응답이 없습니다.');
-      } else {
-        // 요청을 보내기 전에 발생한 에러
-        console.error('요청을 보내는 중에 에러 발생:', error.message);
-      }
-    }
+    await axios.post(`${baseURL}/room/socket/leave/${uuid}`, undefined, {
+      headers,
+    });
   }
 }
