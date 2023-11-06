@@ -115,6 +115,13 @@ jobs:
           echo "GOOGLE_CALLBACK_URL=${{ secrets.GOOGLE_CALLBACK_URL }}" >> .env
           echo "GOOGLE_SCOPE_PROFILE=${{ secrets.GOOGLE_SCOPE_PROFILE }}" >> .env
           echo "GOOGLE_SCOPE_EMAIL=${{ secrets.GOOGLE_SCOPE_EMAIL }}" >> .env
+        working-directory: ./api
+
+      - name: Verify .env file location
+        run: |
+          pwd
+          ls -la
+        working-directory: ./api
 
       - name: List directory contents
         run: ls -la
