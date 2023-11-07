@@ -2,13 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { IRoomRequest } from './room-chats.interface';
 import { Model } from 'mongoose';
-import { Socket as SocketModel } from './models/sockets.model';
-import { Room as RoomModel } from './models/rooms.model';
+import { Socket as SocketModel } from '../models/sockets.model';
+import { Room as RoomModel } from '../models/rooms.model';
 import { Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Exception } from './exception/exception';
+import { Exception } from '../exception/exception';
 import axios from 'axios';
-import { baseURL } from './constant/url.constant';
+import { baseURL } from '../constant/url.constant';
 
 @Injectable()
 export class RoomchatsService {

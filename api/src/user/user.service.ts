@@ -290,6 +290,34 @@ export class UserService {
       },
     });
   }
+  async deleteProfileImage(userId: number) {
+    const user = await this.prisma.user.findUnique({
+      where: { userId },
+      select: { profileImage: true },
+    });
+
+    if (user && user.profileImage) {
+      // S3 파일 URL에서 파일 이름을 추출합니다.
+      const url = new URL(user.profileImage);
+      const fileName = url.pathname.substring(1); // URL의 첫 번째 '/' 문자를 제거합니다.
+
+      // deleteImage 메소드를 사용하여 S3에서 이미지를 삭제합니다.
+      try {
+        await this.imageService.deleteImage(fileName);
+      } catch (error) {
+        // 로그를 남기거나, 오류를 처리하는 로직을 추가할 수 있습니다.
+        throw new Error('S3에서 이미지를 삭제하는 데 실패했습니다.');
+      }
+    }
+
+    // Prisma를 사용하여 데이터베이스에서 이미지 URL을 null로 설정합니다.
+    return this.prisma.user.update({
+      where: { userId },
+      data: {
+        profileImage: null,
+      },
+    });
+  }
 
   async deleteProfileImage(userId: number) {
     const user = await this.prisma.user.findUnique({
