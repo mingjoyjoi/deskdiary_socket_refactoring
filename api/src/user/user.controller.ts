@@ -169,17 +169,6 @@ export class UserController {
     return await this.userService.deleteProfileImage(userId);
   }
 
-  @Delete('me/profile/image')
-  @ApiBearerAuth()
-  @ApiOperation({
-    summary: '프로필 이미지 삭제',
-  })
-  @UseGuards(JwtAuthGuard)
-  async removeProfileImage(@Req() req: any) {
-    const userId = req.user.userId;
-    return await this.userService.deleteProfileImage(userId);
-  }
-
   @Post('/verifyEmail')
   async sendVerification(@Body() body) {
     return await this.userService.sendVerification(body.email);
