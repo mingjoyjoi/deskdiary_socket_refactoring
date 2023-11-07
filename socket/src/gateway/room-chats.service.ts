@@ -119,9 +119,9 @@ export class RoomchatsService {
     const exist = await this.socketModel.findOne({ userId: userId });
     if (exist) {
       const uuid = exist.uuid;
-      const cliendId = exist.clientId;
+      const clientId = exist.clientId;
       await this.leaveRoomRequestToApiServer(uuid);
-      return server.to(cliendId).emit('log-out', Exception.clientLogOut);
+      return client.to(clientId).emit('log-out', Exception.clientLogOut);
     }
   }
 
