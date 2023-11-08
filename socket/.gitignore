@@ -1,7 +1,14 @@
 # compiled output
 /dist
 /node_modules
-.env
+/.env
+/.env.docker
+scripts
+e2e.spec.ts
+room.ts
+init-letsencrypt.sh
+myReport.html
+report.json
 
 # Logs
 logs
