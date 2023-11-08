@@ -109,6 +109,11 @@ jobs:
           echo "GOOGLE_CALLBACK_URL=${{ secrets.GOOGLE_CALLBACK_URL }}" >> .env
           echo "GOOGLE_SCOPE_PROFILE=${{ secrets.GOOGLE_SCOPE_PROFILE }}" >> .env
           echo "GOOGLE_SCOPE_EMAIL=${{ secrets.GOOGLE_SCOPE_EMAIL }}" >> .env
+          echo "JWT_EXPIRATION_TIME=${{ secrets.JWT_EXPIRATION_TIME }}" >> .env
+          echo "JWT_REFERSH_SECRET=${{ secrets.JWT_REFERSH_SECRET }}" >> .env
+          echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
+          echo "EMAIL_USER=${{ secrets.EMAIL_USER }}" >> .env
+          echo "EMAIL_PASS=${{ secrets.EMAIL_PASS }}" >> .env
         working-directory: ./api
 
       # Docker Compose를 이용하여 서비스를 배포합니다.

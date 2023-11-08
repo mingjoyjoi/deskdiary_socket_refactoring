@@ -17,6 +17,8 @@ model User {
   provider      String?      @default("local")
   type          String       @default("user")
   refreshToken  String?
+  signupVerifyToken  String?   @unique
+  isEmailVerified    Boolean   @default(false)
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
   Room          Room[]
