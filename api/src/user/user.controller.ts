@@ -13,8 +13,6 @@ import {
   UploadedFile,
   BadRequestException,
   Query,
-  HttpException,
-  HttpStatus,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -179,7 +177,7 @@ export class UserController {
     const userId = req.user['userId'];
     return this.userService.updateProfileImage(userId, file);
   }
-  
+
   @Delete('me/profile/image')
   @ApiBearerAuth()
   @ApiOperation({
