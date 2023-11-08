@@ -130,7 +130,7 @@ export class UserService {
       expiresIn: this.jwtconfigService.createJwtOptions().signOptions.expiresIn,
     });
     const refreshToken = this.jwtService.sign(jwtPayload, {
-      expiresIn: '7d',
+      expiresIn: '15d',
       secret: process.env.JWT_REFRESH_SECRET,
     });
 
