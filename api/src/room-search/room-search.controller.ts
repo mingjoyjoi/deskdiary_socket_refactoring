@@ -21,10 +21,20 @@ export class RoomSearchController {
     summary: '스터디룸 인기순 조회',
   })
   @ApiResponse(RoomAPIDocs.getRoomListBySearch())
-  @ApiQuery(RoomAPIDocs.getRoomListByTypeQueryCursor())
-  async getPopularStudyRooms(@Query('cursor') cursor: number) {
-    cursor = cursor || 0;
-    return await this.roomSearchService.PopularRooms(cursor, 'study');
+  @ApiQuery(RoomAPIDocs.getRoomListByTypeQueryPage())
+  @ApiQuery(RoomAPIDocs.getRoomListByTypeQueryPerPage())
+  async getPopularStudyRooms(
+    @Query('page') page: number,
+    @Query('perPage') perPage: number,
+  ) {
+    if (page < 1 || page === null || page === undefined) {
+      page = 1;
+    }
+
+    if (perPage < 1 || perPage === null || perPage === undefined) {
+      perPage = 10;
+    }
+    return await this.roomSearchService.PopularRooms(page, perPage, 'study');
   }
 
   @Get('hobby-rooms/popular')
@@ -32,10 +42,20 @@ export class RoomSearchController {
     summary: '취미룸 인기순 조회',
   })
   @ApiResponse(RoomAPIDocs.getRoomListBySearch())
-  @ApiQuery(RoomAPIDocs.getRoomListByTypeQueryCursor())
-  async getPopularHobbyRooms(@Query('cursor') cursor: number) {
-    cursor = cursor || 0;
-    return await this.roomSearchService.PopularRooms(cursor, 'hobby');
+  @ApiQuery(RoomAPIDocs.getRoomListByTypeQueryPage())
+  @ApiQuery(RoomAPIDocs.getRoomListByTypeQueryPerPage())
+  async getPopularHobbyRooms(
+    @Query('page') page: number,
+    @Query('perPage') perPage: number,
+  ) {
+    if (page < 1 || page === null || page === undefined) {
+      page = 1;
+    }
+
+    if (perPage < 1 || perPage === null || perPage === undefined) {
+      perPage = 10;
+    }
+    return await this.roomSearchService.PopularRooms(page, perPage, 'hobby');
   }
 
   @Get('hobby-rooms/latest')
@@ -43,10 +63,20 @@ export class RoomSearchController {
     summary: '취미룸 최신순 조회',
   })
   @ApiResponse(RoomAPIDocs.getRoomListBySearch())
-  @ApiQuery(RoomAPIDocs.getRoomListByTypeQueryCursor())
-  async getLatestHobbyRooms(@Query('cursor') cursor: number) {
-    cursor = cursor || 0;
-    return await this.roomSearchService.LatestRooms(cursor, 'hobby');
+  @ApiQuery(RoomAPIDocs.getRoomListByTypeQueryPage())
+  @ApiQuery(RoomAPIDocs.getRoomListByTypeQueryPerPage())
+  async getLatestHobbyRooms(
+    @Query('page') page: number,
+    @Query('perPage') perPage: number,
+  ) {
+    if (page < 1 || page === null || page === undefined) {
+      page = 1;
+    }
+
+    if (perPage < 1 || perPage === null || perPage === undefined) {
+      perPage = 10;
+    }
+    return await this.roomSearchService.LatestRooms(page, perPage, 'hobby');
   }
 
   @Get('study-rooms/latest')
@@ -54,10 +84,20 @@ export class RoomSearchController {
     summary: '스터디룸 최신순 조회',
   })
   @ApiResponse(RoomAPIDocs.getRoomListBySearch())
-  @ApiQuery(RoomAPIDocs.getRoomListByTypeQueryCursor())
-  async getLatestStudyRooms(@Query('cursor') cursor: number) {
-    cursor = cursor || 0;
-    return await this.roomSearchService.LatestRooms(cursor, 'study');
+  @ApiQuery(RoomAPIDocs.getRoomListByTypeQueryPage())
+  @ApiQuery(RoomAPIDocs.getRoomListByTypeQueryPerPage())
+  async getLatestStudyRooms(
+    @Query('page') page: number,
+    @Query('perPage') perPage: number,
+  ) {
+    if (page < 1 || page === null || page === undefined) {
+      page = 1;
+    }
+
+    if (perPage < 1 || perPage === null || perPage === undefined) {
+      perPage = 10;
+    }
+    return await this.roomSearchService.LatestRooms(page, perPage, 'study');
   }
 
   @Get('study-rooms/popular-top')
@@ -131,19 +171,28 @@ export class RoomSearchController {
   @ApiResponse(RoomAPIDocs.getRoomListBySearch())
   @ApiQuery(RoomAPIDocs.getRoomListByTypeQueryFilter())
   @ApiQuery(RoomAPIDocs.getRoomListByTypeQuerySearch())
-  @ApiQuery(RoomAPIDocs.getRoomListByTypeQueryCursor())
+  @ApiQuery(RoomAPIDocs.getRoomListByTypeQueryPage())
+  @ApiQuery(RoomAPIDocs.getRoomListByTypeQueryPerPage())
   async searchStudyRooms(
     @Query('filter') filter: string,
     @Query('search') search: string,
-    @Query('cursor') cursor: number,
+    @Query('page') page: number,
+    @Query('perPage') perPage: number,
   ) {
-    //"Popularity" 또는 "Latest"
-    filter = filter || 'Popularity';
-    cursor = cursor || 0;
+    if (page < 1 || page === null || page === undefined) {
+      page = 1;
+    }
+    if (perPage < 1 || perPage === null || perPage === undefined) {
+      perPage = 10;
+    }
+    if (filter != 'latest') {
+      filter = 'popularity';
+    }
     const rooms = await this.roomSearchService.searchRooms(
       filter,
       search,
-      cursor,
+      page,
+      perPage,
       'study',
     );
     return rooms;
@@ -156,18 +205,29 @@ export class RoomSearchController {
   @ApiResponse(RoomAPIDocs.getRoomListBySearch())
   @ApiQuery(RoomAPIDocs.getRoomListByTypeQueryFilter())
   @ApiQuery(RoomAPIDocs.getRoomListByTypeQuerySearch())
-  @ApiQuery(RoomAPIDocs.getRoomListByTypeQueryCursor())
+  @ApiQuery(RoomAPIDocs.getRoomListByTypeQueryPage())
+  @ApiQuery(RoomAPIDocs.getRoomListByTypeQueryPerPage())
   async searchHobbyRooms(
     @Query('filter') filter: string,
     @Query('search') search: string,
-    @Query('cursor') cursor: number,
+    @Query('page') page: number,
+    @Query('perPage') perPage: number,
   ) {
-    filter = filter || 'Popularity';
-    cursor = cursor || 0;
+    if (page < 1 || page === null || page === undefined) {
+      page = 1;
+    }
+
+    if (perPage < 1 || perPage === null || perPage === undefined) {
+      perPage = 10;
+    }
+    if (filter != 'latest') {
+      filter = 'popularity';
+    } //"Popularity" 또는 "Latest"
     const rooms = await this.roomSearchService.searchRooms(
       filter,
       search,
-      cursor,
+      page,
+      perPage,
       'hobby',
     );
     return rooms;

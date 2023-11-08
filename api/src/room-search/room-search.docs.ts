@@ -4,16 +4,26 @@ export class RoomAPIDocs {
   static getRoomListByTypeQueryFilter(): ApiQueryOptions {
     return {
       name: 'filter',
-      example: 'Popularity(인기순) 혹은 Latest(최신순)',
-      description: '인기순 or 최신순으로 조회합니다.',
+      example: 'popularity(인기순) 혹은 latest(최신순)',
+      description:
+        '인기순 or 최신순으로 조회합니다. 쿼리스트링 없을 경우 기본은 인기순 조회.',
     };
   }
 
-  static getRoomListByTypeQueryCursor(): ApiQueryOptions {
+  static getRoomListByTypeQueryPage(): ApiQueryOptions {
     return {
-      name: 'cursor',
-      example: 12,
-      description: '유저가 마지막으로 본 룸의 roomId(고유값)를 나타냅니다',
+      name: 'page',
+      example: 2,
+      description: '페이지를 나타냅니다. 쿼리스트링이 없을 경우 기본값은 1',
+    };
+  }
+
+  static getRoomListByTypeQueryPerPage(): ApiQueryOptions {
+    return {
+      name: 'perPage',
+      example: 10,
+      description:
+        '한 페이지당 가져올 데이터의 수를 정합니다. 쿼리스트링이 없을 경우 기본값은 10',
     };
   }
 
@@ -28,9 +38,11 @@ export class RoomAPIDocs {
   static getRoomListBySearch(): ApiResponseOptions {
     return {
       status: 200,
-      description: `QueryResults는 검색 결과 방 정보들을 나타냅니다.
-      myCursor는 마지막 데이터의 roomId 즉, 다음 cursor에 들어갈 값을 나타냅니다.
-      isEnded는 더 이상 반환할 데이터가 없을 시 true를 반환하며 받을 데이터가 남아있는 경우 false를 반환합니다.`,
+      description: `
+      QueryResult는 방정보 데이터들을 가져옵니다.
+      nowCount는 지금까지 받은 방정보 데이터의 갯수를 가져옵니다.
+      totalCount는 모든 방정보 데이터의 갯수를 나타냅니다.
+      remainingCount는 앞으로 더 가져올 수 있는 남은 방정보 데이터의 갯수를 나타냅니다.`,
     };
   }
 }
