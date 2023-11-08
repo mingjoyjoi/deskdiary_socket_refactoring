@@ -140,10 +140,11 @@ export class UserService {
     });
 
     res.setHeader('Authorization', `Bearer ${accessToken}`);
-    res.cookie('RefreshToken', refreshToken, {
-      httpOnly: true,
-      secure: true,
-    });
+    res.setHeader('RefreshToken', `Bearer ${refreshToken}`);
+    // res.cookie('RefreshToken', refreshToken, {
+    //   httpOnly: true,
+    //   secure: true,
+    // });
     res.json({
       message: '로그인에 성공하였습니다.',
       accessToken: accessToken,

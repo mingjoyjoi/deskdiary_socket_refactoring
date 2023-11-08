@@ -68,8 +68,8 @@ export class UserController {
     await this.userService.login(loginuserDto, res);
   }
 
-  @Post('refresh')
   @ApiBearerAuth()
+  @Post('refresh')
   @ApiOperation({ summary: '리프레시 토큰으로 액세스 토큰 재발급' })
   @ApiResponse({ status: 200, description: '새 액세스 토큰 발급됨' })
   @ApiResponse({ status: 401, description: '인증 실패' })
