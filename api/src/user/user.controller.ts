@@ -56,6 +56,15 @@ export class UserController {
     return await this.userService.verifyEmail(signupVerifyToken);
   }
 
+  // @ApiOperation({ summary: '회원가입 시 이메일 인증' })
+  // @Post('/email-verify')
+  // async verifyEmail(
+  //   @Query() dto: VerifyEmailDto,
+  //   @Res() res: Response
+  //   const redirectUrl = await this.userService.verifyEmail(signupVerifyToken);
+  //     return res.redirect(redirectUrl)
+  // }
+
   @ApiBearerAuth()
   @ApiOperation({ summary: '로그인' })
   @Post('auth/login')
