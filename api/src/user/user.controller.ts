@@ -12,6 +12,7 @@ import {
   UseInterceptors,
   UploadedFile,
   BadRequestException,
+  Query,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -29,6 +30,8 @@ import { JwtAuthGuard } from '../auth/jwt/jwt-auth.guard';
 import { Request } from 'express';
 import { UserService } from './user.service';
 import { JoinUserDto } from './dto/join.user.dto';
+import { VerifyEmailDto } from './dto/verify.email.dto';
+// import { EmailService } from 'src/auth/email/email.service';
 import { LoginUserDto } from './dto/login.user.dto';
 import { UpdateProfileDto } from './dto/update.profile.dto';
 import { UpdatePasswordDto } from './dto/update.password.dto';
@@ -44,6 +47,13 @@ export class UserController {
   @HttpCode(200)
   async createUserAccount(@Body() joinuserDto: JoinUserDto) {
     return await this.userService.signUp(joinuserDto);
+  }
+
+  @ApiOperation({ summary: '회원가입 시 이메일 인증' })
+  @Post('/email-verify')
+  async verifyEmail(@Query() dto: VerifyEmailDto): Promise<string> {
+    const { signupVerifyToken } = dto;
+    return await this.userService.verifyEmail(signupVerifyToken);
   }
 
   @ApiBearerAuth()
@@ -153,7 +163,6 @@ export class UserController {
     const userId = req.user['userId'];
     return this.userService.updateProfile(userId, updateProfileDto);
   }
-
   @Post('me/profile/image')
   @ApiBearerAuth()
   @ApiOperation({
@@ -165,23 +174,9 @@ export class UserController {
     @Req() req: any,
     @UploadedFile() file: Express.Multer.File,
   ) {
-    const userId = req.user.userId;
+    console.log('updateProfileImage called');
+    console.log(file);
+    const userId = req.user['userId'];
     return this.userService.updateProfileImage(userId, file);
-  }
-
-  @Delete('me/profile/image')
-  @ApiBearerAuth()
-  @ApiOperation({
-    summary: '프로필 이미지 삭제',
-  })
-  @UseGuards(JwtAuthGuard)
-  async removeProfileImage(@Req() req: any) {
-    const userId = req.user.userId;
-    return await this.userService.deleteProfileImage(userId);
-  }
-
-  @Post('/verifyEmail')
-  async sendVerification(@Body() body) {
-    return await this.userService.sendVerification(body.email);
   }
 }

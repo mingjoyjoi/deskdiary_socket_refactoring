@@ -1,10 +1,9 @@
-import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import Mail = require('nodemailer/lib/mailer');
 import * as nodemailer from 'nodemailer';
-import { Transporter } from 'nodemailer';
 
-// import * as jwt from 'jsonwebtoken';
+import { Injectable } from '@nestjs/common';
 
+// 메일 욥선 타입. 수신자(to), 메일 제목, html 형식의 메일 본문을 가짐
 interface EmailOptions {
   to: string;
   subject: string;
@@ -13,25 +12,40 @@ interface EmailOptions {
 
 @Injectable()
 export class EmailService {
-  private transporter: Transporter;
+  private transporter: Mail;
 
-  // nodemailer에서 제공하는 Transporter 객체 생성
-  constructor(private readonly configService: ConfigService) {
+  // nodemailer에서 제공하는 Transporter 객체를 생성
+  constructor() {
     this.transporter = nodemailer.createTransport({
       service: 'Gmail',
       auth: {
-        user: this.configService.get<string>('EMAIL_USER'),
-        pass: this.configService.get<string>('EMAIL_PASS'),
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
       },
     });
   }
 
-  async sendVerifyToken(email: string, verifyToken: number) {
+  async sendMemberJoinVerification(
+    emailAddress: string,
+    signupVerifyToken: string,
+  ) {
+    // 이 링크를 통해 우리 서비스로 이메일 인증 요청이 들어옴
+    const baseUrl = 'https://deskdiary.store';
+
+    const url = `${baseUrl}/email-verify?signupVerifyToken=${signupVerifyToken}`;
+
+    // 메일 본문 구성 form 태그를 이용해 POST 요청 실시
     const mailOptions: EmailOptions = {
-      to: email,
-      subject: '[책상일기] 이메일 확인',
-      html: `인증번호: ${verifyToken}`,
+      to: emailAddress,
+      subject: '가입 인증 메일',
+      html: `
+        가입확인 버튼를 누르시면 가입 인증이 완료됩니다.<br/>
+        <form action="${url}" method="POST">
+        <button>가입확인</button>
+      </form>
+      `,
     };
+
     // transporter 객체를 이용해 메일 전송
     return await this.transporter.sendMail(mailOptions);
   }
