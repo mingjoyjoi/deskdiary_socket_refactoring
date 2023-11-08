@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { IRoomRequest } from './room-chats.interface';
 import { Model } from 'mongoose';
@@ -12,14 +12,14 @@ import { baseURL } from '../constant/url.constant';
 
 @Injectable()
 export class RoomchatsService {
-  private logger = new Logger('AppService');
+  private logger = new Logger('RoomchatsService');
+
   constructor(
     @InjectModel(SocketModel.name)
     private readonly socketModel: Model<SocketModel>,
-    @InjectModel(RoomModel.name)
-    private readonly roomModel: Model<RoomModel>,
+    @InjectModel(RoomModel.name) private readonly roomModel: Model<RoomModel>,
   ) {
-    this.logger.log('constructor');
+    this.logger.log('RoomchatsService constructor');
   }
 
   async joinRoom(client: Socket, server: Server, iRoomRequest: IRoomRequest) {

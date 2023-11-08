@@ -12,6 +12,8 @@ import {
   UseInterceptors,
   UploadedFile,
   BadRequestException,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -155,7 +157,7 @@ export class UserController {
     @Req() req: any,
     @UploadedFile() file: Express.Multer.File,
   ) {
-    const userId = req.user.userId;
+    const userId = req.user['userId'];
     return this.userService.updateProfileImage(userId, file);
   }
   @Delete('me/profile/image')
@@ -164,9 +166,9 @@ export class UserController {
     summary: '프로필 이미지 삭제',
   })
   @UseGuards(JwtAuthGuard)
-  async removeProfileImage(@Req() req: any) {
-    const userId = req.user.userId;
-    return await this.userService.deleteProfileImage(userId);
+  async deleteProfileImage(@Req() req: any) {
+    const userId = req.user['userId'];
+    return this.userService.deleteProfileImage(userId);
   }
 
   @Post('/verifyEmail')
