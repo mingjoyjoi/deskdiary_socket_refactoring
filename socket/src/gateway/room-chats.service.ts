@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { IRoomRequest } from './room-chats.interface';
 import { Model } from 'mongoose';
@@ -9,6 +9,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Exception } from '../exception/exception';
 import axios from 'axios';
 import { baseURL } from '../constant/url.constant';
+import { pubClient as Redis } from '../redis.adapter';
 
 @Injectable()
 export class RoomchatsService {
@@ -24,18 +25,21 @@ export class RoomchatsService {
 
   async joinRoom(client: Socket, server: Server, iRoomRequest: IRoomRequest) {
     const { uuid, nickname, userId } = iRoomRequest;
-    const exist = await this.socketModel.findOne({ userId: userId });
+
+    this.logger.log(`Redis.get 호출 전: user:${userId}`);
+    const exist = await Redis.get(`user:${userId}`);
+    this.logger.log(`Redis.get 호출 후: user:${userId} 결과: ${exist}`);
     if (exist) {
       await this.leaveRoomRequestToApiServer(uuid);
       return client.emit('joinError', Exception.clientAlreadyConnected);
     }
     client.leave(client.id);
     client.join(uuid);
-    const data = await this.roomModel.findOne({ uuid });
+    const data = await Redis.get(`room:${uuid}`);
     if (!data) {
       await this.createRoom(client, iRoomRequest);
     } else {
-      await this.updateRoom(client, data, iRoomRequest);
+      await this.updateRoom(client, JSON.parse(data), iRoomRequest);
     }
     //return server.to(uuid).emit('new-user', nickname);
     this.emitEventForUserList(client, server, uuid, nickname, 'new-user');
@@ -48,6 +52,8 @@ export class RoomchatsService {
     const newRoom = { uuid: uuid, owner: userId, userList: {} };
     newRoom.userList = { [client.id]: { nickname, img, userId } };
     await this.roomModel.create(newRoom);
+    await Redis.set(uuid, JSON.stringify(newRoom));
+
     const newUser = {
       clientId: client.id,
       uuid: uuid,
@@ -55,6 +61,7 @@ export class RoomchatsService {
       userId: userId,
     };
     await this.socketModel.create(newUser);
+    await Redis.set(client.id, JSON.stringify(newUser));
   }
 
   async updateRoom(
@@ -69,12 +76,11 @@ export class RoomchatsService {
       userId: userId,
     };
     await this.socketModel.create(newUser);
-    const findRoom = roomData;
+    await Redis.set(client.id, JSON.stringify(newUser));
+    const findRoom = JSON.parse(roomData);
+    // 유저 리스트에 새로운 유저를 추가
     findRoom.userList[client.id] = { nickname, img, userId };
-    await this.roomModel.findOneAndUpdate(
-      { uuid },
-      { $set: { userList: findRoom.userList } },
-    );
+    await Redis.set(uuid, JSON.stringify(findRoom));
   }
 
   async removeRoom(client: Socket, server: Server, uuid: string) {
