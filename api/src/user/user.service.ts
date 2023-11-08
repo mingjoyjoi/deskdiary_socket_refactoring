@@ -99,7 +99,8 @@ export class UserService {
       data: { isEmailVerified: true, signupVerifyToken: signupVerifyToken },
     });
 
-    return '이메일이 성공적으로 인증되었습니다.';
+    // return '이메일이 성공적으로 인증되었습니다.';
+    return 'https://desk-diary.com/confirm-email';
   }
 
   async login(loginuserDto: LoginUserDto, res: Response): Promise<void> {
