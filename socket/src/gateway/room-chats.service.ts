@@ -52,25 +52,18 @@ export class RoomchatsService {
     const newRoom = {
       uuid: uuid,
       owner: userId,
-      userList: {
-        [client.id]: { nickname, img, userId },
-      },
+      userList: { [client.id]: { nickname, img, userId } },
     };
+
+    await Redis.set(`room:${uuid}`, JSON.stringify(newRoom));
+
     const newUser = {
       clientId: client.id,
       uuid: uuid,
       nickname: nickname,
       userId: userId,
     };
-
-    const multi = Redis.multi();
-    multi.set(`room:${uuid}`, JSON.stringify(newRoom));
-    multi.set(`user:${client.id}`, JSON.stringify(newUser));
-
-    const execResult = await multi.exec();
-    if (!execResult) {
-      throw new Error('트랜잭션 실패');
-    }
+    await Redis.set(`socket:${client.id}`, JSON.stringify(newUser));
   }
 
   async updateRoom(
@@ -78,21 +71,19 @@ export class RoomchatsService {
     roomData: string,
     { uuid, nickname, img, userId }: IRoomRequest,
   ) {
-    //! 키변경 감시
-    const roomKey = `room:${uuid}`;
-    await Redis.watch(roomKey);
+    const newUser = {
+      clientId: client.id,
+      uuid: uuid,
+      nickname: nickname,
+      userId: userId,
+    };
+    await Redis.set(`user:${client.id}`, JSON.stringify(newUser));
 
-    const findRoom = roomData ? JSON.parse(roomData) : { userList: {} };
+    const findRoom = JSON.parse(roomData || '{}');
+    findRoom.userList = findRoom.userList || {};
     findRoom.userList[client.id] = { nickname, img, userId };
 
-    const multi = Redis.multi()
-      .set(roomKey, JSON.stringify(findRoom)) // 방 정보 업데이트
-      .set(`user:${client.id}`, uuid); // 유저가 속한 방 ID 저장
-
-    const execResult = await multi.exec();
-    if (!execResult) {
-      throw new Error('트랜잭션 실패');
-    }
+    await Redis.set(`room:${uuid}`, JSON.stringify(findRoom));
   }
 
   async removeRoom(client: Socket, server: Server, uuid: string) {
