@@ -24,7 +24,7 @@ export class CheckoutRoomRequestDto {
     required: true,
   })
   @IsNotEmpty({ message: '학습 누적시간이 필요합니다.' })
-  readonly totalHours: string;
+  readonly totalHours;
 
   @ApiProperty({
     description: '참여한 방의 카테고리',

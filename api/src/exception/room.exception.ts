@@ -35,6 +35,13 @@ export class RoomException {
     });
   }
 
+  static roomTokenUpdateError(): HttpException {
+    return new InternalServerErrorException({
+      statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+      message: '아고라 토큰 업데이트 중 오류가 발생했습니다.',
+    });
+  }
+
   static roomJoinError(): HttpException {
     return new InternalServerErrorException({
       statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
