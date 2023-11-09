@@ -9,7 +9,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Exception } from '../exception/exception';
 import axios from 'axios';
 import { baseURL } from '../constant/url.constant';
-//import { pubClient as Redis } from '../redis.adapter';
+import { pubClient as Redis } from '../redis.adapter';
+
 
 @Injectable()
 export class RoomchatsService {

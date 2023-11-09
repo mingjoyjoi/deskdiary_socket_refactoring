@@ -6,7 +6,7 @@ name: deskdiary-socket-server-cicd
 # main 브랜치에 push나 pull request가 일어난우경우
 on:
   push:
-    branches: ['history']
+    branches: ["history"]
 
 # 이벤트가 일어나면 해야할 작업들을 명시
 # 테스트, 빌드, 배포 단위로 명시
@@ -88,6 +88,9 @@ jobs:
           echo "MONGO_URL=${{ secrets.MONGO_URL }}" >> .env
           echo "API_SERVER_URL=${{ secrets.API_SERVER_URL }}" >> .env
           echo "SOCKET_SECRET_KEY=${{ secrets.SOCKET_SECRET_KEY }}" >> .env
+          echo "REDIS_HOST=${{ secrets.REDIS_HOST }}" >> .env
+          echo "REDIS_PORT=${{ secrets.REDIS_PORT }}" >> .env
+          echo "REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}" >> .env
         working-directory: ./socket
 
       # Docker Compose를 이용하여 서비스를 배포합니다.

@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import * as AWS from 'aws-sdk';
+import * as sharp from 'sharp';
 
 export interface ObjectStorageData {
   ETag: string;
@@ -30,16 +31,23 @@ export class ImageService {
     if (file.size > this.FILE_LIMIT_SIZE) {
       throw new BadRequestException('파일 사이즈는 3MB를 넘을 수 없습니다.');
     }
+    const resizedImageBuffer = await sharp(file.buffer)
+      .resize({ height: 600 })
+      .toFormat('webp')
+      .toBuffer();
+
+    const fileName = `${folder}/${Date.now().toString()}-${file.originalname.replace(
+      /[^a-zA-Z0-9.]/g,
+      '_',
+    )}.webp`;
 
     const param = {
       Bucket: process.env.AWS_BUCKET_NAME,
-      Key: `${folder}/${Date.now().toString()}-${file.originalname.replace(
-        /[^a-zA-Z0-9.]/g,
-        '_',
-      )}`,
+      Key: fileName,
       ACL: 'public-read',
-      Body: file.buffer,
+      Body: resizedImageBuffer,
     };
+
     return new Promise((resolve, reject) => {
       this.s3.upload(param, (err, data) => {
         if (err) {

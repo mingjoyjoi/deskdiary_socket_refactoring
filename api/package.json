@@ -55,6 +55,7 @@
     "pm2": "^5.3.0",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
+    "sharp": "^0.32.6",
     "swagger-ui-express": "^5.0.0"
   },
   "devDependencies": {

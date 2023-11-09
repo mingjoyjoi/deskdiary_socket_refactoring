@@ -2,11 +2,10 @@ import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.int
 
 export const CorsConfig: CorsOptions = {
   origin: [
+    'https://desk-diary.com',
     'http://localhost:3000',
     'https://deskdiary-fe-brown.vercel.app',
-    'https://desk-diary.com',
   ],
-  methods: ['GET', 'POST'],
   allowedHeaders: [
     'access-control-allow-origin',
     'X-Requested-With',

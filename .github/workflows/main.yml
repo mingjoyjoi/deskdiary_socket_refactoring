@@ -90,11 +90,6 @@ jobs:
         run: |
           touch .env
           echo "MODE=${{ secrets.MODE }}" >> .env
-          echo "RDS_DB_NAME=${{ secrets.RDS_DB_NAME }}" >> .env
-          echo "RDS_HOSTNAME=${{ secrets.RDS_HOSTNAME }}" >> .env
-          echo "RDS_PASSWORD=${{ secrets.RDS_PASSWORD }}" >> .env
-          echo "RDS_PORT=${{ secrets.RDS_PORT }}" >> .env
-          echo "RDS_USERNAME=${{ secrets.RDS_USERNAME }}" >> .env
           echo "RDS_DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
           echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
           echo "KAKAO_JS_KEY=${{ secrets.KAKAO_JS_KEY }}" >> .env
@@ -107,7 +102,6 @@ jobs:
           echo "AWS_SECRET_KEY=${{ secrets.AWS_SECRET_KEY }}" >> .env
           echo "AGORA_APP_ID=${{ secrets.AGORA_APP_ID }}" >> .env
           echo "AGORA_APP_CERTIFICATE=${{ secrets.AGORA_APP_CERTIFICATE }}" >> .env
-          echo "MONGO_URL=${{ secrets.MONGO_URL }}" >> .env
           echo "API_SERVER_URL=${{ secrets.API_SERVER_URL }}" >> .env
           echo "SOCKET_SECRET_KEY=${{ secrets.SOCKET_SECRET_KEY }}" >> .env
           echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> .env
@@ -115,17 +109,13 @@ jobs:
           echo "GOOGLE_CALLBACK_URL=${{ secrets.GOOGLE_CALLBACK_URL }}" >> .env
           echo "GOOGLE_SCOPE_PROFILE=${{ secrets.GOOGLE_SCOPE_PROFILE }}" >> .env
           echo "GOOGLE_SCOPE_EMAIL=${{ secrets.GOOGLE_SCOPE_EMAIL }}" >> .env
+          echo "JWT_EXPIRATION_TIME=${{ secrets.JWT_EXPIRATION_TIME }}" >> .env
+          echo "JWT_REFERSH_SECRET=${{ secrets.JWT_REFERSH_SECRET }}" >> .env
+          echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
+          echo "EMAIL_USER=${{ secrets.EMAIL_USER }}" >> .env
+          echo "EMAIL_PASS=${{ secrets.EMAIL_PASS }}" >> .env
         working-directory: ./api
 
-      - name: Verify .env file location
-        run: |
-          pwd
-          ls -la
-        working-directory: ./api
-
-      - name: List directory contents
-        run: ls -la
-        working-directory: ./api
       # Docker Compose를 이용하여 서비스를 배포합니다.
       - name: Deploy using Docker Compose
         run: |
