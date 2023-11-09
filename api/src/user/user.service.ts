@@ -3,6 +3,7 @@ import {
   HttpStatus,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
@@ -16,6 +17,7 @@ import { User } from '@prisma/client';
 import { UpdatePasswordDto } from './dto/update.password.dto';
 import { ImageService } from '../image/image.service';
 import { EmailService } from '../auth/email/email.service';
+import * as uuid from 'uuid';
 //import { randomNickname } from './constant/random-nickname';
 
 @Injectable()
@@ -55,6 +57,7 @@ export class UserService {
 
     // 비밀번호 해싱
     const hashedPassword = await bcrypt.hash(password, 10);
+    const signupVerifyToken = uuid.v1();
 
     // 사용자 생성
     await this.prisma.user.create({
@@ -62,10 +65,42 @@ export class UserService {
         email,
         nickname,
         password: hashedPassword,
+        signupVerifyToken,
+        isEmailVerified: false,
       },
     });
 
+    await this.emailService.sendMemberJoinVerification(
+      email,
+      signupVerifyToken,
+    );
+
     return { message: '회원가입에 성공하였습니다.' };
+  }
+
+  async sendMemberJoinEmail(email: string, signupVerifyToken: string) {
+    await this.emailService.sendMemberJoinVerification(
+      email,
+      signupVerifyToken,
+    );
+  }
+
+  async verifyEmail(signupVerifyToken: string): Promise<string> {
+    const user = await this.prisma.user.findUnique({
+      where: { signupVerifyToken },
+    });
+
+    if (!user) {
+      throw new NotFoundException('유효하지 않은 인증 토큰입니다.');
+    }
+
+    await this.prisma.user.update({
+      where: { userId: user.userId },
+      data: { isEmailVerified: true, signupVerifyToken: signupVerifyToken },
+    });
+
+    // return '이메일이 성공적으로 인증되었습니다.';
+    return 'https://desk-diary.com/confirm-email';
   }
 
   async login(loginuserDto: LoginUserDto, res: Response): Promise<void> {
@@ -82,57 +117,70 @@ export class UserService {
       );
     }
 
+    if (!user.isEmailVerified) {
+      throw new HttpException(
+        '이메일 인증이 완료되지 않았습니다.',
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
+
     const jwtPayload = { userId: user.userId, type: 'user' };
     const accessToken = this.jwtService.sign(jwtPayload, {
       secret: this.jwtconfigService.createJwtOptions().secret,
       expiresIn: this.jwtconfigService.createJwtOptions().signOptions.expiresIn,
     });
     const refreshToken = this.jwtService.sign(jwtPayload, {
-      expiresIn: '7d',
+      expiresIn: '15d',
       secret: process.env.JWT_REFRESH_SECRET,
     });
 
+    // const refreshTokenHash = await bcrypt.hash(refreshToken, 10);
     await this.prisma.user.update({
       where: { userId: user.userId },
       data: { refreshToken },
     });
 
     res.setHeader('Authorization', `Bearer ${accessToken}`);
-    // res.cookie('RefreshToken', refreshToken, {
-    //   httpOnly: true,
-    //   secure: true,
-    // });
-    res.json({ message: '로그인에 성공하였습니다.', token: accessToken });
+    res.setHeader('RefreshToken', `Bearer ${refreshToken}`);
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: true,
+    });
+    res.json({
+      message: '로그인에 성공하였습니다.',
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+    });
   }
 
-  // async renewAccessToken(refreshToken: string, res: Response): Promise<void> {
-  //   let userId: number;
-  //   try {
-  //     const decoded = this.jwtService.verify(refreshToken, {
-  //       secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
-  //     });
-  //     userId = decoded.userId;
-  //   } catch (error) {
-  //     throw new UnauthorizedException('유효하지 않은 refreshToken 입니다.');
-  //   }
+  async renewAccessToken(refreshToken: string, res: Response): Promise<void> {
+    console.log('Received refreshToken:', refreshToken);
+    let userId: number;
+    try {
+      const decoded = this.jwtService.verify(refreshToken, {
+        secret: process.env.JWT_REFRESH_SECRET,
+      });
+      userId = decoded.userId;
+    } catch (error) {
+      console.log(error);
+      throw new UnauthorizedException('유효하지 않은 refreshToken 입니다1.');
+    }
 
-  //   const user = await this.prisma.user.findUnique({
-  //     where: { userid: userId },
-  //     select: { userid: true, refreshToken: true },
-  //   });
+    const user = await this.prisma.user.findUnique({
+      where: { userId: userId },
+      select: { refreshToken: true },
+    });
 
-  //   if (!user || user.refreshToken !== refreshToken) {
-  //     throw new UnauthorizedException('유효하지 않은 refreshToken 입니다.');
-  //   }
+    if (!user || refreshToken !== user.refreshToken) {
+      throw new UnauthorizedException('유효하지 않은 refreshToken 입니다2.');
+    }
 
-  //   const jwtPayload = { userId: user.userid, type: 'User' };
-  //   const newAccessToken = this.jwtService.sign(jwtPayload, {
-  //     expiresIn: '5m',
-  //     secret: this.configService.get<string>('JWT_SECRET'),
-  //   });
-  //   res.setHeader('Authorization', `Bearer ${newAccessToken}`);
-  //   res.json({ message: '로그인에 성공하였습니다.' });
-  // }
+    const jwtPayload = { userId: userId, type: 'user' };
+    const jwtSignOptions = this.jwtconfigService.getJwtSignOptions();
+    const newAccessToken = this.jwtService.sign(jwtPayload, jwtSignOptions);
+    res.setHeader('Authorization', `Bearer ${newAccessToken}`);
+    res.json({ message: '로그인에 성공하였습니다2.' });
+  }
 
   async logout(email: string) {
     await this.prisma.user.update({
@@ -292,33 +340,29 @@ export class UserService {
       },
     });
   }
+
   async deleteProfileImage(userId: number) {
+    // 우선 데이터베이스에서 사용자의 현재 프로필 이미지를 조회합니다.
+    console.log(userId);
     const user = await this.prisma.user.findUnique({
       where: { userId },
       select: { profileImage: true },
     });
 
     if (user && user.profileImage) {
-      // S3 파일 URL에서 파일 이름을 추출합니다.
-      const url = new URL(user.profileImage);
-      const fileName = url.pathname.substring(1); // URL의 첫 번째 '/' 문자를 제거합니다.
+      // S3에서 이미지를 삭제합니다.
+      const fileName = user.profileImage.split('/').pop(); // URL에서 파일 이름을 추출합니다.
+      await this.imageService.deleteImage(fileName);
 
-      // deleteImage 메소드를 사용하여 S3에서 이미지를 삭제합니다.
-      try {
-        await this.imageService.deleteImage(fileName);
-      } catch (error) {
-        // 로그를 남기거나, 오류를 처리하는 로직을 추가할 수 있습니다.
-        throw new Error('S3에서 이미지를 삭제하는 데 실패했습니다.');
-      }
+      // 데이터베이스에서 사용자의 프로필 이미지 URL을 제거합니다.
+      console.log(userId);
+      return await this.prisma.user.update({
+        where: { userId },
+        data: { profileImage: null },
+      });
     }
 
-    // Prisma를 사용하여 데이터베이스에서 이미지 URL을 null로 설정합니다.
-    return this.prisma.user.update({
-      where: { userId },
-      data: {
-        profileImage: null,
-      },
-    });
+    throw new Error('프로필 이미지가 존재하지 않습니다.');
   }
 
   async deleteUser(userId: number) {
@@ -329,30 +373,5 @@ export class UserService {
       throw new NotFoundException(`${userId}를 찾을 수 없습니다.`);
     }
     return deletedUser;
-  }
-
-  async sendVerification(email: string) {
-    const verifyToken = this.generateRandomNumber();
-
-    console.log('캐싱할 데이터: ', email, verifyToken);
-    // TODO: verifyToken이랑 이메일 캐싱
-
-    await this.sendVerifyToken(email, verifyToken);
-  }
-
-  async sendVerifyToken(email: string, verifyToken: number) {
-    await this.emailService.sendVerifyToken(email, verifyToken);
-  }
-
-  async verifyEmail(email: string, verifyToken: number) {
-    console.log('verifyEmail: ', email, verifyToken);
-    // TODO: 캐싱된 데이터 찾기. 있으면 200, 없으면 Exception
-    return;
-  }
-
-  private generateRandomNumber(): number {
-    const minm = 100000;
-    const maxm = 999999;
-    return Math.floor(Math.random() * (maxm - minm + 1)) + minm;
   }
 }

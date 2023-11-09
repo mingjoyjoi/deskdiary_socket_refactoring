@@ -12,6 +12,8 @@ import {
   UseInterceptors,
   UploadedFile,
   BadRequestException,
+  Query,
+  UnauthorizedException,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -29,6 +31,8 @@ import { JwtAuthGuard } from '../auth/jwt/jwt-auth.guard';
 import { Request } from 'express';
 import { UserService } from './user.service';
 import { JoinUserDto } from './dto/join.user.dto';
+import { VerifyEmailDto } from './dto/verify.email.dto';
+// import { EmailService } from 'src/auth/email/email.service';
 import { LoginUserDto } from './dto/login.user.dto';
 import { UpdateProfileDto } from './dto/update.profile.dto';
 import { UpdatePasswordDto } from './dto/update.password.dto';
@@ -46,6 +50,15 @@ export class UserController {
     return await this.userService.signUp(joinuserDto);
   }
 
+  @ApiOperation({ summary: '회원가입 시 이메일 인증' })
+  @Post('/email-verify')
+  async verifyEmail(@Query() dto: VerifyEmailDto, @Res() res: Response) {
+    const { signupVerifyToken } = dto;
+    // return await this.userService.verifyEmail(signupVerifyToken);
+    const redirectUrl = await this.userService.verifyEmail(signupVerifyToken);
+    return res.redirect(redirectUrl);
+  }
+
   @ApiBearerAuth()
   @ApiOperation({ summary: '로그인' })
   @Post('auth/login')
@@ -54,6 +67,20 @@ export class UserController {
     @Res() res: Response,
   ): Promise<void> {
     await this.userService.login(loginuserDto, res);
+  }
+
+  @ApiBearerAuth()
+  @Post('refresh')
+  @ApiOperation({ summary: '리프레시 토큰으로 액세스 토큰 재발급' })
+  @ApiResponse({ status: 200, description: '새 액세스 토큰 발급됨' })
+  @ApiResponse({ status: 401, description: '인증 실패' })
+  async renewAccessToken(@Req() req, @Res() res) {
+    const refreshToken = req.cookies['refreshToken'];
+    console.log(refreshToken);
+    if (!refreshToken) {
+      throw new UnauthorizedException('리프레시 토큰이 제공되지 않았습니다.');
+    }
+    return this.userService.renewAccessToken(refreshToken, res);
   }
 
   @Put('me/password')
@@ -143,7 +170,6 @@ export class UserController {
     const userId = req.user['userId'];
     return this.userService.updateProfile(userId, updateProfileDto);
   }
-
   @Post('me/profile/image')
   @ApiBearerAuth()
   @ApiOperation({
@@ -155,22 +181,18 @@ export class UserController {
     @Req() req: any,
     @UploadedFile() file: Express.Multer.File,
   ) {
-    const userId = req.user.userId;
+    const userId = req.user['userId'];
     return this.userService.updateProfileImage(userId, file);
   }
+
   @Delete('me/profile/image')
   @ApiBearerAuth()
   @ApiOperation({
     summary: '프로필 이미지 삭제',
   })
   @UseGuards(JwtAuthGuard)
-  async removeProfileImage(@Req() req: any) {
-    const userId = req.user.userId;
-    return await this.userService.deleteProfileImage(userId);
-  }
-
-  @Post('/verifyEmail')
-  async sendVerification(@Body() body) {
-    return await this.userService.sendVerification(body.email);
+  async deleteProfileImage(@Req() req: any) {
+    const userId = req.user['userId'];
+    return this.userService.deleteProfileImage(userId);
   }
 }
