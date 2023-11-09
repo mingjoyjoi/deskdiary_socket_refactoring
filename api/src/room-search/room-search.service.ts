@@ -22,8 +22,8 @@ export class RoomSearchService {
       take,
       skip,
     });
-    const totalCount = await this.prisma.room.count();
-    const nowCount = skip + take;
+    const totalCount = await this.ResultCountByCategory(category);
+    const nowCount = skip + take > totalCount ? totalCount : skip + take;
     const remainingCount = totalCount - nowCount;
 
     return {
@@ -50,8 +50,8 @@ export class RoomSearchService {
       take,
       skip,
     });
-    const totalCount = await this.prisma.room.count();
-    const nowCount = skip + take;
+    const totalCount = await this.ResultCountByCategory(category);
+    const nowCount = skip + take > totalCount ? totalCount : skip + take;
     const remainingCount = totalCount - nowCount;
 
     return {
@@ -134,8 +134,8 @@ export class RoomSearchService {
       take,
       skip,
     });
-    const totalCount = await this.prisma.room.count();
-    const nowCount = skip + take;
+    const totalCount = await this.ResultCountBySearch(category, search);
+    const nowCount = skip + take > totalCount ? totalCount : skip + take;
     const remainingCount = totalCount - nowCount;
 
     return {
@@ -144,5 +144,23 @@ export class RoomSearchService {
       remainingCount,
       totalCount,
     };
+  }
+
+  async ResultCountByCategory(category: string) {
+    const count = await this.prisma.room.count({
+      where: { category },
+    });
+    return count;
+  }
+  async ResultCountBySearch(category: string, search: string) {
+    const count = await this.prisma.room.count({
+      where: {
+        category,
+        title: {
+          contains: search,
+        },
+      },
+    });
+    return count;
   }
 }
