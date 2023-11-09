@@ -11,9 +11,14 @@ export class RoomSearchService {
     const take = perPage;
     const QueryResults = await this.prisma.room.findMany({
       where: { category },
-      orderBy: {
-        count: 'desc',
-      },
+      orderBy: [
+        {
+          count: 'desc',
+        },
+        {
+          createdAt: 'desc',
+        },
+      ],
       take,
       skip,
     });
@@ -34,9 +39,14 @@ export class RoomSearchService {
     const take = perPage;
     const QueryResults = await this.prisma.room.findMany({
       where: { category },
-      orderBy: {
-        createdAt: 'desc',
-      },
+      orderBy: [
+        {
+          createdAt: 'desc',
+        },
+        {
+          count: 'desc',
+        },
+      ],
       take,
       skip,
     });
@@ -96,6 +106,7 @@ export class RoomSearchService {
     return rooms;
   }
 
+  //검색
   async searchRooms(
     filter: string,
     search: string,
@@ -106,9 +117,11 @@ export class RoomSearchService {
     //기본이 인기순
     const skip = (page - 1) * perPage;
     const take = perPage;
-    let orderBy: Record<string, 'asc' | 'desc'> = { count: 'desc' };
+    let firstOrderBy: Record<string, 'asc' | 'desc'> = { count: 'desc' };
+    let secondOrderBy: Record<string, 'asc' | 'desc'> = { createdAt: 'desc' };
     if (filter === 'latest') {
-      orderBy = { createdAt: 'desc' };
+      firstOrderBy = { createdAt: 'desc' };
+      secondOrderBy = { count: 'desc' };
     }
     const QueryResults = await this.prisma.room.findMany({
       where: {
@@ -117,7 +130,7 @@ export class RoomSearchService {
           contains: search,
         },
       },
-      orderBy,
+      orderBy: [firstOrderBy, secondOrderBy],
       take,
       skip,
     });
