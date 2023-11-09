@@ -32,7 +32,7 @@ export class ImageService {
       throw new BadRequestException('파일 사이즈는 3MB를 넘을 수 없습니다.');
     }
     const resizedImageBuffer = await sharp(file.buffer)
-      .resize({ width: 800 })
+      .resize({ height: 600 })
       .toFormat('webp')
       .toBuffer();
 
