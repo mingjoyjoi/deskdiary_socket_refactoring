@@ -263,6 +263,17 @@ export class UserService {
     if (!existingUser) {
       throw new NotFoundException(`${userId}를 찾을 수 없습니다.`);
     }
+    const { nickname } = dto;
+    const existingUserByNickname = await this.prisma.user.findFirst({
+      where: { nickname },
+    });
+
+    if (existingUserByNickname) {
+      throw new HttpException(
+        '닉네임이 이미 사용중입니다.',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
     return await this.prisma.user.update({
       where: { userId },
       data: dto,
