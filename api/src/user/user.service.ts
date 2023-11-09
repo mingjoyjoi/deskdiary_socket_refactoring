@@ -144,6 +144,7 @@ export class UserService {
     res.setHeader('RefreshToken', `Bearer ${refreshToken}`);
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
+      secure: true,
     });
     res.json({
       message: '로그인에 성공하였습니다.',

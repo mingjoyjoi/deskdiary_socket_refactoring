@@ -76,6 +76,7 @@ export class UserController {
   @ApiResponse({ status: 401, description: '인증 실패' })
   async renewAccessToken(@Req() req, @Res() res) {
     const refreshToken = req.cookies['refreshToken'];
+    console.log(refreshToken);
     if (!refreshToken) {
       throw new UnauthorizedException('리프레시 토큰이 제공되지 않았습니다.');
     }

@@ -19,11 +19,6 @@ async function bootstrap() {
     }),
   );
 
-  app.enableCors({
-    origin: 'http://localhost:3000',
-    credentials: true,
-  });
-
   app.useGlobalFilters(new HttpExceptionFilter());
   app.useStaticAssets(join(__dirname, '..', 'public'));
   app.useStaticAssets(join(__dirname, '..', 'static'), {
