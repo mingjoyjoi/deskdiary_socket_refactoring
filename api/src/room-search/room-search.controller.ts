@@ -166,7 +166,7 @@ export class RoomSearchController {
   //스터디룸에서 검색하고 인기순, 최신순 필터링
   @Get('study-rooms/search')
   @ApiOperation({
-    summary: '스터디룸 방제목 검색 결과 조회, 기본값은 인기순',
+    summary: '스터디룸 방제목 검색 결과 조회',
   })
   @ApiResponse(RoomAPIDocs.getRoomListBySearch())
   @ApiQuery(RoomAPIDocs.getRoomListByTypeQueryFilter())
