@@ -11,6 +11,7 @@ import axios from 'axios';
 import { baseURL } from '../constant/url.constant';
 import { pubClient as Redis } from '../redis.adapter';
 
+
 @Injectable()
 export class RoomchatsService {
   private logger = new Logger('RoomchatsService');
@@ -74,7 +75,12 @@ export class RoomchatsService {
     client: Socket,
     { nickname, uuid, img, userId }: IRoomRequest,
   ) {
-    const newRoom = { uuid: uuid, owner: userId, userList: {} };
+    const newRoom = {
+      uuid: uuid,
+      owner: client.id,
+      ownerId: userId,
+      userList: {},
+    };
     newRoom.userList = { [client.id]: { nickname, img, userId } };
     await this.roomModel.create(newRoom);
     const newUser = {
@@ -143,15 +149,20 @@ export class RoomchatsService {
   //   await Redis.set(`room:${uuid}`, JSON.stringify(room));
   // }
 
-  async removeRoom(client: Socket, server: Server, uuid: string) {
+  async removeRoom(
+    client: Socket,
+    server: Server,
+    uuid: string,
+    userId: number,
+  ) {
     const data = this.roomModel.findOne({ uuid });
     if (!data) {
       return server.to(client.id).emit('error-room', Exception.roomNotFound);
     }
-    if (this.isOwner(data, client)) {
+    if (this.isOwner(data, userId)) {
       await this.deleteDocumentByUuid(uuid);
       await this.socketModel.deleteMany({ uuid });
-      return server.to(uuid).emit('remove-users', {});
+      return server.to(uuid).emit('remove-users', {}); //어떻게 넘겨줄지 서현님이랑 맞추기필요
     }
     client.leave(uuid);
   }
@@ -215,23 +226,20 @@ export class RoomchatsService {
   }
 
   async KickRoomByWithdrawal(client: Socket, server: Server, userId: number) {
-    const room = await this.roomModel.find({ userId });
+    const room = await this.roomModel.find({ ownerId: userId });
     const roomsArr = room.map((x) => x.uuid);
     //owner가 userId인 모든방 삭제시키기
-    await this.roomModel.deleteMany({ owner: userId });
+    await this.roomModel.deleteMany({ ownerId: userId });
     //roomsArr가 uuid인 모든 소켓 삭제시키기
     await this.socketModel.deleteMany({
       $or: roomsArr.map((uuid) => ({ uuid: uuid })),
     });
     return server.to(roomsArr).emit('kick-room', Exception.roomRemoved);
   }
-
-  isOwner(findRoom: any, client: Socket): boolean {
-    const findOwnerNickname = findRoom['userList'][findRoom.owner]?.nickname;
-    const findMyNickname = findRoom['userList'][client.id]?.nickname;
-    return findOwnerNickname === findMyNickname;
+  isOwner(findRoom: any, userId: number): boolean {
+    const findOwnerId = findRoom['ownerId'];
+    return userId === findOwnerId;
   }
-
   async disconnectClient(client: Socket, server: Server) {
     // 클라이언트 ID를 기반으로 사용자 정보 조회
     const user = await this.socketModel.findOne({ clientId: client.id });

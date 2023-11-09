@@ -24,6 +24,13 @@ export class Room extends Document {
   @IsString()
   owner: string;
 
+  @Prop({
+    required: true,
+  })
+  @IsNotEmpty()
+  @IsString()
+  ownerId: number;
+
   @Prop({ type: Object, required: true })
   @IsNotEmpty()
   @IsString() // userList의 타입을 명시적으로 지정
