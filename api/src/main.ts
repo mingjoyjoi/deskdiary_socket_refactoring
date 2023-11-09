@@ -18,6 +18,12 @@ async function bootstrap() {
       transform: true,
     }),
   );
+
+  app.enableCors({
+    origin: 'https://desk-diary.com/',
+    credentials: true,
+  });
+
   app.useGlobalFilters(new HttpExceptionFilter());
   app.useStaticAssets(join(__dirname, '..', 'public'));
   app.useStaticAssets(join(__dirname, '..', 'static'), {
