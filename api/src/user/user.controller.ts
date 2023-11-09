@@ -13,6 +13,7 @@ import {
   UploadedFile,
   BadRequestException,
   Query,
+  UnauthorizedException,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -74,7 +75,10 @@ export class UserController {
   @ApiResponse({ status: 200, description: '새 액세스 토큰 발급됨' })
   @ApiResponse({ status: 401, description: '인증 실패' })
   async renewAccessToken(@Req() req, @Res() res) {
-    const refreshToken = req.cookies['RefreshToken']; // 쿠키에서 리프레시 토큰을 가져옵니다.
+    const refreshToken = req.cookies['refreshToken'];
+    if (!refreshToken) {
+      throw new UnauthorizedException('리프레시 토큰이 제공되지 않았습니다.');
+    }
     return this.userService.renewAccessToken(refreshToken, res);
   }
 

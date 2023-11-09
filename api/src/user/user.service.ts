@@ -134,18 +134,17 @@ export class UserService {
       secret: process.env.JWT_REFRESH_SECRET,
     });
 
-    const refreshTokenHash = await bcrypt.hash(refreshToken, 10);
+    // const refreshTokenHash = await bcrypt.hash(refreshToken, 10);
     await this.prisma.user.update({
       where: { userId: user.userId },
-      data: { refreshToken: refreshTokenHash },
+      data: { refreshToken },
     });
 
     res.setHeader('Authorization', `Bearer ${accessToken}`);
     res.setHeader('RefreshToken', `Bearer ${refreshToken}`);
-    // res.cookie('RefreshToken', refreshToken, {
-    //   httpOnly: true,
-    //   secure: true,
-    // });
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+    });
     res.json({
       message: '로그인에 성공하였습니다.',
       accessToken: accessToken,
@@ -154,6 +153,7 @@ export class UserService {
   }
 
   async renewAccessToken(refreshToken: string, res: Response): Promise<void> {
+    console.log('Received refreshToken:', refreshToken);
     let userId: number;
     try {
       const decoded = this.jwtService.verify(refreshToken, {
@@ -161,7 +161,8 @@ export class UserService {
       });
       userId = decoded.userId;
     } catch (error) {
-      throw new UnauthorizedException('유효하지 않은 refreshToken 입니다.');
+      console.log(error);
+      throw new UnauthorizedException('유효하지 않은 refreshToken 입니다1.');
     }
 
     const user = await this.prisma.user.findUnique({
@@ -169,15 +170,15 @@ export class UserService {
       select: { refreshToken: true },
     });
 
-    if (!user || !(await bcrypt.compare(refreshToken, user.refreshToken))) {
-      throw new UnauthorizedException('유효하지 않은 refreshToken 입니다.');
+    if (!user || refreshToken !== user.refreshToken) {
+      throw new UnauthorizedException('유효하지 않은 refreshToken 입니다2.');
     }
 
     const jwtPayload = { userId: userId, type: 'user' };
     const jwtSignOptions = this.jwtconfigService.getJwtSignOptions();
     const newAccessToken = this.jwtService.sign(jwtPayload, jwtSignOptions);
     res.setHeader('Authorization', `Bearer ${newAccessToken}`);
-    res.json({ message: '로그인에 성공하였습니다.' });
+    res.json({ message: '로그인에 성공하였습니다2.' });
   }
 
   async logout(email: string) {

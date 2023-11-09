@@ -31,6 +31,7 @@ export class EmailService {
   ) {
     // 이 링크를 통해 우리 서비스로 이메일 인증 요청이 들어옴
     const baseUrl = 'https://deskdiary.store';
+    // const baseUrl = 'http://localhost:4000';
 
     const url = `${baseUrl}/email-verify?signupVerifyToken=${signupVerifyToken}`;
 
