@@ -27,6 +27,7 @@ import {
   RoomResponseExample,
   RoomlistResponseExample,
   roomLeaveResponseExample,
+  generateTokenResponseExample,
 } from './room.response.examples';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CheckoutRoomRequestDto } from './dto/checkout-room.dto';
@@ -225,6 +226,22 @@ export class RoomController {
       return await this.roomService.leaveRoom(uuid);
     }
     return false;
+  }
+  //request a fresh token using channel name
+  // 유저의 요청을 검증함
+  //토큰을 발급해서 클라에게 보내줌
+  @Get('generate-aFreshToken/:uuid')
+  @ApiOperation({ summary: '아고라 토큰 재발급' })
+  @ApiResponse({
+    status: 200,
+    description: '재발급한 아고라 토큰을 반환합니다.',
+    content: {
+      examples: generateTokenResponseExample,
+    },
+  })
+  async generateToken(@Param('uuid') uuid: string): Promise<{ token: string }> {
+    const token = await this.roomService.generateAgoraToken(uuid);
+    return { token };
   }
 
   // @Delete('socket/:uuid')

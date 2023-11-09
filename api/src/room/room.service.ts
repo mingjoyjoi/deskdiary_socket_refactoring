@@ -5,9 +5,11 @@ import { UserService } from '../user/user.service';
 import { v4 as uuidv4 } from 'uuid';
 import { RoomException } from '../exception/room.exception';
 import { UserException } from '../exception/user.exception';
-import { PrismaService } from '../prisma/prisma.service';
 import { CheckoutRoomRequestDto } from './dto/checkout-room.dto';
 import { CreateRoomRequestDto } from './dto/create-room-request.dto';
+import { RoomRepository } from './room.repository';
+import { NewRoom } from './room.interface';
+import { CreateHistoryDto } from './dto/create-history.dto';
 // import { createRandomRoom } from './room.seed';
 
 export interface ThumbnailUploadResult {
@@ -17,7 +19,7 @@ export interface ThumbnailUploadResult {
 @Injectable()
 export class RoomService {
   constructor(
-    private prisma: PrismaService,
+    private roomRepository: RoomRepository,
     private userService: UserService,
     private imageService: ImageService,
   ) {}
@@ -33,7 +35,7 @@ export class RoomService {
     if (!user) throw UserException.userNotFound();
     const agoraAppId: string = process.env.AGORA_APP_ID ?? '';
     const agoraToken = this.createTokenWithChannel(agoraAppId, uuid);
-    const newRoom = {
+    const newRoom: NewRoom = {
       title,
       maxHeadcount: +maxHeadcount,
       note,
@@ -45,78 +47,43 @@ export class RoomService {
       ownerId: userId,
       count: 0,
     };
-
-    // await this.roomRepository.createRoom(newRoom);
-    const createdRoom = await this.prisma.room.create({
-      data: newRoom,
-    });
+    const createdRoom = await this.roomRepository.createRoom(newRoom);
     const owner = await this.userService.findUserByUserId(userId);
     //룸정보, 룸오너 정보 같이 리턴해주기
     return { createdRoom, owner };
   }
 
   async getRoomListAll() {
-    const findRooms = await this.prisma.room.findMany({
-      select: {
-        uuid: true,
-        title: true,
-        category: true,
-        agoraAppId: true,
-        agoraToken: true,
-        ownerId: true,
-      },
-    });
+    const findRooms = await this.roomRepository.findManyRoom();
     return findRooms;
   }
   async getRoomByUUID(uuid: string) {
-    const findRoom = await this.prisma.room.findUnique({
-      where: { uuid: uuid },
-    });
+    const findRoom = await this.roomRepository.findRoomByUuid(uuid);
     if (!findRoom) throw RoomException.roomNotFound();
     const userId = findRoom.ownerId;
     const owner = await this.userService.findUserByUserId(userId);
+    if (!owner) throw UserException.userNotFound();
     return { findRoom, owner };
   }
 
   async joinRoom(uuid: string): Promise<boolean> {
-    const findRoom = await this.prisma.room.findUnique({
-      where: { uuid: uuid },
-    });
+    const findRoom = await this.roomRepository.findRoomByUuid(uuid);
     if (!findRoom) throw RoomException.roomNotFound();
     if (findRoom.nowHeadcount === findRoom.maxHeadcount)
       throw RoomException.roomFullError();
 
-    const updateResult = await this.prisma.room.update({
-      data: {
-        nowHeadcount: {
-          increment: 1, // 증가시키려는 값
-        },
-        count: {
-          increment: 1,
-        },
-      },
-      where: { uuid: uuid },
-    });
+    const updateResult = await this.roomRepository.updateRoomByJoin(uuid);
 
     if (!updateResult) throw RoomException.roomJoinError();
     return true;
   }
 
   async leaveRoom(uuid: string): Promise<boolean> {
-    const findRoom = await this.prisma.room.findUnique({
-      where: { uuid: uuid },
-    });
+    const findRoom = await this.roomRepository.findRoomByUuid(uuid);
     if (!findRoom) throw RoomException.roomNotFound();
     if (findRoom.nowHeadcount < 1) throw RoomException.roomLeaveError();
 
-    const updateResult = await this.prisma.room.update({
-      data: {
-        nowHeadcount: {
-          decrement: 1, // 감소시키려는 값
-        },
-      },
-      where: { uuid: uuid },
-    });
+    const updateResult = await this.roomRepository.updateRoomByLeave(uuid);
     if (!updateResult) throw RoomException.roomLeaveError();
     return true;
   }
@@ -129,24 +96,21 @@ export class RoomService {
     const { checkIn, checkOut, totalHours, historyType } =
       checkoutRoomRequestDto;
     const totalSeconds = this.timeStringToSeconds(totalHours);
-    const findRoom = await this.prisma.room.findUnique({
-      where: { uuid: uuid },
-    });
+    const findRoom = await this.roomRepository.findRoomByUuid(uuid);
 
     const user = await this.userService.findUserByUserId(userId);
     if (!user) throw UserException.userNotFound();
 
     const roomId = findRoom.roomId;
-    const recordedHistory = await this.prisma.history.create({
-      data: {
-        checkIn,
-        checkOut,
-        historyType,
-        totalHours: totalSeconds,
-        UserId: userId,
-        RoomId: roomId,
-      },
-    });
+    const newHistory: CreateHistoryDto = {
+      checkIn,
+      checkOut,
+      historyType,
+      totalHours: totalSeconds,
+      UserId: userId,
+      RoomId: roomId,
+    };
+    const recordedHistory = await this.roomRepository.createHistory(newHistory);
 
     return recordedHistory;
   }
@@ -154,24 +118,18 @@ export class RoomService {
   async deleteRoom(userId: number, uuid: string): Promise<boolean> {
     const user = await this.userService.findUserByUserId(userId);
     if (!user) throw UserException.userNotFound();
-    const findRoom = await this.prisma.room.findUnique({
-      where: { uuid: uuid },
-    });
+    const findRoom = await this.roomRepository.findRoomByUuid(uuid);
     if (!findRoom) throw RoomException.roomNotFound();
     //방안에 유저가 있는 경우 에러띄움
     if (findRoom.nowHeadcount) throw RoomException.roomUserexists();
     if (userId != findRoom.ownerId) throw UserException.userUnauthorized();
-    const deleteResult = await this.prisma.room.delete({
-      where: { uuid: uuid },
-    });
+    const deleteResult = await this.roomRepository.deleteRoom(uuid);
     if (!deleteResult) throw RoomException.roomDeleteError();
     return true;
   }
 
   async deleteRoomFromSocket(uuid: string): Promise<boolean> {
-    const deleteResult = await this.prisma.room.delete({
-      where: { uuid: uuid },
-    });
+    const deleteResult = await this.roomRepository.deleteRoom(uuid);
     if (!deleteResult) throw RoomException.roomDeleteError();
     return true;
   }
@@ -196,15 +154,10 @@ export class RoomService {
   }
 
   timeStringToSeconds(timeString: string): number {
-    // 시간 문자열을 콜론 (:)을 기준으로 분리
     const timeParts = timeString.split(':');
-
-    // 시, 분 및 초를 정수로 파싱
     const hours = parseInt(timeParts[0], 10);
     const minutes = parseInt(timeParts[1], 10);
     const seconds = parseInt(timeParts[2], 10);
-
-    // 초로 변환
     const totalSeconds = hours * 3600 + minutes * 60 + seconds;
 
     return totalSeconds;
@@ -227,6 +180,21 @@ export class RoomService {
       message: '썸네일이 성공적으로 업로드되었습니다',
       roomThumbnail: uploadedFile.Location,
     };
+  }
+
+  async generateAgoraToken(uuid: string): Promise<string> {
+    const findRoom = await this.roomRepository.findRoomByUuid(uuid);
+    if (!findRoom) throw RoomException.roomNotFound();
+
+    const agoraAppId: string = process.env.AGORA_APP_ID ?? '';
+    const aFreshToken = this.createTokenWithChannel(agoraAppId, uuid);
+
+    const roomUpdateWithaFreshToken =
+      await this.roomRepository.updateRoomByRefreshToken(aFreshToken, uuid);
+    if (!roomUpdateWithaFreshToken) throw RoomException.roomTokenUpdateError();
+
+    const token = roomUpdateWithaFreshToken.agoraToken;
+    return token;
   }
   // async addRandomRoomToDatabase() {
   //   const ownerId = 1; // 이 값은 실제로 데이터베이스에 있는 사용자 ID여야 합니다.

@@ -90,3 +90,10 @@ export const roomLeaveResponseExample = {
     },
   },
 };
+
+export const generateTokenResponseExample = {
+  example: {
+    token:
+      '0062ec0d84c41c4442d88ba6f5a2beb828bIAD9qg4N4hd04MvaY6A72m4BjYmO/7+xnRMinaI0ncLzkAx+f9gAAAAAEACS0zcn9gASXwEAAQCGvRBf',
+  },
+};
