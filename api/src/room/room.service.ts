@@ -121,7 +121,7 @@ export class RoomService {
     const findRoom = await this.roomRepository.findRoomByUuid(uuid);
     if (!findRoom) throw RoomException.roomNotFound();
     //방안에 유저가 있는 경우 에러띄움
-    if (findRoom.nowHeadcount) throw RoomException.roomUserexists();
+    // if (findRoom.nowHeadcount) throw RoomException.roomUserexists();
     if (userId != findRoom.ownerId) throw UserException.userUnauthorized();
     const deleteResult = await this.roomRepository.deleteRoom(uuid);
     if (!deleteResult) throw RoomException.roomDeleteError();
