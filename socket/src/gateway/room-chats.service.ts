@@ -224,18 +224,32 @@ export class RoomchatsService {
       return server.to(uuid).emit('log-out', { logoutUser: userId });
     }
   }
-
   async KickRoomByWithdrawal(client: Socket, server: Server, userId: number) {
     const room = await this.roomModel.find({ ownerId: userId });
+    if (!room.length) {
+      this.logger.log(`만든방없음`);
+      return;
+    }
+    this.logger.log(`룸데이터 ${room}`);
     const roomsArr = room.map((x) => x.uuid);
+    this.logger.log(`룸데이터배열 ${roomsArr}`);
     //owner가 userId인 모든방 삭제시키기
-    await this.roomModel.deleteMany({ ownerId: userId });
+    const remove = await this.roomModel.deleteMany({ ownerId: userId });
+    if (!remove) {
+      this.logger.log('룸데이터 삭제 실패함');
+    }
+    this.logger.log('룸데이터 삭제함');
     //roomsArr가 uuid인 모든 소켓 삭제시키기
-    await this.socketModel.deleteMany({
+    const socketDel = await this.socketModel.deleteMany({
       $or: roomsArr.map((uuid) => ({ uuid: uuid })),
     });
+    if (!socketDel) {
+      this.logger.log('소켓들 삭제실패함');
+    }
+    this.logger.log('소켓데이터 삭제함');
     return server.to(roomsArr).emit('kick-room', Exception.roomRemoved);
   }
+
   isOwner(findRoom: any, userId: number): boolean {
     const findOwnerId = findRoom['ownerId'];
     return userId === findOwnerId;
