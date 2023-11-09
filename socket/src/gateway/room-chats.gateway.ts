@@ -92,6 +92,7 @@ export class RoomchatsGateway
     @ConnectedSocket() client: Socket,
     @MessageBody() { userId }: IRoomRequest,
   ): void {
+    this.logger.log('회원탈퇴 이벤트 받음');
     this.roomchatsService.KickRoomByWithdrawal(client, this.server, userId);
   }
 
