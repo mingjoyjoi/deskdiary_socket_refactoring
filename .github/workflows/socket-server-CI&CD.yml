@@ -96,7 +96,8 @@ jobs:
       # Docker Compose를 이용하여 서비스를 배포
       # 첫 번째 소켓 서버를 업데이트
       - name: socket service 1
-        run: docker-compose -f docker-compose.yml pull my-socket1
+        run: |
+          docker-compose -f docker-compose.yml pull my-socket1
           docker-compose -f docker-compose.yml up -d my-socket1
         working-directory: ./socket
 
@@ -108,7 +109,8 @@ jobs:
 
       # 두 번째 소켓 서버를 업데이트
       - name: socket service 2
-        run: docker-compose -f docker-compose.yml pull my-socket2
+        run: |
+          docker-compose -f docker-compose.yml pull my-socket2
           docker-compose -f docker-compose.yml up -d my-socket2
         working-directory: ./socket
 
