@@ -93,10 +93,30 @@ jobs:
           echo "REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}" >> .env
         working-directory: ./socket
 
-      # Docker Compose를 이용하여 서비스를 배포합니다.
-      - name: Deploy using Docker Compose
-        run: |
-          docker-compose down || true  # 기존에 동작 중인 컨테이너를 종료합니다.
-          docker-compose pull  # DockerHub에서 최신 이미지를 가져옵니다.
-          docker-compose up -d  # Docker Compose로 서비스를 백그라운드에서 실행합니다.
+      # Docker Compose를 이용하여 서비스를 배포
+      # 첫 번째 소켓 서버를 업데이트
+      - name: socket service 1
+        run: docker-compose -f docker-compose.yml pull my-socket1
+          docker-compose -f docker-compose.yml up -d my-socket1
         working-directory: ./socket
+
+      # 서비스 상태를 확인
+      - name: Health check service 1
+        run: |
+          sleep 10 
+          curl -f http://${{ secrets.SERVER_IP_1 }}/health || exit 1
+
+      # 두 번째 소켓 서버를 업데이트
+      - name: socket service 2
+        run: docker-compose -f docker-compose.yml pull my-socket2
+          docker-compose -f docker-compose.yml up -d my-socket2
+        working-directory: ./socket
+
+      # 서비스 상태를 확인
+      - name: Health check for socket service 2
+        run: |
+          sleep 10
+          curl -f http://${{ secrets.SERVER_IP_2 }}/health || exit 1
+      # 더 이상 사용하지 않는 이미지를 삭제
+      - name: Remove unused Docker images
+        run: docker image prune -a -f
