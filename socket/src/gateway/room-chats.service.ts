@@ -23,30 +23,30 @@ export class RoomchatsService {
     this.logger.log('RoomchatsService constructor');
   }
 
-  // async joinRoom(client: Socket, server: Server, iRoomRequest: IRoomRequest) {
-  //   const { uuid, nickname, userId } = iRoomRequest;
+  async joinRoom(client: Socket, server: Server, iRoomRequest: IRoomRequest) {
+    const { uuid, nickname, userId } = iRoomRequest;
 
-  //   this.logger.log(`Redis.get 호출 전: user:${userId}`);
-  //   const exist = await this.socketModel.findOne({ userId: userId });
-  //   // const exist = await Redis.get(`user:${userId}`);
-  //   this.logger.log(`Redis.get 호출 후: user:${userId} 결과: ${exist}`);
-  //   if (exist) {
-  //     await this.leaveRoomRequestToApiServer(uuid);
-  //     return client.emit('joinError', Exception.clientAlreadyConnected);
-  //   }
-  //   client.leave(client.id);
-  //   client.join(uuid);
+    this.logger.log(`Redis.get 호출 전: user:${userId}`);
+    const exist = await this.socketModel.findOne({ userId: userId });
+    // const exist = await Redis.get(`user:${userId}`);
+    this.logger.log(`Redis.get 호출 후: user:${userId} 결과: ${exist}`);
+    if (exist) {
+      await this.leaveRoomRequestToApiServer(uuid);
+      return client.emit('joinError', Exception.clientAlreadyConnected);
+    }
+    client.leave(client.id);
+    client.join(uuid);
 
-  //   const data = await this.roomModel.findOne({ uuid });
+    const data = await this.roomModel.findOne({ uuid });
 
-  //   if (!data) {
-  //     await this.createRoom(client, iRoomRequest);
-  //   } else {
-  //     await this.updateRoom(client, data, iRoomRequest);
-  //   }
-  //   //return server.to(uuid).emit('new-user', nickname);
-  //   this.emitEventForUserList(client, server, uuid, nickname, 'new-user');
-  // }
+    if (!data) {
+      await this.createRoom(client, iRoomRequest);
+    } else {
+      await this.updateRoom(client, data, iRoomRequest);
+    }
+    //return server.to(uuid).emit('new-user', nickname);
+    this.emitEventForUserList(client, server, uuid, nickname, 'new-user');
+  }
   // async joinRoom(client: Socket, server: Server, iRoomRequest: IRoomRequest) {
   //   const { uuid, nickname, userId } = iRoomRequest;
   //   this.logger.log(`Redis.get 호출 전: user:${userId}`);
@@ -69,18 +69,6 @@ export class RoomchatsService {
   //   }
   //   this.emitEventForUserList(client, server, uuid, nickname, 'new-user');
   // }
-  async joinRoom(client: Socket, server: Server, iRoomRequest: IRoomRequest) {
-    const { uuid, nickname, userId } = iRoomRequest;
-
-    const data = await this.roomModel.findOne({ uuid });
-    if (!data) {
-      await this.createRoom(client, iRoomRequest);
-    } else {
-      // 예를 들어, 이렇게 uuid 문자열을 사용할 수 있습니다.
-      await this.updateRoom(client, data.uuid, iRoomRequest);
-    }
-    return server.to(uuid).emit('new-user', nickname, uuid, userId);
-  }
 
   async createRoom(
     client: Socket,
