@@ -82,46 +82,46 @@ export class RoomchatsService {
     return server.to(uuid).emit('new-user', nickname, uuid, userId);
   }
 
-  // async createRoom(
-  //   client: Socket,
-  //   { nickname, uuid, img, userId }: IRoomRequest,
-  // ) {
-  //   const newRoom = {
-  //     uuid: uuid,
-  //     owner: client.id,
-  //     ownerId: userId,
-  //     userList: {},
-  //   };
-  //   newRoom.userList = { [client.id]: { nickname, img, userId } };
-  //   await this.roomModel.create(newRoom);
-  //   const newUser = {
-  //     clientId: client.id,
-  //     uuid: uuid,
-  //     nickname: nickname,
-  //     userId: userId,
-  //   };
-  //   await this.socketModel.create(newUser);
-  // }
   async createRoom(
     client: Socket,
     { nickname, uuid, img, userId }: IRoomRequest,
   ) {
-    const roomData = {
+    const newRoom = {
       uuid: uuid,
-      owner: userId,
-      userList: { [client.id]: { nickname, img, userId } },
+      owner: client.id,
+      ownerId: userId,
+      userList: {},
     };
-
-    await Redis.set(`room:${uuid}`, JSON.stringify(roomData));
-
-    const userData = {
+    newRoom.userList = { [client.id]: { nickname, img, userId } };
+    await this.roomModel.create(newRoom);
+    const newUser = {
       clientId: client.id,
       uuid: uuid,
       nickname: nickname,
       userId: userId,
     };
-    await Redis.set(`user:${client.id}`, JSON.stringify(userData));
+    await this.socketModel.create(newUser);
   }
+  // async createRoom(
+  //   client: Socket,
+  //   { nickname, uuid, img, userId }: IRoomRequest,
+  // ) {
+  //   const roomData = {
+  //     uuid: uuid,
+  //     owner: userId,
+  //     userList: { [client.id]: { nickname, img, userId } },
+  //   };
+
+  //   await Redis.set(`room:${uuid}`, JSON.stringify(roomData));
+
+  //   const userData = {
+  //     clientId: client.id,
+  //     uuid: uuid,
+  //     nickname: nickname,
+  //     userId: userId,
+  //   };
+  //   await Redis.set(`user:${client.id}`, JSON.stringify(userData));
+  // }
 
   async updateRoom(
     client: Socket,
@@ -178,37 +178,11 @@ export class RoomchatsService {
     client.leave(uuid);
   }
 
-  async leaveRoom(client: Socket, server: Server, uuid: string) {
-    const room = await this.roomModel.findOne({ uuid });
-    if (!room) {
-      return server.to(client.id).emit('error-room', Exception.roomNotFound);
-    }
-    const userId = room.userList[client.id];
-    const nickname = room.userList[client.id]?.nickname;
-    if (userId) {
-      delete room.userList[client.id];
-    } else {
-      return server.to(client.id).emit('error-room', Exception.clientNotFound);
-    }
-    // 방 업데이트
-    await this.roomModel.findOneAndUpdate(
-      { uuid },
-      { $set: { userList: room.userList } },
-    );
-    // 사용자 데이터 삭제
-    await this.socketModel.deleteOne({ clientId: client.id });
-
-    //return server.to(uuid).emit('left-user', nickname);
-    // 유저리스트 보내주기
-    this.emitEventForUserList(client, server, uuid, nickname, 'leave-user');
-  }
   // async leaveRoom(client: Socket, server: Server, uuid: string) {
-  //   const roomData = await Redis.get(`room:${uuid}`);
-  //   if (!roomData) {
+  //   const room = await this.roomModel.findOne({ uuid });
+  //   if (!room) {
   //     return server.to(client.id).emit('error-room', Exception.roomNotFound);
   //   }
-
-  //   const room = JSON.parse(roomData);
   //   const userId = room.userList[client.id];
   //   const nickname = room.userList[client.id]?.nickname;
   //   if (userId) {
@@ -216,15 +190,41 @@ export class RoomchatsService {
   //   } else {
   //     return server.to(client.id).emit('error-room', Exception.clientNotFound);
   //   }
-
-  //   await Redis.set(`room:${uuid}`, JSON.stringify(room));
-
+  //   // 방 업데이트
+  //   await this.roomModel.findOneAndUpdate(
+  //     { uuid },
+  //     { $set: { userList: room.userList } },
+  //   );
   //   // 사용자 데이터 삭제
-  //   await Redis.del(`user:${client.id}`);
+  //   await this.socketModel.deleteOne({ clientId: client.id });
 
+  //   //return server.to(uuid).emit('left-user', nickname);
   //   // 유저리스트 보내주기
   //   this.emitEventForUserList(client, server, uuid, nickname, 'leave-user');
   // }
+  async leaveRoom(client: Socket, server: Server, uuid: string) {
+    const roomData = await Redis.get(`room:${uuid}`);
+    if (!roomData) {
+      return server.to(client.id).emit('error-room', Exception.roomNotFound);
+    }
+
+    const room = JSON.parse(roomData);
+    const userId = room.userList[client.id];
+    const nickname = room.userList[client.id]?.nickname;
+    if (userId) {
+      delete room.userList[client.id];
+    } else {
+      return server.to(client.id).emit('error-room', Exception.clientNotFound);
+    }
+
+    await Redis.set(`room:${uuid}`, JSON.stringify(room));
+
+    // 사용자 데이터 삭제
+    await Redis.del(`user:${client.id}`);
+
+    // 유저리스트 보내주기
+    this.emitEventForUserList(client, server, uuid, nickname, 'leave-user');
+  }
 
   // async logOut(client: Socket, server: Server, userId: number) {
   //   const exist = await this.socketModel.findOne({ userId: userId });
