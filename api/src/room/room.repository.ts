@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { NewRoom } from './room.interface';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateHistoryDto } from './dto/create-history.dto';
@@ -6,6 +6,21 @@ import { CreateHistoryDto } from './dto/create-history.dto';
 @Injectable()
 export class RoomRepository {
   constructor(private prisma: PrismaService) {}
+  private readonly logger = new Logger();
+
+  async deleteOldData(): Promise<void> {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    await this.prisma.room.deleteMany({
+      where: {
+        createdAt: {
+          lte: sevenDaysAgo,
+        },
+        nowHeadcount: 0,
+      },
+    });
+  }
 
   async createRoom(newRoom: NewRoom) {
     return await this.prisma.room.create({

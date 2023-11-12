@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { RtcRole, RtcTokenBuilder } from 'agora-access-token';
 import { ImageService } from '../image/image.service';
 import { UserService } from '../user/user.service';
@@ -10,6 +10,7 @@ import { CreateRoomRequestDto } from './dto/create-room-request.dto';
 import { RoomRepository } from './room.repository';
 import { NewRoom } from './room.interface';
 import { CreateHistoryDto } from './dto/create-history.dto';
+import { Cron } from '@nestjs/schedule';
 // import { createRandomRoom } from './room.seed';
 
 export interface ThumbnailUploadResult {
@@ -23,6 +24,8 @@ export class RoomService {
     private userService: UserService,
     private imageService: ImageService,
   ) {}
+
+  private readonly logger = new Logger();
 
   async createRoom(
     createRoomRequestDto: CreateRoomRequestDto,
@@ -51,6 +54,14 @@ export class RoomService {
     const owner = await this.userService.findUserByUserId(userId);
     //룸정보, 룸오너 정보 같이 리턴해주기
     return { createdRoom, owner };
+  }
+
+  @Cron('0 3 * * *', {
+    timeZone: 'Asia/Seoul',
+  })
+  async handleCron() {
+    this.logger.debug('매일 새벽3시 마다 실행');
+    await this.roomRepository.deleteOldData();
   }
 
   async getRoomListAll() {
@@ -134,9 +145,9 @@ export class RoomService {
     return true;
   }
   createTokenWithChannel(appID: string, uuid: string): string {
-    const HOUR_TO_SECOND = 3600;
+    //const HOUR_TO_SECOND = 3600;
     const appCertificate: string = process.env.AGORA_APP_CERTIFICATE ?? '';
-    const expirationTimeInSeconds = HOUR_TO_SECOND * 24;
+    const expirationTimeInSeconds = 30;
     const role = RtcRole.PUBLISHER;
     const channel = uuid;
     const currentTimestamp = Math.floor(Date.now() / 1000);

@@ -13,6 +13,7 @@ import { RoomSearchModule } from './room-search/room-search.module';
 import { HistoryModule } from './history/history.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import * as mongoose from 'mongoose';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import * as mongoose from 'mongoose';
     UserDetailModule,
     RoomSearchModule,
     HistoryModule,
+    ScheduleModule.forRoot(),
   ],
   controllers: [AppController],
   providers: [AppService],
