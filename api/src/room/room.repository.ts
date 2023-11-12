@@ -2,16 +2,18 @@ import { Injectable, Logger } from '@nestjs/common';
 import { NewRoom } from './room.interface';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateHistoryDto } from './dto/create-history.dto';
+import { createTokenWithChannel } from '../utils/create-agoraToken';
 
 @Injectable()
 export class RoomRepository {
   constructor(private prisma: PrismaService) {}
   private readonly logger = new Logger();
 
+  //만든지 7일 지난 방 삭제
   async deleteOldData(): Promise<void> {
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-
+    // lte = less than or equal to
     await this.prisma.room.deleteMany({
       where: {
         createdAt: {
@@ -19,6 +21,40 @@ export class RoomRepository {
         },
         nowHeadcount: 0,
       },
+    });
+  }
+
+  //createAt 만든지 1시간 이상인 방을 찾음 토큰 재발급할 대상을 찾음(유효시간 23시간이하로 남음)
+  async updateToken() {
+    const oneHoursAgo = new Date();
+    oneHoursAgo.setHours(oneHoursAgo.getHours() - 1);
+
+    const rooms = await this.prisma.room.findMany({
+      where: {
+        createdAt: {
+          lte: oneHoursAgo,
+        },
+      },
+      select: {
+        uuid: true,
+      },
+    });
+    if (!rooms) return;
+    const roomsArr = rooms.map((room) => room.uuid);
+    const agoraAppId: string = process.env.AGORA_APP_ID ?? '';
+
+    roomsArr.forEach(async (uuid) => {
+      //토큰을 uuid에 맞게 재생성함
+      const aFreshToken = createTokenWithChannel(agoraAppId, uuid);
+      //갈아끼워줌
+      await this.prisma.room.update({
+        where: {
+          uuid: uuid,
+        },
+        data: {
+          agoraToken: aFreshToken,
+        },
+      });
     });
   }
 
