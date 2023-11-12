@@ -147,7 +147,7 @@ export class RoomService {
   createTokenWithChannel(appID: string, uuid: string): string {
     //const HOUR_TO_SECOND = 3600;
     const appCertificate: string = process.env.AGORA_APP_CERTIFICATE ?? '';
-    const expirationTimeInSeconds = 30;
+    const expirationTimeInSeconds = 600;
     const role = RtcRole.PUBLISHER;
     const channel = uuid;
     const currentTimestamp = Math.floor(Date.now() / 1000);
