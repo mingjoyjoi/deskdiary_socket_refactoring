@@ -5,6 +5,8 @@ services:
     image: namhyeonjae/deskdiary-server:socket
     env_file:
       - ./.env
+    environment:
+      - NODE_PORT=4001
     restart: unless-stopped
     networks:
       - backend
@@ -15,6 +17,8 @@ services:
     image: namhyeonjae/deskdiary-server:socket
     env_file:
       - ./.env
+    environment:
+      - NODE_PORT=4002
     restart: unless-stopped
     networks:
       - backend
