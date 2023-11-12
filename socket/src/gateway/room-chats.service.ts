@@ -166,37 +166,11 @@ export class RoomchatsService {
     client.leave(uuid);
   }
 
-  // async leaveRoom(client: Socket, server: Server, uuid: string) {
-  //   const room = await this.roomModel.findOne({ uuid });
-  //   if (!room) {
-  //     return server.to(client.id).emit('error-room', Exception.roomNotFound);
-  //   }
-  //   const userId = room.userList[client.id];
-  //   const nickname = room.userList[client.id]?.nickname;
-  //   if (userId) {
-  //     delete room.userList[client.id];
-  //   } else {
-  //     return server.to(client.id).emit('error-room', Exception.clientNotFound);
-  //   }
-  //   // 방 업데이트
-  //   await this.roomModel.findOneAndUpdate(
-  //     { uuid },
-  //     { $set: { userList: room.userList } },
-  //   );
-  //   // 사용자 데이터 삭제
-  //   await this.socketModel.deleteOne({ clientId: client.id });
-
-  //   //return server.to(uuid).emit('left-user', nickname);
-  //   // 유저리스트 보내주기
-  //   this.emitEventForUserList(client, server, uuid, nickname, 'leave-user');
-  // }
   async leaveRoom(client: Socket, server: Server, uuid: string) {
-    const roomData = await Redis.get(`room:${uuid}`);
-    if (!roomData) {
+    const room = await this.roomModel.findOne({ uuid });
+    if (!room) {
       return server.to(client.id).emit('error-room', Exception.roomNotFound);
     }
-
-    const room = JSON.parse(roomData);
     const userId = room.userList[client.id];
     const nickname = room.userList[client.id]?.nickname;
     if (userId) {
@@ -204,15 +178,41 @@ export class RoomchatsService {
     } else {
       return server.to(client.id).emit('error-room', Exception.clientNotFound);
     }
-
-    await Redis.set(`room:${uuid}`, JSON.stringify(room));
-
+    // 방 업데이트
+    await this.roomModel.findOneAndUpdate(
+      { uuid },
+      { $set: { userList: room.userList } },
+    );
     // 사용자 데이터 삭제
-    await Redis.del(`user:${client.id}`);
+    await this.socketModel.deleteOne({ clientId: client.id });
 
+    //return server.to(uuid).emit('left-user', nickname);
     // 유저리스트 보내주기
     this.emitEventForUserList(client, server, uuid, nickname, 'leave-user');
   }
+  // async leaveRoom(client: Socket, server: Server, uuid: string) {
+  //   const roomData = await Redis.get(`room:${uuid}`);
+  //   if (!roomData) {
+  //     return server.to(client.id).emit('error-room', Exception.roomNotFound);
+  //   }
+
+  //   const room = JSON.parse(roomData);
+  //   const userId = room.userList[client.id];
+  //   const nickname = room.userList[client.id]?.nickname;
+  //   if (userId) {
+  //     delete room.userList[client.id];
+  //   } else {
+  //     return server.to(client.id).emit('error-room', Exception.clientNotFound);
+  //   }
+
+  //   await Redis.set(`room:${uuid}`, JSON.stringify(room));
+
+  //   // 사용자 데이터 삭제
+  //   await Redis.del(`user:${client.id}`);
+
+  //   // 유저리스트 보내주기
+  //   this.emitEventForUserList(client, server, uuid, nickname, 'leave-user');
+  // }
 
   // async logOut(client: Socket, server: Server, userId: number) {
   //   const exist = await this.socketModel.findOne({ userId: userId });
