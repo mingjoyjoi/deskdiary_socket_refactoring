@@ -154,13 +154,17 @@ export class RoomchatsService {
     uuid: string,
     userId: number,
   ) {
-    const data = this.roomModel.findOne({ uuid });
+    const data = await Redis.get(`room:${uuid}`);
     if (!data) {
       return server.to(client.id).emit('error-room', Exception.roomNotFound);
     }
+    const findRoom = JSON.parse(data);
     if (this.isOwner(data, userId)) {
-      await this.deleteDocumentByUuid(uuid);
-      await this.socketModel.deleteMany({ uuid });
+      await Redis.del(`room:${uuid}`);
+      for (const userInfo of Object.entries(findRoom.userList)) {
+        const clientId: string = userInfo[0];
+        await Redis.del(`user:${clientId}`);
+      }
       return server.to(uuid).emit('remove-users', {}); //어떻게 넘겨줄지 서현님이랑 맞추기필요
     }
     client.leave(uuid);
@@ -291,15 +295,15 @@ export class RoomchatsService {
   }
   async disconnectClient(client: Socket, server: Server) {
     // 클라이언트 ID를 기반으로 사용자 정보 조회
-    const user = await this.socketModel.findOne({ clientId: client.id });
-    if (!user) {
+    const exist = await Redis.get(`clientId:${client.id}`);
+    if (!exist) {
       return server.to(client.id).emit('error-room', Exception.clientNotFound);
     }
-    const uuid = user.uuid;
+    const uuid = exist.uuid;
     // 클라이언트 ID에 해당하는 사용자를 삭제
-    await this.socketModel.findOneAndDelete({ clientId: client.id }).exec();
+    await Redis.del(`user:${client.id}`);
     // 방 정보 조회
-    const room = await this.roomModel.findOne({ uuid: uuid });
+    const room = await Redis.get(`room:${uuid}`);
     if (!room) {
       return server.to(client.id).emit('error-room', Exception.roomNotFound);
     }
@@ -307,10 +311,7 @@ export class RoomchatsService {
     const nickname = room.userList[client.id]?.nickname;
     delete room.userList[client.id];
     // 업데이트된 데이터를 저장
-    await this.roomModel.findOneAndUpdate(
-      { uuid },
-      { $set: { userList: room.userList } },
-    );
+    await Redis.set(`room:${uuid}`, JSON.stringify(room));
 
     await this.leaveRoomRequestToApiServer(uuid);
     //server.to(uuid).emit('disconnect_user', nickname);
@@ -318,6 +319,34 @@ export class RoomchatsService {
     this.logger.log(`disconnected: ${client.id}`);
   }
 
+  // async disconnectClient(client: Socket, server: Server) {
+  //   // 클라이언트 ID를 기반으로 사용자 정보 조회
+  //   const user = await this.socketModel.findOne({ clientId: client.id });
+  //   if (!user) {
+  //     return server.to(client.id).emit('error-room', Exception.clientNotFound);
+  //   }
+  //   const uuid = user.uuid;
+  //   // 클라이언트 ID에 해당하는 사용자를 삭제
+  //   await this.socketModel.findOneAndDelete({ clientId: client.id }).exec();
+  //   // 방 정보 조회
+  //   const room = await this.roomModel.findOne({ uuid: uuid });
+  //   if (!room) {
+  //     return server.to(client.id).emit('error-room', Exception.roomNotFound);
+  //   }
+  //   // 유저리스트에서 클라이언트 ID 제거
+  //   const nickname = room.userList[client.id]?.nickname;
+  //   delete room.userList[client.id];
+  //   // 업데이트된 데이터를 저장
+  //   await this.roomModel.findOneAndUpdate(
+  //     { uuid },
+  //     { $set: { userList: room.userList } },
+  //   );
+
+  //   await this.leaveRoomRequestToApiServer(uuid);
+  //   //server.to(uuid).emit('disconnect_user', nickname);
+  //   this.emitEventForUserList(client, server, uuid, nickname, 'leave-user');
+  //   this.logger.log(`disconnected: ${client.id}`);
+  // }
   // async emitEventForUserList(
   //   client: Socket,
   //   server: Server,
