@@ -208,6 +208,7 @@ export class RoomchatsService {
   //   // 유저리스트 보내주기
   //   this.emitEventForUserList(client, server, uuid, nickname, 'leave-user');
   // }
+
   async leaveRoom(client: Socket, server: Server, uuid: string) {
     const roomData = await Redis.get(`room:${uuid}`);
     if (!roomData) {
@@ -215,10 +216,12 @@ export class RoomchatsService {
     }
 
     const room = JSON.parse(roomData);
-    const userId = room.userList[client.id];
+    const userId = room.userList[client.id]?.userId;
     await Redis.del(`userId:${userId}`);
+
     const nickname = room.userList[client.id]?.nickname;
-    if (userId) {
+    const user = room.userList[client.id];
+    if (user) {
       delete room.userList[client.id];
     } else {
       return server.to(client.id).emit('error-room', Exception.clientNotFound);
