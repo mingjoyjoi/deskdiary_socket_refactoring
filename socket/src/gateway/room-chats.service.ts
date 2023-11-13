@@ -53,7 +53,7 @@ export class RoomchatsService {
     const exist = await Redis.get(`user:${userId}`);
     this.logger.log(`Redis.get 호출 후: user:${userId} 결과: ${exist}`);
 
-    if (String(exist) !== 'null' || String(exist) !== 'undefined') {
+    if (exist) {
       await this.leaveRoomRequestToApiServer(uuid);
       return client.emit('joinError', Exception.clientAlreadyConnected);
     }
@@ -62,7 +62,7 @@ export class RoomchatsService {
 
     const data = await Redis.get(`room:${uuid}`);
     //데이터가 존재하지 않으면
-    if (String(data) === 'null' || String(data) === 'undefined') {
+    if (!data) {
       await this.createRoom(client, iRoomRequest);
     } else {
       await this.updateRoom(client, data, iRoomRequest);
@@ -156,7 +156,7 @@ export class RoomchatsService {
     userId: number,
   ) {
     const data = await Redis.get(`room:${uuid}`);
-    if (String(data) === 'null' || String(data) === 'undefined') {
+    if (!data) {
       return server.to(client.id).emit('error-room', Exception.roomNotFound);
     }
     const findRoom = JSON.parse(data);
@@ -197,7 +197,7 @@ export class RoomchatsService {
   // }
   async leaveRoom(client: Socket, server: Server, uuid: string) {
     const roomData = await Redis.get(`room:${uuid}`);
-    if (String(roomData) === 'null' || String(roomData) === 'undefined') {
+    if (!roomData) {
       return server.to(client.id).emit('error-room', Exception.roomNotFound);
     }
 
@@ -230,7 +230,7 @@ export class RoomchatsService {
   // }
   async logOut(client: Socket, server: Server, userId: number) {
     const exist = await Redis.get(`user:${userId}`);
-    if (String(exist) !== 'null' || String(exist) !== 'undefined') {
+    if (exist) {
       const user = JSON.parse(exist);
       const uuid = user.uuid;
 
@@ -246,7 +246,7 @@ export class RoomchatsService {
   async disconnectClient(client: Socket, server: Server) {
     // 클라이언트 ID를 기반으로 사용자 정보 조회
     const exist = await Redis.get(`clientId:${client.id}`);
-    if (String(exist) === 'null' || String(exist) === 'undefined') {
+    if (!exist) {
       return server.to(client.id).emit('error-room', Exception.clientNotFound);
     }
     const user = JSON.parse(exist);
@@ -255,7 +255,7 @@ export class RoomchatsService {
     await Redis.del(`user:${client.id}`);
     // 방 정보 조회
     const room = await Redis.get(`room:${uuid}`);
-    if (String(room) === 'null' || String(room) === 'undefined') {
+    if (!room) {
       return server.to(client.id).emit('error-room', Exception.roomNotFound);
     }
     const findroom = JSON.parse(room);
@@ -323,7 +323,7 @@ export class RoomchatsService {
     userEvent: string,
   ) {
     const roomData = await Redis.get(`room:${uuid}`);
-    if (String(roomData) === 'null' || String(roomData) === 'undefined') {
+    if (!roomData) {
       return server.to(client.id).emit('error-room', Exception.roomNotFound);
     }
 
