@@ -10,7 +10,7 @@ import { CreateRoomRequestDto } from './dto/create-room-request.dto';
 import { RoomRepository } from './room.repository';
 import { NewRoom } from './room.interface';
 import { CreateHistoryDto } from './dto/create-history.dto';
-import { Cron, Interval } from '@nestjs/schedule';
+import { Cron } from '@nestjs/schedule';
 // import { createRandomRoom } from './room.seed';
 
 export interface ThumbnailUploadResult {
@@ -64,17 +64,19 @@ export class RoomService {
     await this.roomRepository.deleteOldData();
   }
 
-  @Cron('45 6 * * *', {
+  @Cron('0 0 * * *', {
     timeZone: 'Asia/Seoul',
   })
-  async handleCron() {
-    this.logger.debug('토큰 만료된거 재발급용 테스트');
+  async handleNoonTokenCron() {
+    this.logger.debug('자정마다 토큰 재발급');
     await this.roomRepository.updateToken();
   }
 
-  @Interval(3600 * 23)
-  async handleTokenCron() {
-    this.logger.debug('23시간 마다 실행');
+  @Cron('0 12 * * *', {
+    timeZone: 'Asia/Seoul',
+  })
+  async handleMidnightTokenCron() {
+    this.logger.debug('정오마다 토큰 재발급');
     await this.roomRepository.updateToken();
   }
 
@@ -202,6 +204,7 @@ export class RoomService {
     const token = roomUpdateWithaFreshToken.agoraToken;
     return token;
   }
+
   // async addRandomRoomToDatabase() {
   //   const ownerId = 1; // 이 값은 실제로 데이터베이스에 있는 사용자 ID여야 합니다.
   //   const randomRoom = createRandomRoom(ownerId);
