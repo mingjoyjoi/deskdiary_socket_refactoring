@@ -53,7 +53,7 @@ export class RoomchatsService {
     const exist = await Redis.get(`user:${userId}`);
     this.logger.log(`Redis.get 호출 후: user:${userId} 결과: ${exist}`);
 
-    if (exist) {
+    if (String(exist) !== 'null' || String(exist) !== 'undefined') {
       await this.leaveRoomRequestToApiServer(uuid);
       return client.emit('joinError', Exception.clientAlreadyConnected);
     }
@@ -61,8 +61,8 @@ export class RoomchatsService {
     client.join(uuid);
 
     const data = await Redis.get(`room:${uuid}`);
-
-    if (!data) {
+    //데이터가 존재하지 않으면
+    if (String(data) === 'null' || String(data) === 'undefined') {
       await this.createRoom(client, iRoomRequest);
     } else {
       await this.updateRoom(client, data, iRoomRequest);
@@ -97,6 +97,7 @@ export class RoomchatsService {
     const roomData = {
       uuid: uuid,
       owner: userId,
+      ownerId: userId,
       userList: { [client.id]: { nickname, img, userId } },
     };
 
@@ -155,11 +156,11 @@ export class RoomchatsService {
     userId: number,
   ) {
     const data = await Redis.get(`room:${uuid}`);
-    if (!data) {
+    if (String(data) === 'null' || String(data) === 'undefined') {
       return server.to(client.id).emit('error-room', Exception.roomNotFound);
     }
     const findRoom = JSON.parse(data);
-    if (this.isOwner(data, userId)) {
+    if (this.isOwner(findRoom, userId)) {
       await Redis.del(`room:${uuid}`);
       for (const userInfo of Object.entries(findRoom.userList)) {
         const clientId: string = userInfo[0];
@@ -196,7 +197,7 @@ export class RoomchatsService {
   // }
   async leaveRoom(client: Socket, server: Server, uuid: string) {
     const roomData = await Redis.get(`room:${uuid}`);
-    if (!roomData) {
+    if (String(roomData) === 'null' || String(roomData) === 'undefined') {
       return server.to(client.id).emit('error-room', Exception.roomNotFound);
     }
 
@@ -229,64 +230,13 @@ export class RoomchatsService {
   // }
   async logOut(client: Socket, server: Server, userId: number) {
     const exist = await Redis.get(`user:${userId}`);
-    if (exist) {
+    if (String(exist) !== 'null' || String(exist) !== 'undefined') {
       const user = JSON.parse(exist);
       const uuid = user.uuid;
 
       await this.leaveRoomRequestToApiServer(uuid);
       return server.to(uuid).emit('log-out', { logoutUser: userId });
     }
-  }
-
-  // async KickRoomByWithdrawal(client: Socket, server: Server, userId: number) {
-  //   const room = await this.roomModel.find({ ownerId: userId });
-  //   if (!room.length) {
-  //     this.logger.log(`만든방없음`);
-  //     return;
-  //   }
-  //   this.logger.log(`룸데이터 ${room}`);
-  //   const roomsArr = room.map((x) => x.uuid);
-  //   this.logger.log(`룸데이터배열 ${roomsArr}`);
-  //   //owner가 userId인 모든방 삭제시키기
-  //   const remove = await this.roomModel.deleteMany({ ownerId: userId });
-  //   if (!remove) {
-  //     this.logger.log('룸데이터 삭제 실패함');
-  //   }
-  //   this.logger.log('룸데이터 삭제함');
-  //   //roomsArr가 uuid인 모든 소켓 삭제시키기
-  //   const socketDel = await this.socketModel.deleteMany({
-  //     $or: roomsArr.map((uuid) => ({ uuid: uuid })),
-  //   });
-  //   if (!socketDel) {
-  //     this.logger.log('소켓들 삭제실패함');
-  //   }
-  //   this.logger.log('소켓데이터 삭제함');
-  //   return server.to(roomsArr).emit('kick-room', Exception.roomRemoved);
-  // }
-  async KickRoomByWithdrawal(client: Socket, server: Server, userId: number) {
-    const room = await this.roomModel.find({ ownerId: userId });
-    if (!room.length) {
-      this.logger.log(`만든방없음`);
-      return;
-    }
-    this.logger.log(`룸데이터 ${room}`);
-    const roomsArr = room.map((x) => x.uuid);
-    this.logger.log(`룸데이터배열 ${roomsArr}`);
-    //owner가 userId인 모든방 삭제시키기
-    const remove = await this.roomModel.deleteMany({ ownerId: userId });
-    if (!remove) {
-      this.logger.log('룸데이터 삭제 실패함');
-    }
-    this.logger.log('룸데이터 삭제함');
-    //roomsArr가 uuid인 모든 소켓 삭제시키기
-    const socketDel = await this.socketModel.deleteMany({
-      $or: roomsArr.map((uuid) => ({ uuid: uuid })),
-    });
-    if (!socketDel) {
-      this.logger.log('소켓들 삭제실패함');
-    }
-    this.logger.log('소켓데이터 삭제함');
-    return server.to(roomsArr).emit('kick-room', Exception.roomRemoved);
   }
 
   isOwner(findRoom: any, userId: number): boolean {
@@ -296,7 +246,7 @@ export class RoomchatsService {
   async disconnectClient(client: Socket, server: Server) {
     // 클라이언트 ID를 기반으로 사용자 정보 조회
     const exist = await Redis.get(`clientId:${client.id}`);
-    if (!exist) {
+    if (String(exist) === 'null' || String(exist) === 'undefined') {
       return server.to(client.id).emit('error-room', Exception.clientNotFound);
     }
     const user = JSON.parse(exist);
@@ -305,7 +255,7 @@ export class RoomchatsService {
     await Redis.del(`user:${client.id}`);
     // 방 정보 조회
     const room = await Redis.get(`room:${uuid}`);
-    if (!room) {
+    if (String(room) === 'null' || String(room) === 'undefined') {
       return server.to(client.id).emit('error-room', Exception.roomNotFound);
     }
     const findroom = JSON.parse(room);
@@ -373,7 +323,7 @@ export class RoomchatsService {
     userEvent: string,
   ) {
     const roomData = await Redis.get(`room:${uuid}`);
-    if (!roomData) {
+    if (String(roomData) === 'null' || String(roomData) === 'undefined') {
       return server.to(client.id).emit('error-room', Exception.roomNotFound);
     }
 
