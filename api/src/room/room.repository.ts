@@ -24,7 +24,7 @@ export class RoomRepository {
     });
   }
 
-  //createAt 만든지 1시간 이상인 방을 찾음 토큰 재발급할 대상을 찾음(유효시간 23시간이하로 남음)
+  //createAt 만든지 1시간 이상인 방을 찾음 토큰 재발급할 대상을 찾음
   async updateToken() {
     const oneHoursAgo = new Date();
     oneHoursAgo.setHours(oneHoursAgo.getHours() - 1);
