@@ -108,7 +108,10 @@ export class RoomchatsService {
       nickname: nickname,
       userId: userId,
     };
-    await Redis.get(`user:${userId}`, uuid);
+    const uuidData = {
+      uuid: uuid,
+    };
+    await Redis.get(`user:${userId}`, JSON.stringify(uuidData));
     await Redis.set(`user:${client.id}`, JSON.stringify(userData));
   }
 
@@ -142,7 +145,10 @@ export class RoomchatsService {
       nickname: nickname,
       userId: userId,
     };
-    await Redis.get(`user:${userId}`, uuid);
+    const uuidData = {
+      uuid: uuid,
+    };
+    await Redis.get(`user:${userId}`, JSON.stringify(uuidData));
     await Redis.set(`user:${client.id}`, JSON.stringify(newUser));
 
     const room = JSON.parse(roomData);
@@ -236,7 +242,8 @@ export class RoomchatsService {
   async logOut(client: Socket, server: Server, userId: number) {
     const exist = await Redis.get(`user:${userId}`);
     if (exist) {
-      const uuid = exist;
+      const user = JSON.parse(exist);
+      const uuid = user.uuid;
 
       await this.leaveRoomRequestToApiServer(uuid);
       return server.to(uuid).emit('log-out', { logoutUser: userId });
