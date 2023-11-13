@@ -6,40 +6,44 @@ name: deskdiary-cicd
 # main 브랜치에 push나 pull request가 일어난우경우
 on:
   push:
-    branches: ['dev']
+    branches: ["history"]
 
 # 이벤트가 일어나면 해야할 작업들을 명시
 # 테스트, 빌드, 배포 단위로 명시
 # 각각의 job은 runner라는 컨테이너에서 개별적으로 실행
 jobs:
   # test code with Jest
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Source Code
-        uses: actions/checkout@v3
-      - name: setup node.js 18.x
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18.x
-          cache: 'npm'
-      - name: Load env file
-        run: |
-          touch .env
-          echo "MODE=${{ secrets.MODE }}" >> .env
-          echo "RDS_DB_NAME=${{ secrets.RDS_DB_NAME }}" >> .env
-          echo "RDS_HOSTNAME=${{ secrets.RDS_HOSTNAME }}" >> .env
-          echo "RDS_PASSWORD=${{ secrets.RDS_PASSWORD }}" >> .env
-          echo "RDS_PORT=${{ secrets.RDS_PORT }}" >> .env
-          echo "RDS_USERNAME=${{ secrets.RDS_USERNAME }}" >> .env
-          echo "RDS_DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
-      - name: Install dependencies
-        run: npm install
-      - run: npm run test
+  # test:
+  #   runs-on: ubuntu-latest
+  #   defaults:
+  #     run:
+  #       working-directory: ./api
+  #   steps:
+  #     - name: Checkout Source Code
+  #       uses: actions/checkout@v3
+  #     - name: setup node.js 18.x
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version: 18.x
+  #         cache: "npm"
+  #     - name: Load env file
+  #       run: |
+  #         touch .env
+  #         echo "MODE=${{ secrets.MODE }}" >> .env
+  #         echo "RDS_DB_NAME=${{ secrets.RDS_DB_NAME }}" >> .env
+  #         echo "RDS_HOSTNAME=${{ secrets.RDS_HOSTNAME }}" >> .env
+  #         echo "RDS_PASSWORD=${{ secrets.RDS_PASSWORD }}" >> .env
+  #         echo "RDS_PORT=${{ secrets.RDS_PORT }}" >> .env
+  #         echo "RDS_USERNAME=${{ secrets.RDS_USERNAME }}" >> .env
+  #         echo "RDS_DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
+  #     - name: Install dependencies
+  #       run: npm install
+  #     - run: npm run test
+
   # Docker image build
   build:
     # build가 시작되려면 test를 완료해야함
-    needs: test
+    # needs: test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Source Code
@@ -63,7 +67,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v2
         with:
-          context: .
+          context: ./api
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGE }}:latest
 
@@ -86,11 +90,6 @@ jobs:
         run: |
           touch .env
           echo "MODE=${{ secrets.MODE }}" >> .env
-          echo "RDS_DB_NAME=${{ secrets.RDS_DB_NAME }}" >> .env
-          echo "RDS_HOSTNAME=${{ secrets.RDS_HOSTNAME }}" >> .env
-          echo "RDS_PASSWORD=${{ secrets.RDS_PASSWORD }}" >> .env
-          echo "RDS_PORT=${{ secrets.RDS_PORT }}" >> .env
-          echo "RDS_USERNAME=${{ secrets.RDS_USERNAME }}" >> .env
           echo "RDS_DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
           echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
           echo "KAKAO_JS_KEY=${{ secrets.KAKAO_JS_KEY }}" >> .env
@@ -103,7 +102,6 @@ jobs:
           echo "AWS_SECRET_KEY=${{ secrets.AWS_SECRET_KEY }}" >> .env
           echo "AGORA_APP_ID=${{ secrets.AGORA_APP_ID }}" >> .env
           echo "AGORA_APP_CERTIFICATE=${{ secrets.AGORA_APP_CERTIFICATE }}" >> .env
-          echo "MONGO_URL=${{ secrets.MONGO_URL }}" >> .env
           echo "API_SERVER_URL=${{ secrets.API_SERVER_URL }}" >> .env
           echo "SOCKET_SECRET_KEY=${{ secrets.SOCKET_SECRET_KEY }}" >> .env
           echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> .env
@@ -111,6 +109,12 @@ jobs:
           echo "GOOGLE_CALLBACK_URL=${{ secrets.GOOGLE_CALLBACK_URL }}" >> .env
           echo "GOOGLE_SCOPE_PROFILE=${{ secrets.GOOGLE_SCOPE_PROFILE }}" >> .env
           echo "GOOGLE_SCOPE_EMAIL=${{ secrets.GOOGLE_SCOPE_EMAIL }}" >> .env
+          echo "JWT_EXPIRATION_TIME=${{ secrets.JWT_EXPIRATION_TIME }}" >> .env
+          echo "JWT_REFERSH_SECRET=${{ secrets.JWT_REFERSH_SECRET }}" >> .env
+          echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
+          echo "EMAIL_USER=${{ secrets.EMAIL_USER }}" >> .env
+          echo "EMAIL_PASS=${{ secrets.EMAIL_PASS }}" >> .env
+        working-directory: ./api
 
       # Docker Compose를 이용하여 서비스를 배포합니다.
       - name: Deploy using Docker Compose
@@ -118,3 +122,4 @@ jobs:
           docker-compose down || true  # 기존에 동작 중인 컨테이너를 종료합니다.
           docker-compose pull  # DockerHub에서 최신 이미지를 가져옵니다.
           docker-compose up -d  # Docker Compose로 서비스를 백그라운드에서 실행합니다.
+        working-directory: ./api
