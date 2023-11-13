@@ -1,4 +1,5 @@
-![배너이미지](/src/images/main/nonUserIntro.svg)
+
+![image](https://github.com/NHJeans/deskdiary-be/assets/110883544/b5f61224-dab8-4f81-8eac-138ac38a99e5)
 
 ## <a href="https://deskdiary-fe-brown.vercel.app/" target="_blank">책상일기</a>
 
@@ -65,9 +66,10 @@
 - 타이머를 통해 카테고리별 시간을 누적할 수 있어요.
 
 
-### 기술 아키텍처
+### 서비스 아키텍처
+![KakaoTalk_Photo_2023-11-09-21-51-17](https://github.com/NHJeans/deskdiary-be/assets/110883544/0ac9515c-d6ca-4b15-a415-f0facb17a0fe)
 
-![아키텍처](/src/images/Architecture.jpg)
+
 
 ## 🛠 Tools
 
