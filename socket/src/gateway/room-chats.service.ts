@@ -47,6 +47,7 @@ export class RoomchatsService {
   //   //return server.to(uuid).emit('new-user', nickname);
   //   this.emitEventForUserList(client, server, uuid, nickname, 'new-user');
   // }
+
   async joinRoom(client: Socket, server: Server, iRoomRequest: IRoomRequest) {
     const { uuid, nickname, userId } = iRoomRequest;
     this.logger.log(`Redis.get 호출 전: user:${userId}`);
@@ -57,6 +58,7 @@ export class RoomchatsService {
       await this.leaveRoomRequestToApiServer(uuid);
       return client.emit('joinError', Exception.clientAlreadyConnected);
     }
+
     client.leave(client.id);
     client.join(uuid);
 
@@ -90,6 +92,7 @@ export class RoomchatsService {
   //   };
   //   await this.socketModel.create(newUser);
   // }
+
   async createRoom(
     client: Socket,
     { nickname, uuid, img, userId }: IRoomRequest,
@@ -111,7 +114,7 @@ export class RoomchatsService {
     const uuidData = {
       uuid: uuid,
     };
-    await Redis.get(`user:${userId}`, JSON.stringify(uuidData));
+    await Redis.get(`userId:${userId}`, JSON.stringify(uuidData));
     await Redis.set(`user:${client.id}`, JSON.stringify(userData));
   }
 
@@ -148,7 +151,7 @@ export class RoomchatsService {
     const uuidData = {
       uuid: uuid,
     };
-    await Redis.get(`user:${userId}`, JSON.stringify(uuidData));
+    await Redis.get(`userId:${userId}`, JSON.stringify(uuidData));
     await Redis.set(`user:${client.id}`, JSON.stringify(newUser));
 
     const room = JSON.parse(roomData);
@@ -213,7 +216,7 @@ export class RoomchatsService {
 
     const room = JSON.parse(roomData);
     const userId = room.userList[client.id];
-    await Redis.del(`user:${userId}`);
+    await Redis.del(`userId:${userId}`);
     const nickname = room.userList[client.id]?.nickname;
     if (userId) {
       delete room.userList[client.id];
@@ -240,7 +243,7 @@ export class RoomchatsService {
   //   }
   // }
   async logOut(client: Socket, server: Server, userId: number) {
-    const exist = await Redis.get(`user:${userId}`);
+    const exist = await Redis.get(`userId:${userId}`);
     if (exist) {
       const user = JSON.parse(exist);
       const uuid = user.uuid;
@@ -249,7 +252,6 @@ export class RoomchatsService {
       return server.to(uuid).emit('log-out', { logoutUser: userId });
     }
   }
-
   isOwner(findRoom: any, userId: number): boolean {
     const findOwnerId = findRoom['ownerId'];
     return userId === findOwnerId;
@@ -273,7 +275,7 @@ export class RoomchatsService {
     // 유저리스트에서 클라이언트 ID 제거
     const nickname = findroom.userList[client.id]?.nickname;
     const userId = findroom.userList[client.id]?.userId;
-    await Redis.del(`user:${userId}`);
+    await Redis.del(`userId:${userId}`);
     delete findroom.userList[client.id];
     // 업데이트된 데이터를 저장
     await Redis.set(`room:${uuid}`, JSON.stringify(findroom));
