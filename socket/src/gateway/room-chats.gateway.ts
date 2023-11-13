@@ -64,6 +64,7 @@ export class RoomchatsGateway
     @ConnectedSocket() client: Socket,
     @MessageBody() { uuid, userId }: IRoomRequest,
   ): void {
+    console.log(userId);
     this.roomchatsService.removeRoom(client, this.server, uuid, userId);
   }
 
