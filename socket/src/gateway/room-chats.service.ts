@@ -299,7 +299,8 @@ export class RoomchatsService {
     if (!exist) {
       return server.to(client.id).emit('error-room', Exception.clientNotFound);
     }
-    const uuid = exist.uuid;
+    const user = JSON.parse(exist);
+    const uuid = user.uuid;
     // 클라이언트 ID에 해당하는 사용자를 삭제
     await Redis.del(`user:${client.id}`);
     // 방 정보 조회
@@ -307,11 +308,12 @@ export class RoomchatsService {
     if (!room) {
       return server.to(client.id).emit('error-room', Exception.roomNotFound);
     }
+    const findroom = JSON.parse(room);
     // 유저리스트에서 클라이언트 ID 제거
-    const nickname = room.userList[client.id]?.nickname;
-    delete room.userList[client.id];
+    const nickname = findroom.userList[client.id]?.nickname;
+    delete findroom.userList[client.id];
     // 업데이트된 데이터를 저장
-    await Redis.set(`room:${uuid}`, JSON.stringify(room));
+    await Redis.set(`room:${uuid}`, JSON.stringify(findroom));
 
     await this.leaveRoomRequestToApiServer(uuid);
     //server.to(uuid).emit('disconnect_user', nickname);
