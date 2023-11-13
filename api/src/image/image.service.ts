@@ -29,7 +29,7 @@ export class ImageService {
     folder: string,
   ): Promise<ObjectStorageData> {
     if (file.size > this.FILE_LIMIT_SIZE) {
-      throw new BadRequestException('파일 사이즈는 3MB를 넘을 수 없습니다.');
+      throw new BadRequestException('파일 사이즈는 10MB를 넘을 수 없습니다.');
     }
     const resizedImageBuffer = await sharp(file.buffer)
       .resize({ height: 600 })
