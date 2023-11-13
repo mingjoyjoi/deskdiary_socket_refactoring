@@ -156,16 +156,24 @@ export class RoomchatsService {
     userId: number,
   ) {
     const data = await Redis.get(`room:${uuid}`);
+    this.logger.log(`방데이터 : ${data}`);
     if (!data) {
+      this.logger.log(`방데이터 없음`);
       return server.to(client.id).emit('error-room', Exception.roomNotFound);
     }
     const findRoom = JSON.parse(data);
+    this.logger.log(`방데이터 ${findRoom}`);
     if (this.isOwner(findRoom, userId)) {
+      this.logger.log(findRoom, userId);
       await Redis.del(`room:${uuid}`);
+      this.logger.log('방 데이터 삭제함');
       for (const userInfo of Object.entries(findRoom.userList)) {
+        this.logger.log(userInfo);
         const clientId: string = userInfo[0];
         await Redis.del(`user:${clientId}`);
+        this.logger.log('유저 데이터 삭제함');
       }
+      this.logger.log('리무브 유저 이벤트 날림시작');
       return server.to(uuid).emit('remove-users', {}); //어떻게 넘겨줄지 서현님이랑 맞추기필요
     }
     client.leave(uuid);
