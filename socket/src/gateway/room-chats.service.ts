@@ -349,7 +349,6 @@ export class RoomchatsService {
   //   this.emitEventForUserList(client, server, uuid, nickname, 'leave-user');
   //   this.logger.log(`disconnected: ${client.id}`);
   // }
-
   // async emitEventForUserList(
   //   client: Socket,
   //   server: Server,
