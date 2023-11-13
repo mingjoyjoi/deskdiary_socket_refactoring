@@ -5,7 +5,7 @@
 // import { RoomRepository } from './room.repository';
 // import { RoomException } from '../exception/room.exception';
 // import { UserException } from '../exception/user.exception';
-// import { lorem } from 'faker';
+// import { faker } from '@faker-js/faker';
 
 // describe('RoomService', () => {
 //   let roomService: RoomService;
@@ -39,7 +39,7 @@
 
 //   it('잘못된 uuid로 방정보를 조회할 경우 에러를 반환함', async () => {
 //     jest.spyOn(roomRepository, 'findRoomByUuid').mockResolvedValue(null);
-//     const uuid = lorem.uuid();
+//     const uuid = faker.string.uuid();
 //     try {
 //       await roomService.getRoomByUUID(uuid);
 //     } catch (error) {
@@ -94,7 +94,7 @@
 //     const mockRoom = null;
 //     jest.spyOn(roomRepository, 'findRoomByUuid').mockResolvedValue(mockRoom);
 
-//     const uuid = lorem.uuid();
+//     const uuid = faker.string.uuid();
 //     await expect(roomService.joinRoom(uuid)).rejects.toThrow(
 //       RoomException.roomNotFound(),
 //     );
@@ -133,7 +133,7 @@
 //     const mockRoom = null;
 //     jest.spyOn(roomRepository, 'findRoomByUuid').mockResolvedValue(mockRoom);
 
-//     const uuid = lorem.uuid();
+//     const uuid = faker.string.uuid();
 //     await expect(roomService.leaveRoom(uuid)).rejects.toThrow(
 //       RoomException.roomNotFound(),
 //     );

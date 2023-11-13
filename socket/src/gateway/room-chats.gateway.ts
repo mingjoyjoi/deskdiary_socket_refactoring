@@ -14,7 +14,7 @@ import { LocalDateTime } from '@js-joda/core';
 import { RoomchatsService } from './room-chats.service';
 import { IMessage, IRoomRequest } from './room-chats.interface';
 
-@WebSocketGateway({ cors: true, allowEIO3: true })
+@WebSocketGateway({ cors: true, allowEIO3: true, transports: ['websocket'] })
 export class RoomchatsGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
@@ -34,7 +34,7 @@ export class RoomchatsGateway
     const formattedHour = localDateTime.hour() % 12 || 12;
     const minute = localDateTime.minute().toString().padStart(2, '0');
     const emitMessage: IMessage = {
-      message,
+      message: message + process.env.NODE_PORT,
       time: `${formattedHour}:${minute} ${period}`,
       nickname,
       uuid,
@@ -62,9 +62,9 @@ export class RoomchatsGateway
   @SubscribeMessage('removeRoom')
   handleRemoveRoom(
     @ConnectedSocket() client: Socket,
-    @MessageBody() { uuid, userId }: IRoomRequest,
+    @MessageBody() { uuid }: IRoomRequest,
   ): void {
-    this.roomchatsService.removeRoom(client, this.server, uuid, userId);
+    this.roomchatsService.removeRoom(client, this.server, uuid);
   }
 
   // 방을 떠남
@@ -87,14 +87,14 @@ export class RoomchatsGateway
   }
 
   //회원탈퇴로 인한 방 퇴장시키기
-  @SubscribeMessage('withdrawal')
-  handleKickRoomByWithdrawal(
-    @ConnectedSocket() client: Socket,
-    @MessageBody() { userId }: IRoomRequest,
-  ): void {
-    this.logger.log('회원탈퇴 이벤트 받음');
-    this.roomchatsService.KickRoomByWithdrawal(client, this.server, userId);
-  }
+  // @SubscribeMessage('withdrawal')
+  // handleKickRoomByWithdrawal(
+  //   @ConnectedSocket() client: Socket,
+  //   @MessageBody() { userId }: IRoomRequest,
+  // ): void {
+  //   this.logger.log('회원탈퇴 이벤트 받음');
+  //   this.roomchatsService.KickRoomByWithdrawal(client, this.server, userId);
+  // }
 
   afterInit() {
     this.logger.log('init');

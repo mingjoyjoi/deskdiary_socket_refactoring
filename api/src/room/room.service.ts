@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
-import { RtcRole, RtcTokenBuilder } from 'agora-access-token';
+import { createTokenWithChannel } from '../utils/create-agoraToken';
 import { ImageService } from '../image/image.service';
 import { UserService } from '../user/user.service';
 import { v4 as uuidv4 } from 'uuid';
@@ -37,7 +37,7 @@ export class RoomService {
     const user = await this.userService.findUserByUserId(userId);
     if (!user) throw UserException.userNotFound();
     const agoraAppId: string = process.env.AGORA_APP_ID ?? '';
-    const agoraToken = this.createTokenWithChannel(agoraAppId, uuid);
+    const agoraToken = createTokenWithChannel(agoraAppId, uuid);
     const newRoom: NewRoom = {
       title,
       maxHeadcount: +maxHeadcount,
@@ -59,9 +59,25 @@ export class RoomService {
   @Cron('0 3 * * *', {
     timeZone: 'Asia/Seoul',
   })
-  async handleCron() {
-    this.logger.debug('매일 새벽3시 마다 실행');
+  async handleRoomDataCron() {
+    this.logger.debug('매일 새벽3시 마다 실행 만든지 7일 지난 방 삭제');
     await this.roomRepository.deleteOldData();
+  }
+
+  @Cron('0 0 * * *', {
+    timeZone: 'Asia/Seoul',
+  })
+  async handleNoonTokenCron() {
+    this.logger.debug('자정마다 토큰 재발급');
+    await this.roomRepository.updateToken();
+  }
+
+  @Cron('0 12 * * *', {
+    timeZone: 'Asia/Seoul',
+  })
+  async handleMidnightTokenCron() {
+    this.logger.debug('정오마다 토큰 재발급');
+    await this.roomRepository.updateToken();
   }
 
   async getRoomListAll() {
@@ -144,25 +160,6 @@ export class RoomService {
     if (!deleteResult) throw RoomException.roomDeleteError();
     return true;
   }
-  createTokenWithChannel(appID: string, uuid: string): string {
-    //const HOUR_TO_SECOND = 3600;
-    const appCertificate: string = process.env.AGORA_APP_CERTIFICATE ?? '';
-    const expirationTimeInSeconds = 30;
-    const role = RtcRole.PUBLISHER;
-    const channel = uuid;
-    const currentTimestamp = Math.floor(Date.now() / 1000);
-    const expirationTimestamp = currentTimestamp + expirationTimeInSeconds;
-
-    return RtcTokenBuilder.buildTokenWithUid(
-      appID,
-      appCertificate,
-      channel,
-      0,
-      role,
-      expirationTimestamp,
-    );
-    //0는게 원래는 uid 자리인데 저거 그냥 똑같아도 이미 다른거에서 고유한 토큰값 나오니깐 0으로 함
-  }
 
   timeStringToSeconds(timeString: string): number {
     const timeParts = timeString.split(':');
@@ -198,7 +195,7 @@ export class RoomService {
     if (!findRoom) throw RoomException.roomNotFound();
 
     const agoraAppId: string = process.env.AGORA_APP_ID ?? '';
-    const aFreshToken = this.createTokenWithChannel(agoraAppId, uuid);
+    const aFreshToken = createTokenWithChannel(agoraAppId, uuid);
 
     const roomUpdateWithaFreshToken =
       await this.roomRepository.updateRoomByRefreshToken(aFreshToken, uuid);
@@ -207,6 +204,7 @@ export class RoomService {
     const token = roomUpdateWithaFreshToken.agoraToken;
     return token;
   }
+
   // async addRandomRoomToDatabase() {
   //   const ownerId = 1; // 이 값은 실제로 데이터베이스에 있는 사용자 ID여야 합니다.
   //   const randomRoom = createRandomRoom(ownerId);

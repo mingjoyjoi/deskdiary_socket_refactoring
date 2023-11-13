@@ -1,32 +1,35 @@
-import { datatype, internet, lorem, image, random } from 'faker';
+import { faker } from '@faker-js/faker';
 export const mockUuid = '550e8400-e29b-41d4-a716-446655440000';
+faker.seed(123);
 export const mockRoom = {
-  roomId: datatype.number(),
+  roomId: faker.number.int(),
   uuid: mockUuid,
-  agoraAppId: random.uuid(),
-  agoraToken: random.uuid(),
-  title: lorem.words(),
-  note: lorem.sentence(),
-  ownerId: datatype.number(),
+  agoraAppId: faker.string.uuid(),
+  agoraToken: faker.string.uuid(),
+  title: faker.lorem.word(),
+  note: faker.lorem.sentence(),
+  ownerId: faker.number.int(),
   nowHeadcount: 3,
   maxHeadcount: 5,
-  roomThumbnail: image.imageUrl(),
+  roomThumbnail: faker.string.alphanumeric(8),
   category: 'study',
-  count: datatype.number(),
+  count: faker.number.int(),
   createdAt: new Date(),
   updatedAt: new Date(),
 };
 
 export const mockOwner = {
-  userId: datatype.number(),
-  email: internet.email(),
-  nickname: internet.userName(),
-  password: random.uuid(),
-  profileImage: image.imageUrl(),
-  snsId: internet.userName(),
+  userId: faker.number.int(),
+  email: faker.internet.email(),
+  nickname: faker.internet.userName(),
+  password: faker.string.uuid(),
+  profileImage: faker.string.alphanumeric(8),
+  snsId: faker.internet.userName(),
   provider: 'local',
   type: 'user',
-  refreshToken: random.uuid(),
+  refreshToken: faker.string.uuid(),
+  signupVerifyToken: faker.string.uuid(),
+  isEmailVerified: faker.datatype.boolean(),
   createdAt: new Date(),
   updatedAt: new Date(),
 };
