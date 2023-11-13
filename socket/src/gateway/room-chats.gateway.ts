@@ -87,14 +87,14 @@ export class RoomchatsGateway
   }
 
   //회원탈퇴로 인한 방 퇴장시키기
-  @SubscribeMessage('withdrawal')
-  handleKickRoomByWithdrawal(
-    @ConnectedSocket() client: Socket,
-    @MessageBody() { userId }: IRoomRequest,
-  ): void {
-    this.logger.log('회원탈퇴 이벤트 받음');
-    this.roomchatsService.KickRoomByWithdrawal(client, this.server, userId);
-  }
+  // @SubscribeMessage('withdrawal')
+  // handleKickRoomByWithdrawal(
+  //   @ConnectedSocket() client: Socket,
+  //   @MessageBody() { userId }: IRoomRequest,
+  // ): void {
+  //   this.logger.log('회원탈퇴 이벤트 받음');
+  //   this.roomchatsService.KickRoomByWithdrawal(client, this.server, userId);
+  // }
 
   afterInit() {
     this.logger.log('init');
