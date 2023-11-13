@@ -62,10 +62,9 @@ export class RoomchatsGateway
   @SubscribeMessage('removeRoom')
   handleRemoveRoom(
     @ConnectedSocket() client: Socket,
-    @MessageBody() { uuid, userId }: IRoomRequest,
+    @MessageBody() { uuid }: IRoomRequest,
   ): void {
-    console.log(userId);
-    this.roomchatsService.removeRoom(client, this.server, uuid, userId);
+    this.roomchatsService.removeRoom(client, this.server, uuid);
   }
 
   // 방을 떠남
