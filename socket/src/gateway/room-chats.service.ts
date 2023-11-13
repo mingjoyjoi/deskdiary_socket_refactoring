@@ -155,6 +155,7 @@ export class RoomchatsService {
     uuid: string,
     userId: number,
   ) {
+    this.logger.log(userId);
     const data = await Redis.get(`room:${uuid}`);
     this.logger.log(`레디스에서 받아온 방데이터 : ${data}`);
     if (!data) {
