@@ -51,7 +51,7 @@ export class RoomchatsService {
   async joinRoom(client: Socket, server: Server, iRoomRequest: IRoomRequest) {
     const { uuid, nickname, userId } = iRoomRequest;
     this.logger.log(`Redis.get 호출 전: user:${userId}`);
-    const exist = await Redis.get(`user:${userId}`);
+    const exist = await Redis.get(`userId:${userId}`);
     this.logger.log(`Redis.get 호출 후: user:${userId} 결과: ${exist}`);
 
     if (exist) {
@@ -114,7 +114,7 @@ export class RoomchatsService {
     const uuidData = {
       uuid: uuid,
     };
-    await Redis.get(`userId:${userId}`, JSON.stringify(uuidData));
+    await Redis.set(`userId:${userId}`, JSON.stringify(uuidData));
     await Redis.set(`user:${client.id}`, JSON.stringify(userData));
   }
 
@@ -151,7 +151,7 @@ export class RoomchatsService {
     const uuidData = {
       uuid: uuid,
     };
-    await Redis.get(`userId:${userId}`, JSON.stringify(uuidData));
+    await Redis.set(`userId:${userId}`, JSON.stringify(uuidData));
     await Redis.set(`user:${client.id}`, JSON.stringify(newUser));
 
     const room = JSON.parse(roomData);
@@ -242,6 +242,7 @@ export class RoomchatsService {
   //     return server.to(uuid).emit('log-out', { logoutUser: userId });
   //   }
   // }
+
   async logOut(client: Socket, server: Server, userId: number) {
     const exist = await Redis.get(`userId:${userId}`);
     if (exist) {
@@ -252,16 +253,19 @@ export class RoomchatsService {
       return server.to(uuid).emit('log-out', { logoutUser: userId });
     }
   }
+
   isOwner(findRoom: any, userId: number): boolean {
     const findOwnerId = findRoom['ownerId'];
     return userId === findOwnerId;
   }
+
   async disconnectClient(client: Socket, server: Server) {
     // 클라이언트 ID를 기반으로 사용자 정보 조회
     const exist = await Redis.get(`user:${client.id}`);
     if (!exist) {
       return server.to(client.id).emit('error-room', Exception.clientNotFound);
     }
+
     const user = JSON.parse(exist);
     const uuid = user.uuid;
     // 클라이언트 ID에 해당하는 사용자를 삭제
