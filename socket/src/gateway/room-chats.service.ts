@@ -100,7 +100,6 @@ export class RoomchatsService {
       ownerId: userId,
       userList: { [client.id]: { nickname, img, userId } },
     };
-
     await Redis.set(`room:${uuid}`, JSON.stringify(roomData));
 
     const userData = {
@@ -109,6 +108,7 @@ export class RoomchatsService {
       nickname: nickname,
       userId: userId,
     };
+    await Redis.get(`user:${userId}`, uuid);
     await Redis.set(`user:${client.id}`, JSON.stringify(userData));
   }
 
@@ -142,6 +142,7 @@ export class RoomchatsService {
       nickname: nickname,
       userId: userId,
     };
+    await Redis.get(`user:${userId}`, uuid);
     await Redis.set(`user:${client.id}`, JSON.stringify(newUser));
 
     const room = JSON.parse(roomData);
@@ -155,36 +156,20 @@ export class RoomchatsService {
     uuid: string,
     userId: number,
   ) {
-    this.logger.log(userId);
     const data = await Redis.get(`room:${uuid}`);
-    this.logger.log(`레디스에서 받아온 방데이터 : ${data}`);
     if (!data) {
-      this.logger.log(`방데이터 없음`);
       return server.to(client.id).emit('error-room', Exception.roomNotFound);
     }
     const findRoom = JSON.parse(data);
-    this.logger.log(findRoom);
-    this.logger.log(findRoom['ownerId'], userId);
-    this.logger.log(typeof findRoom['ownerId'], typeof userId);
-    if (this.isOwner(findRoom, userId)) {
-      this.logger.log(findRoom, userId);
-      await Redis.del(`room:${uuid}`);
-      this.logger.log('방 데이터 삭제함');
 
-      for (const userInfo of Object.entries(findRoom.userList)) {
-        this.logger.log(userInfo);
-        const clientId: string = userInfo[0];
-        await Redis.del(`user:${clientId}`);
-        this.logger.log('유저 데이터 삭제함');
-      }
+    if (this.isOwner(findRoom, userId)) {
+      await Redis.del(`room:${uuid}`);
 
       // 방의 userList를 순회하며 각 사용자의 정보를 삭제합니다.
       for (const clientId in findRoom.userList) {
         await Redis.del(`user:${clientId}`);
         this.logger.log(`유저 데이터 삭제함: user:${clientId}`);
       }
-
-      this.logger.log('리무브 유저 이벤트 날림시작');
       return server.to(uuid).emit('remove-users', {}); //어떻게 넘겨줄지 서현님이랑 맞추기필요
     }
     client.leave(uuid);
@@ -222,6 +207,7 @@ export class RoomchatsService {
 
     const room = JSON.parse(roomData);
     const userId = room.userList[client.id];
+    await Redis.del(`user:${userId}`);
     const nickname = room.userList[client.id]?.nickname;
     if (userId) {
       delete room.userList[client.id];
@@ -250,8 +236,7 @@ export class RoomchatsService {
   async logOut(client: Socket, server: Server, userId: number) {
     const exist = await Redis.get(`user:${userId}`);
     if (exist) {
-      const user = JSON.parse(exist);
-      const uuid = user.uuid;
+      const uuid = exist;
 
       await this.leaveRoomRequestToApiServer(uuid);
       return server.to(uuid).emit('log-out', { logoutUser: userId });
@@ -264,7 +249,7 @@ export class RoomchatsService {
   }
   async disconnectClient(client: Socket, server: Server) {
     // 클라이언트 ID를 기반으로 사용자 정보 조회
-    const exist = await Redis.get(`clientId:${client.id}`);
+    const exist = await Redis.get(`user:${client.id}`);
     if (!exist) {
       return server.to(client.id).emit('error-room', Exception.clientNotFound);
     }
@@ -280,6 +265,8 @@ export class RoomchatsService {
     const findroom = JSON.parse(room);
     // 유저리스트에서 클라이언트 ID 제거
     const nickname = findroom.userList[client.id]?.nickname;
+    const userId = findroom.userList[client.id]?.userId;
+    await Redis.del(`user:${userId}`);
     delete findroom.userList[client.id];
     // 업데이트된 데이터를 저장
     await Redis.set(`room:${uuid}`, JSON.stringify(findroom));
