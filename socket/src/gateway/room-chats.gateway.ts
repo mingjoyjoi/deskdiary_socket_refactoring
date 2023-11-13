@@ -14,7 +14,7 @@ import { LocalDateTime } from '@js-joda/core';
 import { RoomchatsService } from './room-chats.service';
 import { IMessage, IRoomRequest } from './room-chats.interface';
 
-@WebSocketGateway({ cors: true, allowEIO3: true })
+@WebSocketGateway({ cors: true, allowEIO3: true, transports: ['websocket'] })
 export class RoomchatsGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
