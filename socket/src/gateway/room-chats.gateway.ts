@@ -34,7 +34,7 @@ export class RoomchatsGateway
     const formattedHour = localDateTime.hour() % 12 || 12;
     const minute = localDateTime.minute().toString().padStart(2, '0');
     const emitMessage: IMessage = {
-      message: message + process.env.NODE_PORT,
+      message: message,
       time: `${formattedHour}:${minute} ${period}`,
       nickname,
       uuid,
