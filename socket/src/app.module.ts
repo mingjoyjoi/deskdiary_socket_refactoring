@@ -32,6 +32,11 @@ export class AppModule implements NestModule {
           secret: 'your_secret',
           resave: false,
           saveUninitialized: false,
+          cookie: {
+            secure: true,
+            httpOnly: true, // XSS 공격 방지
+            maxAge: 24 * 60 * 60 * 1000, // 쿠키 유효기간 (예: 1일)
+          },
         }),
       )
       .forRoutes('*');
