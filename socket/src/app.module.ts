@@ -34,8 +34,8 @@ export class AppModule implements NestModule {
           saveUninitialized: false,
           cookie: {
             secure: true,
-            httpOnly: true, // XSS 공격 방지
-            maxAge: 24 * 60 * 60 * 1000, // 쿠키 유효기간 (예: 1일)
+            path: '/',
+            maxAge: 24 * 60 * 60 * 1000,
           },
         }),
       )
