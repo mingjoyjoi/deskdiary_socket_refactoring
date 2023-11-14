@@ -28,4 +28,4 @@ RUN npm run build
 
 # 서버 실행
 ENTRYPOINT ["pm2-runtime"]
-CMD ["dist/main.js"]
+CMD ["dist/main.js", "-i", "max"]
