@@ -14,7 +14,7 @@ import { LocalDateTime } from '@js-joda/core';
 import { RoomchatsService } from './room-chats.service';
 import { IMessage, IRoomRequest } from './room-chats.interface';
 
-@WebSocketGateway({ cors: true, allowEIO3: true, transports: ['websocket'] })
+@WebSocketGateway({ cors: true, allowEIO3: true })
 export class RoomchatsGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
@@ -34,7 +34,7 @@ export class RoomchatsGateway
     const formattedHour = localDateTime.hour() % 12 || 12;
     const minute = localDateTime.minute().toString().padStart(2, '0');
     const emitMessage: IMessage = {
-      message: message + process.env.NODE_PORT,
+      message: message,
       time: `${formattedHour}:${minute} ${period}`,
       nickname,
       uuid,

@@ -16,6 +16,9 @@ RUN npm install
 
 # pm2 설치
 RUN npm install pm2 -g
+
+ENV PM2_PUBLIC_KEY w3ly9zzerio92ho
+ENV PM2_SECRET_KEY qezaq81hl2zd79t
 # # Artillery 설치
 # RUN npm install -g artillery
 
@@ -24,8 +27,6 @@ RUN npm install pm2 -g
 # Nest.js 빌드
 RUN npm run build
 
-
-
 # 서버 실행
 ENTRYPOINT ["pm2-runtime"]
-CMD ["dist/main.js"]
+CMD ["dist/main.js", "-i", "max"]
