@@ -6,8 +6,8 @@ import { RoomchatsModule } from './gateway/room-chats.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { HealthModule } from './health/health.module';
 import { pubClient } from './redis.adapter';
+import * as session from 'express-session';
 import RedisStore from 'connect-redis';
-import session from 'express-session';
 
 @Module({
   imports: [
@@ -26,8 +26,10 @@ export class AppModule implements NestModule {
     consumer
       .apply(
         session({
-          store: new RedisStore({ client: pubClient }),
-          secret: 'secret',
+          store: new RedisStore({
+            client: pubClient,
+          }),
+          secret: 'your_secret',
           resave: false,
           saveUninitialized: false,
         }),
