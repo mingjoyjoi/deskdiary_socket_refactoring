@@ -215,18 +215,18 @@ export class RoomController {
     return await this.roomService.deleteRoom(userId, uuid);
   }
 
-  @Post('socket/leave/:uuid')
-  @ApiOperation({ summary: '소켓 방 나가기' })
-  async leaveRoomBySocket(
-    @Req() req: Request,
-    @Param('uuid') uuid: string,
-  ): Promise<boolean> {
-    const key = req.header('socket-secret-key');
-    if (key === process.env.SOCKET_SECRET_KEY) {
-      return await this.roomService.leaveRoom(uuid);
-    }
-    return false;
-  }
+  // @Post('socket/leave/:uuid')
+  // @ApiOperation({ summary: '소켓 방 나가기' })
+  // async leaveRoomBySocket(
+  //   @Req() req: Request,
+  //   @Param('uuid') uuid: string,
+  // ): Promise<boolean> {
+  //   const key = req.header('socket-secret-key');
+  //   if (key === process.env.SOCKET_SECRET_KEY) {
+  //     return await this.roomService.leaveRoom(uuid);
+  //   }
+  //   return false;
+  // }
   //request a fresh token using channel name
   // 유저의 요청을 검증함
   //토큰을 발급해서 클라에게 보내줌
@@ -255,52 +255,5 @@ export class RoomController {
   //     return await this.roomService.deleteRoomFromSocket(uuid);
   //   }
   //   return false;
-  // }
-
-  // @UseGuards(JwtAuthGuard)
-  // @ApiBearerAuth()
-  // @ApiOperation({ summary: '방 썸네일 업로드' })
-  // @ApiConsumes('multipart/form-data')
-  // @ApiBody({
-  //   description: '방 썸네일 이미지',
-  //   type: 'multipart/form-data',
-  //   required: true,
-  //   schema: {
-  //     type: 'object',
-  //     properties: {
-  //       file: {
-  //         type: 'string',
-  //         format: 'binary',
-  //       },
-  //     },
-  //   },
-  // })
-  // @Post('room/image')
-  // @UseInterceptors(FileInterceptor('file'))
-  // async uploadThumbnail(
-  //   @Req() req: { user: { userId: number } },
-  //   @UploadedFile() image: Express.Multer.File,
-  // ): Promise<{ message: string; roomThumbnail: string }> {
-  //   const userId = req.user.userId;
-
-  //   try {
-  //     const uploadResult = await this.roomService.uploadRoomThumbnail(
-  //       userId,
-  //       image,
-  //     );
-  //     return {
-  //       message: '썸네일이 성공적으로 업로드되었습니다.',
-  //       roomThumbnail: uploadResult.roomThumbnail,
-  //     };
-  //   } catch (error) {
-  //     if (error instanceof HttpException) {
-  //       throw error;
-  //     } else {
-  //       throw new HttpException(
-  //         '썸네일 업로드 중 문제가 발생했습니다.',
-  //         HttpStatus.INTERNAL_SERVER_ERROR,
-  //       );
-  //     }
-  //   }
   // }
 }

@@ -105,15 +105,15 @@ export class RoomService {
     return true;
   }
 
-  async leaveRoom(uuid: string): Promise<boolean> {
-    const findRoom = await this.roomRepository.findRoomByUuid(uuid);
-    if (!findRoom) throw RoomException.roomNotFound();
-    if (findRoom.nowHeadcount < 1) throw RoomException.roomLeaveError();
+  // async leaveRoom(uuid: string): Promise<boolean> {
+  //   const findRoom = await this.roomRepository.findRoomByUuid(uuid);
+  //   if (!findRoom) throw RoomException.roomNotFound();
+  //   if (findRoom.nowHeadcount < 1) throw RoomException.roomLeaveError();
 
-    const updateResult = await this.roomRepository.updateRoomByLeave(uuid);
-    if (!updateResult) throw RoomException.roomLeaveError();
-    return true;
-  }
+  //   const updateResult = await this.roomRepository.updateRoomByLeave(uuid);
+  //   if (!updateResult) throw RoomException.roomLeaveError();
+  //   return true;
+  // }
 
   async checkoutRoom(
     checkoutRoomRequestDto: CheckoutRoomRequestDto,
