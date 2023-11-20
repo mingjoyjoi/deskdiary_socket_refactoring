@@ -215,18 +215,18 @@ export class RoomController {
     return await this.roomService.deleteRoom(userId, uuid);
   }
 
-  // @Post('socket/leave/:uuid')
-  // @ApiOperation({ summary: '소켓 방 나가기' })
-  // async leaveRoomBySocket(
-  //   @Req() req: Request,
-  //   @Param('uuid') uuid: string,
-  // ): Promise<boolean> {
-  //   const key = req.header('socket-secret-key');
-  //   if (key === process.env.SOCKET_SECRET_KEY) {
-  //     return await this.roomService.leaveRoom(uuid);
-  //   }
-  //   return false;
-  // }
+  @Post('socket/leave/:uuid')
+  @ApiOperation({ summary: '소켓 방 나가기' })
+  async leaveRoomBySocket(
+    @Req() req: Request,
+    @Param('uuid') uuid: string,
+  ): Promise<boolean> {
+    const key = req.header('socket-secret-key');
+    if (key === process.env.SOCKET_SECRET_KEY) {
+      return await this.roomService.leaveRoom(uuid);
+    }
+    return false;
+  }
   //request a fresh token using channel name
   // 유저의 요청을 검증함
   //토큰을 발급해서 클라에게 보내줌
