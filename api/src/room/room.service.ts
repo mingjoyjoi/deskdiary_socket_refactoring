@@ -56,27 +56,27 @@ export class RoomService {
     return { createdRoom, owner };
   }
 
-  @Cron('0 3 * * *', {
+  // @Cron('0 3 * * *', {
+  //   timeZone: 'Asia/Seoul',
+  // })
+  // async handleRoomDataCron() {
+  //   this.logger.debug('매일 새벽3시 마다 실행 만든지 7일 지난 방 삭제');
+  //   await this.roomRepository.deleteOldData();
+  // }
+
+  @Cron('0 12 * * *', {
     timeZone: 'Asia/Seoul',
   })
-  async handleRoomDataCron() {
-    this.logger.debug('매일 새벽3시 마다 실행 만든지 7일 지난 방 삭제');
-    await this.roomRepository.deleteOldData();
+  async handleNoonTokenCron() {
+    this.logger.debug('정오마다 토큰 재발급');
+    await this.roomRepository.updateToken();
   }
 
   @Cron('0 0 * * *', {
     timeZone: 'Asia/Seoul',
   })
-  async handleNoonTokenCron() {
-    this.logger.debug('자정마다 토큰 재발급');
-    await this.roomRepository.updateToken();
-  }
-
-  @Cron('0 12 * * *', {
-    timeZone: 'Asia/Seoul',
-  })
   async handleMidnightTokenCron() {
-    this.logger.debug('정오마다 토큰 재발급');
+    this.logger.debug('자정마다 토큰 재발급');
     await this.roomRepository.updateToken();
   }
 
