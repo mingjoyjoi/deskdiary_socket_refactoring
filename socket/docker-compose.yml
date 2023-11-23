@@ -29,13 +29,13 @@ services:
     ports:
       - '4002:4001' # 호스트의 4002 포트를 컨테이너의 4001 포트와 연결
 
-  my-redis:
-    image: redis:latest
-    networks:
-      - backend
-    container_name: redis-server
-    ports:
-      - 6379:6379
+  # my-redis:
+  #   image: redis:latest
+  #   networks:
+  #     - backend
+  #   container_name: redis-server
+  #   ports:
+  #     - 6379:6379
 
 networks:
   backend:
