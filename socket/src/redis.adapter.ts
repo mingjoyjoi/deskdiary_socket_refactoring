@@ -6,7 +6,7 @@ import { Logger } from '@nestjs/common';
 import 'dotenv/config';
 
 export const pubClient: RedisClientType = createClient({
-  url: `redis://:${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
+  url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
   socket: {
     connectTimeout: 10000,
   },
