@@ -3,9 +3,6 @@ version: '3.7'
 services:
   my-socket1:
     image: namhyeonjae/deskdiary-server:socket
-
-    links:
-      - my-redis
     env_file:
       - ./.env
     environment:
@@ -18,7 +15,6 @@ services:
 
   my-socket2:
     image: namhyeonjae/deskdiary-server:socket
-
     env_file:
       - ./.env
     environment:
