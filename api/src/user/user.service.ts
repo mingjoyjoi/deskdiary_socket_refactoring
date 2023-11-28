@@ -6,18 +6,18 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { Response } from 'express';
+import * as uuid from 'uuid';
+import { EmailService } from '../auth/email/email.service';
+import { JwtConfigService } from '../config/jwt.config.service';
+import { ImageService } from '../image/image.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { JoinUserDto } from './dto/join.user.dto';
 import { LoginUserDto } from './dto/login.user.dto';
-import { UpdateProfileDto } from './dto/update.profile.dto';
-import { JwtConfigService } from '../config/jwt.config.service';
-import { User } from '@prisma/client';
 import { UpdatePasswordDto } from './dto/update.password.dto';
-import { ImageService } from '../image/image.service';
-import { EmailService } from '../auth/email/email.service';
-import * as uuid from 'uuid';
+import { UpdateProfileDto } from './dto/update.profile.dto';
 //import { randomNickname } from './constant/random-nickname';
 
 @Injectable()
@@ -178,6 +178,7 @@ export class UserService {
     const jwtPayload = { userId: userId, type: 'user' };
     const jwtSignOptions = this.jwtconfigService.getJwtSignOptions();
     const newAccessToken = this.jwtService.sign(jwtPayload, jwtSignOptions);
+    console.log(`newAcess : ${newAccessToken}`);
     res.setHeader('Authorization', `Bearer ${newAccessToken}`);
     res.json({ message: '로그인에 성공하였습니다2.' });
   }
