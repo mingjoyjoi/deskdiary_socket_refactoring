@@ -4,6 +4,7 @@ import { Room, RoomSchema } from '../models/rooms.model';
 import { MongooseModule } from '@nestjs/mongoose';
 import { RoomchatsService } from './room-chats.service';
 import { RoomchatsGateway } from './room-chats.gateway';
+import { RoomchatsRepository } from './room-chats.repository';
 
 @Module({
   imports: [
@@ -12,6 +13,6 @@ import { RoomchatsGateway } from './room-chats.gateway';
       { name: SocketModel.name, schema: SocketSchema },
     ]),
   ],
-  providers: [RoomchatsService, RoomchatsGateway],
+  providers: [RoomchatsService, RoomchatsGateway, RoomchatsRepository],
 })
 export class RoomchatsModule {}
