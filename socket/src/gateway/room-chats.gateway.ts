@@ -19,9 +19,11 @@ export class RoomchatsGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
   @WebSocketServer() server: Server;
-  private logger: Logger = new Logger('AppGateway');
+  private logger: Logger = new Logger('roomChatsGateway');
 
-  constructor(private readonly roomchatsService: RoomchatsService) {}
+  constructor(private readonly roomchatsService: RoomchatsService) {
+    this.logger.log('roomChatsGateway constructor');
+  }
 
   // 메시지를 방에 있는 유저들에게 보냄
   @SubscribeMessage('msgToServer')
@@ -58,7 +60,7 @@ export class RoomchatsGateway
     });
   }
 
-  // 방을 삭제함
+  // 책상기록 페이지에서 방을 삭제함
   @SubscribeMessage('removeRoom')
   handleRemoveRoom(
     @ConnectedSocket() client: Socket,
