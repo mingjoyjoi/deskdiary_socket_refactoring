@@ -1,42 +1,41 @@
 import {
+  BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
-  Delete,
   Post,
   Put,
-  Res,
+  Query,
   Req,
+  Res,
+  UnauthorizedException,
+  UploadedFile,
   UseGuards,
   UseInterceptors,
-  UploadedFile,
-  BadRequestException,
-  Query,
-  UnauthorizedException,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
-  ApiTags,
   ApiResponse,
+  ApiTags,
 } from '@nestjs/swagger';
-import {
-  UpdatePasswordExample,
-  GetProfileExample,
-  UpdateProfileExample,
-} from './user.response.exampes';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { JwtAuthGuard } from '../auth/jwt/jwt-auth.guard';
-import { Request } from 'express';
-import { UserService } from './user.service';
 import { JoinUserDto } from './dto/join.user.dto';
 import { VerifyEmailDto } from './dto/verify.email.dto';
+import {
+  GetProfileExample,
+  UpdatePasswordExample,
+  UpdateProfileExample,
+} from './user.response.exampes';
+import { UserService } from './user.service';
 // import { EmailService } from 'src/auth/email/email.service';
-import { LoginUserDto } from './dto/login.user.dto';
-import { UpdateProfileDto } from './dto/update.profile.dto';
-import { UpdatePasswordDto } from './dto/update.password.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { LoginUserDto } from './dto/login.user.dto';
+import { UpdatePasswordDto } from './dto/update.password.dto';
+import { UpdateProfileDto } from './dto/update.profile.dto';
 
 @ApiTags('User API')
 @Controller()
@@ -74,8 +73,8 @@ export class UserController {
   @ApiOperation({ summary: '리프레시 토큰으로 액세스 토큰 재발급' })
   @ApiResponse({ status: 200, description: '새 액세스 토큰 발급됨' })
   @ApiResponse({ status: 401, description: '인증 실패' })
-  async renewAccessToken(@Req() req, @Res() res) {
-    const refreshToken = req.cookies['refreshToken'];
+  async renewAccessToken(@Body() body, @Res() res) {
+    const refreshToken = body.refreshToken;
     console.log(refreshToken);
     if (!refreshToken) {
       throw new UnauthorizedException('리프레시 토큰이 제공되지 않았습니다.');
