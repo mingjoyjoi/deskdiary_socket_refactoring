@@ -21,7 +21,7 @@ export class RoomchatsRepository {
   }
 
   async getRoomInfo(uuid: string) {
-    return await Redis.get(`roomId:${uuid}`);
+    return await Redis.get(`room:${uuid}`);
   }
 
   async setRoomAndUserData(
