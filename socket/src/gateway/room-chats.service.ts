@@ -126,10 +126,10 @@ export class RoomchatsService {
     if (!exist) return;
     //방에 아무도 없을경우 방 정보도 삭제해야함
     //방에 유저리스트 이벤트를 쏴줌
-    const user = JSON.parse(exist);
+    const user: UserData = JSON.parse(exist);
     const uuid: string = user.uuid;
     const clientId: string = user.clientId;
-    const nickname: string = user.nickename;
+    const nickname: string = user.nickname;
     const roomData = await this.roomchatsRepository.getRoomInfo(uuid);
     if (!roomData) {
       return this.emitEventForError(client, server, Exception.roomNotFound);
