@@ -28,6 +28,7 @@ export class RoomchatsService {
     const data = await this.roomchatsRepository.getRoomInfo(uuid);
     if (!data) {
       await this.createRoom(client, iRoomRequest);
+    } else {
       await this.updateRoom(client, data, iRoomRequest);
     }
     this.emitEventForUserList(client, server, uuid, nickname, 'new-user');
