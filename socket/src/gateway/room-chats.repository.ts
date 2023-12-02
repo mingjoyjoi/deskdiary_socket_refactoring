@@ -8,7 +8,7 @@ export class RoomchatsRepository {
 
   async getUserInfo(userId: number) {
     //특정 종류의 데이터를 구분하기 위해 네임스페이스를 사용한다는데 사용법공부필요
-    return await Redis.get(`user:${userId}`);
+    return Redis.get(`user:${userId}`);
   }
 
   async getclientInfo(clinetId: string) {
@@ -16,7 +16,7 @@ export class RoomchatsRepository {
   }
 
   async getRoomInfo(uuid: string) {
-    return await Redis.get(`room:${uuid}`);
+    return Redis.get(`room:${uuid}`);
   }
 
   async setRoomAndUserAndClient(
@@ -45,6 +45,17 @@ export class RoomchatsRepository {
     clientId: string,
   ) {
     await Redis.set(`room:${uuid}`, JSON.stringify(room));
+    await Redis.del(`user:${userId}`);
+    await Redis.del(`client:${clientId}`);
+  }
+
+  async deleteRoomAndUserAndClient(
+    room,
+    uuid: string,
+    userId: number,
+    clientId: string,
+  ) {
+    await Redis.del(`room:${uuid}`);
     await Redis.del(`user:${userId}`);
     await Redis.del(`client:${clientId}`);
   }

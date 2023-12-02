@@ -79,26 +79,22 @@ export class RoomchatsService {
     const data = await this.roomchatsRepository.getRoomInfo(uuid);
     if (!data) {
       return this.emitEventForError(client, server, Exception.roomNotFound);
-      //return server.to(client.id).emit('error-room', Exception.roomNotFound);
     }
     const findRoom = JSON.parse(data);
-    await this.roomchatsRepository.deleteRoom(uuid);
-
-    // 방의 userList를 순회하며 각 사용자의 정보를 삭제합니다.
+    // 방의 userList를 순회하며 각 사용자의 정보를 삭제
     for (const clientId in findRoom.userList) {
-      const userId = findRoom.userList[clientId]?.userId;
+      const userId: number = findRoom.userList[clientId]?.userId;
       await this.roomchatsRepository.deleteUserAndClient(userId, clientId);
       this.logger.log(`유저 데이터 삭제함: client:${clientId}, user:${userId}`);
     }
-    return server.to(uuid).emit('remove-users', {});
+    await this.roomchatsRepository.deleteRoom(uuid);
+    this.emitToRoom(server, uuid, 'remove-users', {});
   }
 
-  //유저가1명이면, 혹은 지금나가면 0명남으면 방데이터 삭제
   async leaveRoom(client: Socket, server: Server, uuid: string) {
     const roomData = await this.roomchatsRepository.getRoomInfo(uuid);
     if (!roomData) {
       return this.emitEventForError(client, server, Exception.roomNotFound);
-      //return server.to(client.id).emit('error-room', Exception.roomNotFound);
     }
     const room = JSON.parse(roomData);
     const userId: number = room.userList[client.id]?.userId;
@@ -109,14 +105,24 @@ export class RoomchatsService {
     } else {
       return this.emitEventForError(client, server, Exception.clientNotFound);
     }
-
+    //방에 0명남으면 방데이터 삭제
+    const userListObj = room['userList'];
+    const isEmpty = Object.keys(userListObj).length === 0;
+    if (isEmpty) {
+      await this.roomchatsRepository.deleteRoomAndUserAndClient(
+        room,
+        uuid,
+        userId,
+        client.id,
+      );
+      return this.emitToRoom(server, uuid, 'leave-user', {});
+    }
     await this.roomchatsRepository.setRoomAndDeleteUserAndClient(
       room,
       uuid,
       userId,
       client.id,
     );
-
     // 유저리스트 보내주기
     this.emitEventForUserList(client, server, uuid, nickname, 'leave-user');
   }
@@ -124,8 +130,7 @@ export class RoomchatsService {
   async logOut(client: Socket, server: Server, userId: number) {
     const exist = await this.roomchatsRepository.getUserInfo(userId);
     if (!exist) return;
-    //방에 아무도 없을경우 방 정보도 삭제해야함
-    //방에 유저리스트 이벤트를 쏴줌
+
     const user: UserData = JSON.parse(exist);
     const uuid: string = user.uuid;
     const clientId: string = user.clientId;
@@ -133,30 +138,36 @@ export class RoomchatsService {
     const roomData = await this.roomchatsRepository.getRoomInfo(uuid);
     if (!roomData) {
       return this.emitEventForError(client, server, Exception.roomNotFound);
-      //return server.to(client.id).emit('error-room', Exception.roomNotFound);
     }
     const room = JSON.parse(roomData);
     const userInRoom = room.userList[clientId];
     if (!userInRoom) {
       return this.emitEventForError(client, server, Exception.clientNotFound);
-      //return server.to(client.id).emit('error-room', Exception.clientNotFound);
     }
     delete room.userList[clientId];
-    await this.roomchatsRepository.setRoomAndDeleteUserAndClient(
-      room,
-      uuid,
-      userId,
-      clientId,
-    );
-
+    // 방에 0명남으면 방데이터 삭제
     const userListObj = room['userList'];
+    const isEmpty = Object.keys(userListObj).length === 0;
+    if (isEmpty) {
+      await this.roomchatsRepository.deleteRoomAndUserAndClient(
+        room,
+        uuid,
+        userId,
+        client.id,
+      );
+    } else {
+      await this.roomchatsRepository.setRoomAndDeleteUserAndClient(
+        room,
+        uuid,
+        userId,
+        client.id,
+      );
+    }
     const userListArr = Object.values(userListObj);
 
     await this.leaveRoomRequestToApiServer(uuid);
     this.emitToRoom(server, uuid, 'log-out', { logoutUser: userId });
     this.emitToRoom(server, uuid, 'leave-user', { nickname, userListArr });
-    // server.to(uuid).emit('log-out', { logoutUser: userId });
-    // server.to(uuid).emit('leave-user', { nickname, userListArr });
   }
 
   isOwner(findRoom: any, userId: number): boolean {
@@ -165,38 +176,43 @@ export class RoomchatsService {
   }
 
   async disconnectClient(client: Socket, server: Server) {
-    // 클라이언트 ID를 기반으로 사용자 정보 조회
     const exist = await this.roomchatsRepository.getclientInfo(client.id);
     if (!exist) {
       return this.emitEventForError(client, server, Exception.clientNotFound);
-      //return server.to(client.id).emit('error-room', Exception.clientNotFound);
     }
     const uuid: string = exist;
-
-    // 방 정보 조회
     const room = await this.roomchatsRepository.getRoomInfo(uuid);
     if (!room) {
       return this.emitEventForError(client, server, Exception.roomNotFound);
-      //return server.to(client.id).emit('error-room', Exception.roomNotFound);
     }
-    const findroom = JSON.parse(room);
     // 유저리스트에서 클라이언트 ID 제거
+    const findroom = JSON.parse(room);
     const nickname: string = findroom.userList[client.id]?.nickname;
     const userId: number = findroom.userList[client.id]?.userId;
     delete findroom.userList[client.id];
-    //여기서 만약 findroom.userList 가 빈 객체라면 룸정보를 삭제 하도록 함
-    //그리고 빈유저리스트를 이벤트 넘김
-    //그게 아닐경우 아래를 실행시킴
 
+    // 방에 0명남으면 방데이터 삭제
+    const userListObj = findroom['userList'];
+    const isEmpty = Object.keys(userListObj).length === 0;
+    if (isEmpty) {
+      await this.roomchatsRepository.deleteRoomAndUserAndClient(
+        room,
+        uuid,
+        userId,
+        client.id,
+      );
+      await this.leaveRoomRequestToApiServer(uuid);
+      this.emitToRoom(server, uuid, 'leave-user', {});
+      return this.logger.log(`disconnected: ${client.id}`);
+    }
     await this.roomchatsRepository.setRoomAndDeleteUserAndClient(
-      findroom,
+      room,
       uuid,
       userId,
       client.id,
     );
 
     await this.leaveRoomRequestToApiServer(uuid);
-    //server.to(uuid).emit('disconnect_user', nickname);
     this.emitEventForUserList(client, server, uuid, nickname, 'leave-user');
     this.logger.log(`disconnected: ${client.id}`);
   }
@@ -211,7 +227,6 @@ export class RoomchatsService {
     const roomData = await this.roomchatsRepository.getRoomInfo(uuid);
     if (!roomData) {
       return this.emitEventForError(client, server, Exception.roomNotFound);
-      //return server.to(client.id).emit('error-room', Exception.roomNotFound);
     }
 
     const room = JSON.parse(roomData);
