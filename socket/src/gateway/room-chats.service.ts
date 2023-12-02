@@ -1,11 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
-import {
-  IRoomRequest,
-  RoomData,
-  UserData,
-  UuidData,
-} from './room-chats.interface';
+import { IRoomRequest, UserData } from './room-chats.interface';
 import { Logger } from '@nestjs/common';
 import { Exception } from '../exception/exception';
 import axios from 'axios';
@@ -21,21 +16,18 @@ export class RoomchatsService {
   }
 
   async joinRoom(client: Socket, server: Server, iRoomRequest: IRoomRequest) {
+    client.leave(client.id);
     const { uuid, nickname, userId } = iRoomRequest;
-    const exist = await this.roomchatsRepository.getUserIdInfo(userId);
+    const exist = await this.roomchatsRepository.getUserInfo(userId);
     if (exist) {
       await this.leaveRoomRequestToApiServer(uuid);
       return client.emit('joinError', Exception.clientAlreadyConnected);
     }
-
-    client.leave(client.id);
     client.join(uuid);
 
     const data = await this.roomchatsRepository.getRoomInfo(uuid);
-    //데이터가 존재하지 않으면
     if (!data) {
-      await this.createRoom(client, iRoomRequest); //이걸 그냥 레포지토리에 분류 해도 될듯
-    } else {
+      await this.createRoom(client, iRoomRequest);
       await this.updateRoom(client, data, iRoomRequest);
     }
     this.emitEventForUserList(client, server, uuid, nickname, 'new-user');
@@ -43,28 +35,19 @@ export class RoomchatsService {
 
   async createRoom(client: Socket, iRoomRequest: IRoomRequest) {
     const { nickname, uuid, img, userId } = iRoomRequest;
-    const roomData: RoomData = {
-      uuid: uuid,
-      owner: client.id,
-      ownerId: userId,
+    const roomData = {
       userList: { [client.id]: { nickname, img, userId } },
     };
     const userData: UserData = {
       clientId: client.id,
-      uuid: uuid,
-      nickname: nickname,
-      userId: userId,
+      uuid,
+      nickname,
     };
 
-    const uuidData: UuidData = {
-      uuid: uuid,
-    };
-
-    await this.roomchatsRepository.setRoomAndUserData(
+    await this.roomchatsRepository.setRoomAndUserAndClient(
       iRoomRequest,
       client.id,
       roomData,
-      uuidData,
       userData,
     );
   }
@@ -75,23 +58,18 @@ export class RoomchatsService {
     iRoomRequest: IRoomRequest,
   ) {
     const { uuid, nickname, img, userId } = iRoomRequest;
-    const newUser = {
+    const newUser: UserData = {
       clientId: client.id,
       uuid: uuid,
       nickname: nickname,
-      userId: userId,
-    };
-    const uuidData = {
-      uuid: uuid,
     };
     const room = JSON.parse(roomData);
     room.userList[client.id] = { nickname, img, userId };
 
-    await this.roomchatsRepository.setRoomAndUserData(
+    await this.roomchatsRepository.setRoomAndUserAndClient(
       iRoomRequest,
       client.id,
       room,
-      uuidData,
       newUser,
     );
   }
@@ -99,7 +77,8 @@ export class RoomchatsService {
   async removeRoom(client: Socket, server: Server, uuid: string) {
     const data = await this.roomchatsRepository.getRoomInfo(uuid);
     if (!data) {
-      return server.to(client.id).emit('error-room', Exception.roomNotFound);
+      return this.emitEventForError(client, server, Exception.roomNotFound);
+      //return server.to(client.id).emit('error-room', Exception.roomNotFound);
     }
     const findRoom = JSON.parse(data);
     await this.roomchatsRepository.deleteRoom(uuid);
@@ -107,31 +86,33 @@ export class RoomchatsService {
     // 방의 userList를 순회하며 각 사용자의 정보를 삭제합니다.
     for (const clientId in findRoom.userList) {
       const userId = findRoom.userList[clientId]?.userId;
-      await this.roomchatsRepository.deleteUserAndUserId(clientId, userId);
-      this.logger.log(`유저 데이터 삭제함: user:${clientId}, userId:${userId}`); //어떻게 넘겨줄지 서현님이랑 맞추기필요
+      await this.roomchatsRepository.deleteUserAndClient(userId, clientId);
+      this.logger.log(`유저 데이터 삭제함: client:${clientId}, user:${userId}`);
     }
     return server.to(uuid).emit('remove-users', {});
   }
 
+  //유저가1명이면, 혹은 지금나가면 0명남으면 방데이터 삭제
   async leaveRoom(client: Socket, server: Server, uuid: string) {
     const roomData = await this.roomchatsRepository.getRoomInfo(uuid);
     if (!roomData) {
-      return server.to(client.id).emit('error-room', Exception.roomNotFound);
+      return this.emitEventForError(client, server, Exception.roomNotFound);
+      //return server.to(client.id).emit('error-room', Exception.roomNotFound);
     }
-    const room: RoomData = JSON.parse(roomData);
+    const room = JSON.parse(roomData);
     const userId: number = room.userList[client.id]?.userId;
     const nickname: string = room.userList[client.id]?.nickname;
     const user = room.userList[client.id];
     if (user) {
       delete room.userList[client.id];
     } else {
-      return server.to(client.id).emit('error-room', Exception.clientNotFound);
+      return this.emitEventForError(client, server, Exception.clientNotFound);
     }
 
-    await this.roomchatsRepository.setRoomAndDeleteUser(
-      userId,
-      uuid,
+    await this.roomchatsRepository.setRoomAndDeleteUserAndClient(
       room,
+      uuid,
+      userId,
       client.id,
     );
 
@@ -140,14 +121,41 @@ export class RoomchatsService {
   }
 
   async logOut(client: Socket, server: Server, userId: number) {
-    const exist = await this.roomchatsRepository.getUserIdInfo(userId);
-    if (exist) {
-      const user = JSON.parse(exist);
-      const uuid = user.uuid;
-
-      await this.leaveRoomRequestToApiServer(uuid);
-      return server.to(uuid).emit('log-out', { logoutUser: userId });
+    const exist = await this.roomchatsRepository.getUserInfo(userId);
+    if (!exist) return;
+    //방에 아무도 없을경우 방 정보도 삭제해야함
+    //방에 유저리스트 이벤트를 쏴줌
+    const user = JSON.parse(exist);
+    const uuid: string = user.uuid;
+    const clientId: string = user.clientId;
+    const nickname: string = user.nickename;
+    const roomData = await this.roomchatsRepository.getRoomInfo(uuid);
+    if (!roomData) {
+      return this.emitEventForError(client, server, Exception.roomNotFound);
+      //return server.to(client.id).emit('error-room', Exception.roomNotFound);
     }
+    const room = JSON.parse(roomData);
+    const userInRoom = room.userList[clientId];
+    if (!userInRoom) {
+      return this.emitEventForError(client, server, Exception.clientNotFound);
+      //return server.to(client.id).emit('error-room', Exception.clientNotFound);
+    }
+    delete room.userList[clientId];
+    await this.roomchatsRepository.setRoomAndDeleteUserAndClient(
+      room,
+      uuid,
+      userId,
+      clientId,
+    );
+
+    const userListObj = room['userList'];
+    const userListArr = Object.values(userListObj);
+
+    await this.leaveRoomRequestToApiServer(uuid);
+    this.emitToRoom(server, uuid, 'log-out', { logoutUser: userId });
+    this.emitToRoom(server, uuid, 'leave-user', { nickname, userListArr });
+    // server.to(uuid).emit('log-out', { logoutUser: userId });
+    // server.to(uuid).emit('leave-user', { nickname, userListArr });
   }
 
   isOwner(findRoom: any, userId: number): boolean {
@@ -157,29 +165,32 @@ export class RoomchatsService {
 
   async disconnectClient(client: Socket, server: Server) {
     // 클라이언트 ID를 기반으로 사용자 정보 조회
-    const exist = await this.roomchatsRepository.getUserInfo(client.id);
+    const exist = await this.roomchatsRepository.getclientInfo(client.id);
     if (!exist) {
-      return server.to(client.id).emit('error-room', Exception.clientNotFound);
+      return this.emitEventForError(client, server, Exception.clientNotFound);
+      //return server.to(client.id).emit('error-room', Exception.clientNotFound);
     }
-
-    const user = JSON.parse(exist);
-    const uuid = user.uuid;
+    const uuid: string = exist;
 
     // 방 정보 조회
     const room = await this.roomchatsRepository.getRoomInfo(uuid);
     if (!room) {
-      return server.to(client.id).emit('error-room', Exception.roomNotFound);
+      return this.emitEventForError(client, server, Exception.roomNotFound);
+      //return server.to(client.id).emit('error-room', Exception.roomNotFound);
     }
     const findroom = JSON.parse(room);
     // 유저리스트에서 클라이언트 ID 제거
-    const nickname = findroom.userList[client.id]?.nickname;
-    const userId = findroom.userList[client.id]?.userId;
+    const nickname: string = findroom.userList[client.id]?.nickname;
+    const userId: number = findroom.userList[client.id]?.userId;
     delete findroom.userList[client.id];
+    //여기서 만약 findroom.userList 가 빈 객체라면 룸정보를 삭제 하도록 함
+    //그리고 빈유저리스트를 이벤트 넘김
+    //그게 아닐경우 아래를 실행시킴
 
-    await this.roomchatsRepository.setRoomAndDeleteUser(
-      userId,
-      uuid,
+    await this.roomchatsRepository.setRoomAndDeleteUserAndClient(
       findroom,
+      uuid,
+      userId,
       client.id,
     );
 
@@ -198,7 +209,8 @@ export class RoomchatsService {
   ) {
     const roomData = await this.roomchatsRepository.getRoomInfo(uuid);
     if (!roomData) {
-      return server.to(client.id).emit('error-room', Exception.roomNotFound);
+      return this.emitEventForError(client, server, Exception.roomNotFound);
+      //return server.to(client.id).emit('error-room', Exception.roomNotFound);
     }
 
     const room = JSON.parse(roomData);
@@ -206,6 +218,14 @@ export class RoomchatsService {
     const userListArr = Object.values(userListObj);
 
     server.to(uuid).emit(userEvent, { nickname, userListArr });
+  }
+
+  emitEventForError(client: Socket, server: Server, errorType) {
+    server.to(client.id).emit('error-room', errorType);
+  }
+
+  emitToRoom(server: Server, uuid: string, event: string, data) {
+    server.to(uuid).emit(event, data);
   }
 
   async leaveRoomRequestToApiServer(uuid: string): Promise<void> {
