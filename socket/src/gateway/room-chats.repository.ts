@@ -1,7 +1,7 @@
 import { pubClient as Redis } from '../redis.adapter';
 import { Injectable, Logger } from '@nestjs/common';
 import { IRoomRequest, UserData } from './room-chats.interface';
-
+//:card_file_box:
 @Injectable()
 export class RoomchatsRepository {
   private logger: Logger = new Logger('RoomchatsRepository');
@@ -19,15 +19,20 @@ export class RoomchatsRepository {
     return Redis.get(`room:${uuid}`);
   }
 
-  async setRoomAndUserAndClient(
+  async setRoomUserAndClient(
     { uuid, userId }: IRoomRequest,
     clientId: string,
     roomData,
     userData: UserData,
   ) {
-    await Redis.set(`room:${uuid}`, JSON.stringify(roomData));
-    await Redis.set(`user:${userId}`, JSON.stringify(userData));
-    await Redis.set(`client:${clientId}`, uuid);
+    await Redis.multi()
+      .set(`room:${uuid}`, JSON.stringify(roomData))
+      .set(`user:${userId}`, JSON.stringify(userData))
+      .set(`client:${clientId}`, uuid)
+      .exec();
+    // await Redis.set(`room:${uuid}`, JSON.stringify(roomData));
+    // await Redis.set(`user:${userId}`, JSON.stringify(userData));
+    // await Redis.set(`client:${clientId}`, uuid);
   }
 
   async deleteRoom(uuid: string) {
@@ -35,28 +40,38 @@ export class RoomchatsRepository {
   }
 
   async deleteUserAndClient(userId: number, clientId: string) {
-    await Redis.del(`user:${userId}`);
-    await Redis.del(`client:${clientId}`);
+    await Redis.multi().del(`user:${userId}`).del(`client:${clientId}`).exec();
+    // await Redis.del(`user:${userId}`);
+    // await Redis.del(`client:${clientId}`);
   }
-  async setRoomAndDeleteUserAndClient(
+  async setRoomDeleteUserAndClient(
     room,
     uuid: string,
     userId: number,
     clientId: string,
   ) {
-    await Redis.set(`room:${uuid}`, JSON.stringify(room));
-    await Redis.del(`user:${userId}`);
-    await Redis.del(`client:${clientId}`);
+    await Redis.multi()
+      .set(`room:${uuid}`, JSON.stringify(room))
+      .del(`user:${userId}`)
+      .del(`client:${clientId}`)
+      .exec();
+    // await Redis.set(`room:${uuid}`, JSON.stringify(room));
+    // await Redis.del(`user:${userId}`);
+    // await Redis.del(`client:${clientId}`);
   }
 
-  async deleteRoomAndUserAndClient(
-    room,
+  async deleteRoomUserAndClient(
     uuid: string,
     userId: number,
     clientId: string,
   ) {
-    await Redis.del(`room:${uuid}`);
-    await Redis.del(`user:${userId}`);
-    await Redis.del(`client:${clientId}`);
+    await Redis.multi()
+      .del(`room:${uuid}`)
+      .del(`user:${userId}`)
+      .del(`client:${clientId}`)
+      .exec();
+    // await Redis.del(`room:${uuid}`);
+    // await Redis.del(`user:${userId}`);
+    // await Redis.del(`client:${clientId}`);
   }
 }

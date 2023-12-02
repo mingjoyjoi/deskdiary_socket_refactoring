@@ -45,7 +45,7 @@ export class RoomchatsService {
       nickname,
     };
 
-    await this.roomchatsRepository.setRoomAndUserAndClient(
+    await this.roomchatsRepository.setRoomUserAndClient(
       iRoomRequest,
       client.id,
       roomData,
@@ -67,7 +67,7 @@ export class RoomchatsService {
     const room = JSON.parse(roomData);
     room.userList[client.id] = { nickname, img, userId };
 
-    await this.roomchatsRepository.setRoomAndUserAndClient(
+    await this.roomchatsRepository.setRoomUserAndClient(
       iRoomRequest,
       client.id,
       room,
@@ -109,15 +109,14 @@ export class RoomchatsService {
     const userListObj = room['userList'];
     const isEmpty = Object.keys(userListObj).length === 0;
     if (isEmpty) {
-      await this.roomchatsRepository.deleteRoomAndUserAndClient(
-        room,
+      await this.roomchatsRepository.deleteRoomUserAndClient(
         uuid,
         userId,
         client.id,
       );
       return this.emitToRoom(server, uuid, 'leave-user', {});
     }
-    await this.roomchatsRepository.setRoomAndDeleteUserAndClient(
+    await this.roomchatsRepository.setRoomDeleteUserAndClient(
       room,
       uuid,
       userId,
@@ -149,14 +148,13 @@ export class RoomchatsService {
     const userListObj = room['userList'];
     const isEmpty = Object.keys(userListObj).length === 0;
     if (isEmpty) {
-      await this.roomchatsRepository.deleteRoomAndUserAndClient(
-        room,
+      await this.roomchatsRepository.deleteRoomUserAndClient(
         uuid,
         userId,
         client.id,
       );
     } else {
-      await this.roomchatsRepository.setRoomAndDeleteUserAndClient(
+      await this.roomchatsRepository.setRoomDeleteUserAndClient(
         room,
         uuid,
         userId,
@@ -195,8 +193,7 @@ export class RoomchatsService {
     const userListObj = findroom['userList'];
     const isEmpty = Object.keys(userListObj).length === 0;
     if (isEmpty) {
-      await this.roomchatsRepository.deleteRoomAndUserAndClient(
-        room,
+      await this.roomchatsRepository.deleteRoomUserAndClient(
         uuid,
         userId,
         client.id,
@@ -205,7 +202,7 @@ export class RoomchatsService {
       this.emitToRoom(server, uuid, 'leave-user', {});
       return this.logger.log(`disconnected: ${client.id}`);
     }
-    await this.roomchatsRepository.setRoomAndDeleteUserAndClient(
+    await this.roomchatsRepository.setRoomDeleteUserAndClient(
       room,
       uuid,
       userId,
