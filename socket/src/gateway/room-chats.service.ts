@@ -168,13 +168,8 @@ export class RoomchatsService {
     this.emitToRoom(server, uuid, 'leave-user', { nickname, userListArr });
   }
 
-  isOwner(findRoom: any, userId: number): boolean {
-    const findOwnerId = findRoom['ownerId'];
-    return userId === findOwnerId;
-  }
-
   async disconnectClient(client: Socket, server: Server) {
-    const exist = await this.roomchatsRepository.getclientInfo(client.id);
+    const exist = await this.roomchatsRepository.getClientInfo(client.id);
     if (!exist) {
       return this.emitEventForError(client, server, Exception.clientNotFound);
     }
