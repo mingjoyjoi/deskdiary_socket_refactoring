@@ -10,9 +10,10 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
-import { LocalDateTime } from '@js-joda/core';
 import { RoomchatsService } from './room-chats.service';
 import { IMessage, IRoomRequest } from './room-chats.interface';
+import { RoomEvent } from './room-chats.events';
+import { getFormattedCurrentTime } from 'src/utils/formatted.time.maker';
 
 @WebSocketGateway({ cors: true, allowEIO3: true })
 export class RoomchatsGateway
@@ -26,28 +27,25 @@ export class RoomchatsGateway
   }
 
   // 메시지를 방에 있는 유저들에게 보냄
-  @SubscribeMessage('msgToServer')
+  @SubscribeMessage(RoomEvent.MsgToServer)
   handleMessage(
     @ConnectedSocket() client: Socket,
     @MessageBody() { uuid, message, nickname, img }: IMessage,
   ): void {
-    const localDateTime = LocalDateTime.now().plusHours(9);
-    const period = localDateTime.hour() < 12 ? 'AM' : 'PM';
-    const formattedHour = localDateTime.hour() % 12 || 12;
-    const minute = localDateTime.minute().toString().padStart(2, '0');
+    const time = getFormattedCurrentTime();
     const emitMessage: IMessage = {
       message: message,
-      time: `${formattedHour}:${minute} ${period}`,
+      time,
       nickname,
       uuid,
       img,
     };
     this.logger.log(emitMessage);
-    this.server.to(uuid).emit('msgToClient', emitMessage);
+    this.server.to(uuid).emit(RoomEvent.MsgToClient, emitMessage);
   }
 
   // 방에 참석함
-  @SubscribeMessage('joinRoom')
+  @SubscribeMessage(RoomEvent.JoinRoom)
   handleJoinRoom(
     @ConnectedSocket() client: Socket,
     @MessageBody() { nickname, uuid, img, userId }: IRoomRequest,
@@ -61,16 +59,16 @@ export class RoomchatsGateway
   }
 
   // 책상기록 페이지에서 방을 삭제함
-  @SubscribeMessage('removeRoom')
-  handleRemoveRoom(
+  @SubscribeMessage(RoomEvent.RemoveRoom)
+  handleRemoveRoomFromMainPage(
     @ConnectedSocket() client: Socket,
     @MessageBody() { uuid }: IRoomRequest,
   ): void {
-    this.roomchatsService.removeRoom(client, this.server, uuid);
+    this.roomchatsService.RemoveRoomFromMainPage(client, this.server, uuid);
   }
 
   // 방을 떠남
-  @SubscribeMessage('leave-room')
+  @SubscribeMessage(RoomEvent.LeaveRoom)
   handleLeaveRoom(
     @ConnectedSocket() client: Socket,
     @MessageBody() { uuid }: IRoomRequest,
@@ -80,12 +78,16 @@ export class RoomchatsGateway
   }
 
   //로그아웃
-  @SubscribeMessage('log-out')
+  @SubscribeMessage(RoomEvent.logOut)
   handleLogOut(
     @ConnectedSocket() client: Socket,
     @MessageBody() { userId }: IRoomRequest,
   ): void {
-    this.roomchatsService.logOut(client, this.server, userId);
+    this.roomchatsService.handleLogoutInOtherBrowser(
+      client,
+      this.server,
+      userId,
+    );
   }
 
   //회원탈퇴로 인한 방 퇴장시키기
