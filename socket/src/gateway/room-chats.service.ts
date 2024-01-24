@@ -1,11 +1,6 @@
 import { Injectable, UseFilters } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
-import {
-  ForsaveRoomAndUserData,
-  IRoomRequest,
-  RoomData,
-  UserData,
-} from './room-chats.interface';
+import { IRoomRequest, RoomData, UserData } from './room-chats.interface';
 import { Logger } from '@nestjs/common';
 import { Exception } from '../exception/exception';
 import axios from 'axios';
@@ -13,7 +8,10 @@ import { baseURL } from '../constant/url.constant';
 import { RoomchatsRepository } from './room-chats.repository';
 import { RoomEvent } from './room-chats.events';
 import { WsException } from '@nestjs/websockets';
-import { WsExceptionFilter } from 'src/filter/socket.exception.filter';
+import {
+  AxiosErrorFilter,
+  WsExceptionFilter,
+} from 'src/filter/socket.exception.filter';
 
 @Injectable()
 export class RoomchatsService {
@@ -23,35 +21,30 @@ export class RoomchatsService {
     this.logger.log('RoomchatsService constructor');
   }
 
+  @UseFilters(WsExceptionFilter)
   async joinRoom(client: Socket, server: Server, iRoomRequest: IRoomRequest) {
     const { uuid, userId } = iRoomRequest;
     let user: string;
     try {
       user = await this.roomchatsRepository.getUserInfo(userId);
     } catch (err) {
-      return this.emitEventForError(client, server, Exception.userSearchError);
+      throw new WsException(Exception.userSearchError);
     }
     if (user) {
-      this.emitEventForAlreadyConnected(client);
-      client.join(uuid);
-      return await this.leaveRoomRequestToApiServer(uuid);
+      await this.leaveRoomRequestToApiServer(uuid);
+      throw new WsException(Exception.clientAlreadyConnected);
     }
-    const result = await this.createOrUpdateRoomByRoomExistence(
-      client,
-      server,
-      iRoomRequest,
-    );
-    if (!result) {
-      return this.emitEventForError(client, server, Exception.roomCreateError);
-    }
+    client.join(uuid);
+    await this.createOrUpdateRoomByRoomExistence(client, server, iRoomRequest);
     this.emitEventForNewUserAndUserList(client, server, iRoomRequest);
   }
 
+  @UseFilters(WsExceptionFilter)
   async createOrUpdateRoomByRoomExistence(
     client: Socket,
     server: Server,
     iRoomRequest: IRoomRequest,
-  ): Promise<boolean> {
+  ) {
     try {
       const { uuid } = iRoomRequest;
       const exist = await this.roomchatsRepository.getRoomInfo(uuid);
@@ -64,26 +57,27 @@ export class RoomchatsService {
         roomData,
         userData,
       );
-      return true;
     } catch (err) {
-      return false;
+      throw new WsException(Exception.roomCreateError);
     }
   }
 
+  @UseFilters(WsExceptionFilter)
   async RemoveRoomFromMainPage(client: Socket, server: Server, uuid: string) {
     const room = await this.roomchatsRepository.getRoomInfo(uuid);
     if (!room) {
-      return this.emitEventForError(client, server, Exception.roomNotFound);
+      throw new WsException(Exception.roomNotFound);
     }
     await this.removeUsersFromRoom(room);
     await this.roomchatsRepository.removeRoom(uuid);
     this.emitEventForKickUsersAndEmptyUserList(server, uuid);
   }
 
+  @UseFilters(WsExceptionFilter)
   async leaveRoom(client: Socket, server: Server, uuid: string) {
     const room = await this.roomchatsRepository.getRoomInfo(uuid);
     if (!room) {
-      return this.emitEventForError(client, server, Exception.roomNotFound);
+      throw new WsException(Exception.roomNotFound);
     }
     const roomData: RoomData = JSON.parse(room);
     const clientId = client.id;
@@ -100,6 +94,7 @@ export class RoomchatsService {
     this.emitEventForLeaveUserAndUserList(server, userData, userListArr);
   }
 
+  @UseFilters(WsExceptionFilter)
   async handleLogoutInOtherBrowser(
     client: Socket,
     server: Server,
@@ -109,7 +104,7 @@ export class RoomchatsService {
     try {
       exist = await this.roomchatsRepository.getUserInfo(userId);
     } catch (err) {
-      return this.emitEventForError(client, server, Exception.userSearchError);
+      throw new WsException(Exception.userSearchError);
     }
     if (!exist) return;
     const userData: UserData = JSON.parse(exist);
@@ -117,7 +112,7 @@ export class RoomchatsService {
 
     const room = await this.roomchatsRepository.getRoomInfo(uuid);
     if (!room) {
-      return this.emitEventForError(client, server, Exception.roomNotFound);
+      throw new WsException(Exception.roomNotFound);
     }
     const roomData = JSON.parse(room);
     delete roomData.userList[clientId];
@@ -134,10 +129,11 @@ export class RoomchatsService {
     await this.leaveRoomRequestToApiServer(uuid);
   }
 
+  @UseFilters(WsExceptionFilter)
   async disconnectClient(client: Socket, server: Server) {
     const uuid = await this.roomchatsRepository.getRoomIdByClientId(client.id);
     if (!uuid) {
-      return this.emitEventForError(client, server, Exception.clientNotFound);
+      throw new WsException(Exception.clientNotFound);
     }
     await this.leaveRoom(client, server, uuid);
     await this.leaveRoomRequestToApiServer(uuid);
@@ -154,19 +150,16 @@ export class RoomchatsService {
     server.to(uuid).emit(RoomEvent.NewUser, { nickname, userListArr });
   }
 
+  @UseFilters(WsExceptionFilter)
   async getUserListInRoom(client: Socket, server: Server, uuid: string) {
     const roomData = await this.roomchatsRepository.getRoomInfo(uuid);
     if (!roomData) {
-      return this.emitEventForError(client, server, Exception.roomNotFound);
+      throw new WsException(Exception.roomNotFound);
     }
     const room: RoomData = JSON.parse(roomData);
     const userListObj = room['userList'];
     const userListArr = Object.values(userListObj);
     return userListArr;
-  }
-
-  emitEventForError(client: Socket, server: Server, errorType) {
-    server.to(client.id).emit(RoomEvent.Error, errorType);
   }
 
   emitEventForKickUsersAndEmptyUserList(server: Server, uuid: string) {
@@ -175,10 +168,6 @@ export class RoomchatsService {
 
   emitToRoom(server: Server, uuid: string, event: string, data) {
     server.to(uuid).emit(event, data);
-  }
-
-  emitEventForAlreadyConnected(client: Socket) {
-    client.emit(RoomEvent.JoinError, Exception.clientAlreadyConnected);
   }
 
   emitEventForLeaveUserAndUserList(
@@ -249,7 +238,7 @@ export class RoomchatsService {
     }
   }
 
-  @UseFilters(WsExceptionFilter)
+  @UseFilters(AxiosErrorFilter)
   async leaveRoomRequestToApiServer(uuid: string): Promise<void> {
     const headers = {
       'socket-secret-key': process.env.SOCKET_SECRET_KEY ?? '',
